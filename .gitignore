@@ -32,3 +32,6 @@ hs_err_pid*
 .idea/libraries
 .idea/caches
 .idea/*
+
+# txt file for test
+*.txt
