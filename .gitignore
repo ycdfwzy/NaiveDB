@@ -35,3 +35,6 @@ hs_err_pid*
 
 # txt file for test
 *.txt
+
+# output
+out/*
