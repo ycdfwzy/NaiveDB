@@ -1,17 +1,42 @@
-package BTree;
+package BPulsTree;
 
-public class BTree {
-    public BTree(int a) {
-        data = a;
+import java.util.LinkedList;
+
+public class BPlusTree {
+
+    private BPlusTreeNode root;
+    private BPlusTreeConfiguration config;
+
+    public BPlusTree(BPlusTreeConfiguration config) {
+        this.config = config;
+        root = new BPlusTreeLeaf(this);
     }
 
-    public void printData() {
-        System.out.println("x = "+data);
+    public BPlusTree(String filename) {
+        fromFile(filename);
     }
 
-    public void setData(int a) {
-        data = a;
+    public void fromFile(String filename) {
+
     }
 
-    private int data;
+    public int getTreeDegree() {return config.getTreeDegree();}
+
+    public String getIndexType() {return config.getIndexType();}
+
+    public void insert() {
+
+    }
+
+    public void search() {
+
+    }
+
+    public void delete() {
+
+    }
+
+    public void printTree() {
+        System.out.println(config.getIndexType());
+    }
 }
