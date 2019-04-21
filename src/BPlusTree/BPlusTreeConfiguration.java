@@ -1,12 +1,12 @@
-package BPulsTree;
+package BPlusTree;
 
 import java.util.LinkedList;
 
 public class BPlusTreeConfiguration {
 
     private int pageSize;
-    private String indexType;
-    private int indexSize;
+    private String keyType;
+    private int keySize;
     private int treeDegree;
     private int rowSize;
 
@@ -16,22 +16,22 @@ public class BPlusTreeConfiguration {
     private static int pointSize = 4;
 
 
-    public BPlusTreeConfiguration(String indexType,
+    public BPlusTreeConfiguration(String keyType,
                                   LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
-        this(4096, indexType, columnName, columnType);
+        this(4096, keyType, columnName, columnType);
     }
 
     public BPlusTreeConfiguration(int pageSize,
-                                  String indexType,
+                                  String keyType,
                                   LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
         this.pageSize = pageSize;
-        this.indexType = indexType;
-        this.indexSize = Type2Size(this.indexType);
-        this.treeDegree = pageSize / (indexSize + pointSize);
+        this.keyType = keyType;
+        this.keySize = Type2Size(this.keyType);
+        this.treeDegree = pageSize / (keySize + pointSize);
         if (this.treeDegree < 3) {
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
         }
@@ -64,14 +64,14 @@ public class BPlusTreeConfiguration {
                 ret = 8;
                 break;
             default:
-                throw new BPlusException("Unknown index type '" + type + "'");
+                throw new BPlusException("Unknown key type '" + type + "'");
         }
         return ret;
     }
 
     public int getTreeDegree() {return treeDegree;}
-    public String getIndexType() {return indexType;}
-    public int getIndexSize() {return indexSize;}
+    public String getKeyType() {return keyType;}
+    public int getKeySize() {return keySize;}
     public int getPageSize() {return pageSize;}
     public int getRowSize() {return rowSize;}
     public String[] getColumnType() {return columnType.toArray(new String[0]);}

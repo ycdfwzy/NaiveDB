@@ -1,6 +1,4 @@
-package BPulsTree;
-
-import java.util.LinkedList;
+package BPlusTree;
 
 public class BPlusTree {
 
@@ -9,7 +7,7 @@ public class BPlusTree {
 
     public BPlusTree(BPlusTreeConfiguration config) {
         this.config = config;
-        root = new BPlusTreeLeaf(this);
+//        root = new BPlusTreeLeaf(this);
     }
 
     public BPlusTree(String filename) {
@@ -22,7 +20,7 @@ public class BPlusTree {
 
     public int getTreeDegree() {return config.getTreeDegree();}
 
-    public String getIndexType() {return config.getIndexType();}
+    public String getKeyType() {return config.getKeyType();}
 
     public void insert() {
 
@@ -37,6 +35,6 @@ public class BPlusTree {
     }
 
     public void printTree() {
-        System.out.println(config.getIndexType());
+        System.out.println(config.getKeyType());
     }
 }

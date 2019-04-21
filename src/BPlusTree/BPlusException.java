@@ -1,4 +1,4 @@
-package BPulsTree;
+package BPlusTree;
 
 public class BPlusException extends Exception{
     public BPlusException(String msg) {
