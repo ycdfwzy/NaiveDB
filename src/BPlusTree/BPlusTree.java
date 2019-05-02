@@ -86,7 +86,7 @@ public class BPlusTree {
         --- rowNum    row number in datafile(store in leaf node)
      */
     private void insert(BPlusTreeNode p, Object key, long rowNum)
-            throws BPlusException {
+            throws BPlusException, IOException {
         if (p.isLeaf()) {
             p.addKeyAndPtr(key, rowNum);
         } else
@@ -164,7 +164,7 @@ public class BPlusTree {
     }
 
     private BPlusTreeNode getNode(long pageIndex)
-            throws BPlusException{
+            throws BPlusException, IOException{
         if (pageIndex < 0) {
 //            new BPlusTreeNode(treeFile, pageIndex);
             throw new BPlusException("Underflow pageIndex!");
@@ -172,7 +172,7 @@ public class BPlusTree {
         {
             this.allNodes.ensureCapacity((int)pageIndex+1);
             if (allNodes.get((int)pageIndex) == null) {
-                allNodes.set((int)pageIndex, new BPlusTreeNode(treeFile, pageIndex));
+                allNodes.set((int)pageIndex, new BPlusTreeNode(treeFile, pageIndex, config));
             }
             return allNodes.get((int)pageIndex);
         }
@@ -184,7 +184,7 @@ public class BPlusTree {
     }
 
     private void splitNode(BPlusTreeNode p)
-        throws BPlusException {
+        throws BPlusException, IOException {
         if (p.isRoot()) {
             long newRootPageIndex = getNewPageIndex();
 

@@ -14,10 +14,6 @@ public class BPlusTreeConfiguration {
     private LinkedList<String> columnType;
     private LinkedList<String> columnName;
 
-    private static int pointSize = 4;
-    private static int nodeTypeSize = 1;
-    private static int parentSize = pointSize;
-
     public BPlusTreeConfiguration(String keyType,
                                   LinkedList<String> columnName,
                                   LinkedList<String> columnType)
@@ -33,7 +29,7 @@ public class BPlusTreeConfiguration {
         this.pageSize = pageSize;
         this.keyType = keyType;
         this.keySize = Type2Size(this.keyType);
-        this.treeDegree = pageSize / (keySize + pointSize + nodeTypeSize + parentSize);
+        this.treeDegree = (pageSize - Consts.nodeTypeSize - Consts.parentSize) / (keySize + Consts.pointSize);
         if (this.treeDegree < 3) {
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
         }

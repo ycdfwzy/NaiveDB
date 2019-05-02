@@ -26,12 +26,15 @@ public class BPlusTreeNode {
     }
 
     /*
-        node size
+        node page format
+            node_type|parent_ptr|[(key, ptr)]
      */
-    public BPlusTreeNode(RandomAccessFile treeFile,
-                        long pageIndex)
+    public BPlusTreeNode(RandomAccessFile input,
+                        long pageIndex,
+                         BPlusTreeConfiguration conf)
             throws IOException, BPlusException {
         this.pageIndex = pageIndex;
+        this.conf = conf;
         // Todo: read node info from file
     }
 
@@ -186,8 +189,8 @@ public class BPlusTreeNode {
         this.nodeType = nodeType;
     }
 
-    public void writeNode(RandomAccessFile r, BPlusTreeConfiguration conf) {
-
+    public void writeNode(RandomAccessFile output) {
+        // Todo: write to file
     }
 
     public static int compareKey(Object a, Object b, String keyType) {
