@@ -1,5 +1,6 @@
 package BPlusTree;
 
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
@@ -7,30 +8,43 @@ public class BPlusTreeNode {
     private ArrayList keyList;
     private ArrayList<Long> ptrList;
     private long pageIndex;
+    private long parent;
     private BPlusTreeNodeType nodeType;
     private BPlusTreeConfiguration conf;
 
     public BPlusTreeNode(long pageIndex,
+                         long parent,
                          BPlusTreeNodeType nodeType,
                          BPlusTreeConfiguration conf)
-    throws BPlusException {
+            throws BPlusException {
         this.pageIndex = pageIndex;
+        this.parent = parent;
         this.nodeType = nodeType;
         this.conf = conf;
         this.keyList = new ArrayList();
-        this.ptrList = new ArrayList();
+        this.ptrList = new ArrayList<Long>();
     }
 
-    public boolean isOverflow(BPlusTreeConfiguration conf) {
-        return keyList.size() >= conf.getTreeDegree();
+    /*
+        node size
+     */
+    public BPlusTreeNode(RandomAccessFile treeFile,
+                        long pageIndex)
+            throws IOException, BPlusException {
+        this.pageIndex = pageIndex;
+        // Todo: read node info from file
     }
 
-    public boolean isToMerge(BPlusTreeConfiguration conf) {
+    public boolean isOverflow() {
+        return keyList.size() >= this.conf.getTreeDegree();
+    }
+
+    public boolean isToMerge() {
         if (isRoot()) {
             return !isLeaf() && isEmpty();
         }
         else {
-            return keyList.size() < conf.getTreeDegree() / 2;
+            return keyList.size() < this.conf.getTreeDegree() / 2;
         }
     }
 
@@ -67,6 +81,13 @@ public class BPlusTreeNode {
         }
     }
 
+    public long getKeyIndex(Object key) {
+        int idx = binarySearch(key, conf.getKeyType());
+        if (idx < 0 || keyList.size() > idx)
+            return -1;
+        return ptrList.get(idx);
+    }
+
     private int binarySearch(Object key, String keyType) {
         int left = 0, right = keyList.size() - 1;
         while (left < right) {
@@ -74,34 +95,26 @@ public class BPlusTreeNode {
             if (keyList.get(mid) == key) {
                 return mid;
             }
-            int compare = 0;
-            switch (keyType) {
-                case "Int":
-                    compare = (int) keyList.get(mid) > (int) key ? 1 : -1;
-                    break;
-                case "Long":
-                    compare = (long) keyList.get(mid) > (long) key ? 1 : -1;
-                    break;
-                case "Float":
-                    compare = (float) keyList.get(mid) > (float) key ? 1 : -1;
-                    break;
-                case "Double":
-                    compare = (double) keyList.get(mid) > (double) key ? 1 : -1;
-                    break;
-                case "String":
-                    compare = keyList.get(mid).toString().compareTo(key.toString());
-                    break;
-                default:
-                    break;
-            }
+            int compare = compareKey(keyList.get(mid), key, keyType);
             if (compare == 1) {
-                right = mid;
+                right = mid-1;
             } else {
-                left = mid;
+                left = mid+1;
             }
-            continue;
         }
-        return left;
+        return right;
+    }
+
+    public long getParent() {
+        return this.parent;
+    }
+
+    public void setParent(long parent) {
+        this.parent = parent;
+    }
+
+    public int getCurrentSize() {
+        return keyList.size();
     }
 
     public void removeKey(Object key) {
@@ -115,7 +128,6 @@ public class BPlusTreeNode {
     public void setKey(int idx, Object key) {
         keyList.set(idx, key);
     }
-
 
     public void addPtr(int idx, long ptr) {
         ptrList.add(idx, ptr);
@@ -141,6 +153,11 @@ public class BPlusTreeNode {
     public void addKeyAndPtr(Object key, long ptr) {
         int idx = addKey(key);
         addPtr(idx, ptr);
+    }
+
+    public void removeKeyAndPtr(int idx) {
+        keyList.remove(idx);
+        ptrList.remove(idx);
     }
 
     public void removeKeyAndPtr(Object key) {
@@ -171,5 +188,31 @@ public class BPlusTreeNode {
 
     public void writeNode(RandomAccessFile r, BPlusTreeConfiguration conf) {
 
+    }
+
+    public static int compareKey(Object a, Object b, String keyType) {
+        int compare = 0;
+        if (a == b)
+            return 0;
+        switch (keyType) {
+            case "Int":
+                compare = (int) a > (int) b ? 1 : -1;
+                break;
+            case "Long":
+                compare = (long) a > (long) b ? 1 : -1;
+                break;
+            case "Float":
+                compare = (float) a > (float) b ? 1 : -1;
+                break;
+            case "Double":
+                compare = (double) a > (double) b ? 1 : -1;
+                break;
+            case "String":
+                compare = a.toString().compareTo(b.toString());
+                break;
+            default:
+                break;
+        }
+        return compare;
     }
 }

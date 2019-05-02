@@ -1,9 +1,10 @@
 import BPlusTree.*;
 
-//import utils.NumberUtils;
+import utils.NumberUtils;
 
 import java.io.*;
 import java.util.LinkedList;
+import java.util.Arrays;
 
 public class main {
 
@@ -31,9 +32,10 @@ public class main {
 //        out.write(bytes);
 //        out.flush();
 //        out.close();
-//
-//        BufferedInputStream in = new BufferedInputStream(new FileInputStream("test.txt"));
-//
+
+//        FileInputStream fin = new FileInputStream("test.txt");
+//        fin.getChannel().position(16); // seek()
+
 //        while (in.read(bytes, 0, 16) != -1) {
 //            String s = new String(bytes);
 //            s = s.trim();

@@ -1,6 +1,7 @@
 package BPlusTree;
 
 import java.util.LinkedList;
+import utils.Consts;
 
 public class BPlusTreeConfiguration {
 
@@ -14,7 +15,8 @@ public class BPlusTreeConfiguration {
     private LinkedList<String> columnName;
 
     private static int pointSize = 4;
-
+    private static int nodeTypeSize = 1;
+    private static int parentSize = pointSize;
 
     public BPlusTreeConfiguration(String keyType,
                                   LinkedList<String> columnName,
@@ -31,7 +33,7 @@ public class BPlusTreeConfiguration {
         this.pageSize = pageSize;
         this.keyType = keyType;
         this.keySize = Type2Size(this.keyType);
-        this.treeDegree = pageSize / (keySize + pointSize);
+        this.treeDegree = pageSize / (keySize + pointSize + nodeTypeSize + parentSize);
         if (this.treeDegree < 3) {
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
         }
@@ -49,19 +51,19 @@ public class BPlusTreeConfiguration {
         int ret;
         switch (type) {
             case "Int":
-                ret = 4;
+                ret = Consts.intSize;
                 break;
             case "Long":
-                ret = 8;
+                ret = Consts.longSize;
                 break;
             case "String":
-                ret = 128;
+                ret = Consts.stringSize;
                 break;
             case "Float":
-                ret = 4;
+                ret = Consts.floatSize;
                 break;
             case "Double":
-                ret = 8;
+                ret = Consts.doubleSize;
                 break;
             default:
                 throw new BPlusException("Unknown key type '" + type + "'");

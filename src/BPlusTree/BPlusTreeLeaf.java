@@ -4,12 +4,13 @@ public class BPlusTreeLeaf extends BPlusTreeNode {
 
     private long nextPage, prevPage;
     BPlusTreeLeaf(long pageIndex,
+                  long parent,
                   BPlusTreeNodeType nodeType,
                   BPlusTreeConfiguration conf,
                   long nextPage,
                   long prevPage)
     throws BPlusException {
-        super(pageIndex, nodeType, conf);
+        super(pageIndex, parent, nodeType, conf);
         if (!isLeaf()) {
             throw new BPlusException("wrong node type for instance of BPlusTreeLeaf");
         }
