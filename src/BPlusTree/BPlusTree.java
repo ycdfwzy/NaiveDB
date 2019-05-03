@@ -257,8 +257,8 @@ public class BPlusTree {
 
     }
 
-    public void delete() {
-
+    public void delete(Object key) {
+        // Todo: delete single key
     }
 
     public void printTree() {
