@@ -18,7 +18,7 @@ public class BPlusTreeConfiguration {
                                   LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
-        this(4096, keyType, columnName, columnType);
+        this(Consts.defaultBlockSize, keyType, columnName, columnType);
     }
 
     public BPlusTreeConfiguration(int pageSize,
@@ -29,7 +29,8 @@ public class BPlusTreeConfiguration {
         this.pageSize = pageSize;
         this.keyType = keyType;
         this.keySize = Type2Size(this.keyType);
-        this.treeDegree = (pageSize - Consts.nodeTypeSize - Consts.parentSize) / (keySize + Consts.pointSize);
+        // header = nodeType|parent_ptr|next_page|prev_page
+        this.treeDegree = (pageSize - Consts.nodeTypeSize - Consts.parentSize*3) / (keySize + Consts.pointSize);
         if (this.treeDegree < 3) {
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
         }
@@ -72,6 +73,7 @@ public class BPlusTreeConfiguration {
     public int getKeySize() {return keySize;}
     public int getPageSize() {return pageSize;}
     public int getRowSize() {return rowSize;}
+    public int getColumnSize() {return columnName.size();}
     public String[] getColumnType() {return columnType.toArray(new String[0]);}
     public String[] getColumnName() {return columnName.toArray(new String[0]);}
 }

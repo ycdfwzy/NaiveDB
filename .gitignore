@@ -33,8 +33,10 @@ hs_err_pid*
 .idea/caches
 .idea/*
 
-# txt file for test
+# files for test
 *.txt
+*.tree
+*.data
 
 # output
 out/*
