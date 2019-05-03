@@ -92,28 +92,15 @@ public class BPlusTreeNode {
         // [(key, ptr)]
         this.keyList = new ArrayList();
         this.ptrList = new ArrayList<Long>();
-        int n = this.conf.getColumnSize();
+        int n = this.conf.getTreeDegree();
         for (int i = 0; i < n; ++i) {
-            switch (conf.getKeyType()) {
-                case "Int":
-                    this.keyList.add(NumberUtils.parseInt(pageS, pos, conf.getKeySize()));
-                    break;
-                case "Long":
-                    this.keyList.add(NumberUtils.parseLong(pageS, pos, conf.getKeySize()));
-                    break;
-                case "String":
-                    this.keyList.add(pageS.substring(pos, conf.getKeySize()).trim());
-                    break;
-                case "Float":
-                    this.keyList.add(NumberUtils.parseFloat(pageS, pos, conf.getKeySize()));
-                    break;
-                case "Double":
-                    this.keyList.add(NumberUtils.parseDouble(pageS, pos, conf.getKeySize()));
-                    break;
+            if (pageS.substring(pos).startsWith("\0")) {
+                break;
             }
-            long ptr = NumberUtils.parseLong(pageS, pos+conf.getKeySize(), Consts.pointSize);
+            pos += NumberUtils.fromBytes(this.keyList, pageS, pos, conf.getKeyType());
+            long ptr = NumberUtils.parseLong(pageS, pos, Consts.pointSize);
             this.ptrList.add(ptr);
-            pos += conf.getKeySize() + Consts.pointSize;
+            pos += Consts.pointSize;
         }
         if (!pageS.substring(pos).trim().isEmpty()) {
             throw new BPlusException("Node page is invalid!");
@@ -145,10 +132,8 @@ public class BPlusTreeNode {
         }
 
         // [(key, ptr)]
-        int n = this.conf.getColumnSize();
-        String[] types = this.conf.getColumnType();
-        for (int i = 0; i < n; ++i) {
-            pos += NumberUtils.toBytes(pageB, pos, keyList.get(i), types[i]);
+        for (int i = 0; i < keyList.size(); ++i) {
+            pos += NumberUtils.toBytes(pageB, pos, keyList.get(i), conf.getKeyType());
             tmp = Long.toString(ptrList.get(i)).getBytes();
             System.arraycopy(tmp, 0, pageB, pos, tmp.length);
             pos += Consts.pointSize;
@@ -163,7 +148,7 @@ public class BPlusTreeNode {
     }
 
     public boolean isOverflow() {
-        return keyList.size() >= this.conf.getTreeDegree();
+        return keyList.size() > this.conf.getTreeDegree();
     }
 
     public boolean isToMerge() {
@@ -208,8 +193,8 @@ public class BPlusTreeNode {
     }
 
     public long getKeyIndex(Object key) {
-        int idx = binarySearch(key, conf.getKeyType());
-        if (idx < 0 || keyList.size() > idx)
+        int idx = Integer.max(0, binarySearch(key, conf.getKeyType()));
+        if (keyList.size() < idx)
             return -1;
         return ptrList.get(idx);
     }

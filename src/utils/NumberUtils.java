@@ -2,6 +2,10 @@ package utils;
 
 import BPlusTree.BPlusException;
 
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 public class NumberUtils {
     public static boolean isPureInteger(String s) {
         if (s.isEmpty())
@@ -34,7 +38,7 @@ public class NumberUtils {
 
     public static int parseInt(String s, int startIndex, int len)
         throws utilsException {
-        String t = s.substring(startIndex, len).trim();
+        String t = s.substring(startIndex, startIndex+len).trim();
         if (isInteger(t)) {
             return Integer.parseInt(t);
         }
@@ -43,7 +47,7 @@ public class NumberUtils {
 
     public static long parseLong(String s, int startIndex, int len)
             throws utilsException {
-        String t = s.substring(startIndex, len).trim();
+        String t = s.substring(startIndex, startIndex+len).trim();
         if (isInteger(t)) {
             return Long.parseLong(t);
         }
@@ -52,7 +56,7 @@ public class NumberUtils {
 
     public static float parseFloat(String s, int startIndex, int len)
             throws utilsException {
-        String t = s.substring(startIndex, len).trim();
+        String t = s.substring(startIndex, startIndex+len).trim();
         if (isFloat(t)) {
             return Float.parseFloat(t);
         }
@@ -61,11 +65,39 @@ public class NumberUtils {
 
     public static Double parseDouble(String s, int startIndex, int len)
             throws utilsException {
-        String t = s.substring(startIndex, len).trim();
+        String t = s.substring(startIndex, startIndex+len).trim();
         if (isFloat(t)) {
             return Double.parseDouble(t);
         }
         throw new utilsException(t + " is not a Long");
+    }
+
+    public static int fromBytes(List list, String s, int pos, String type)
+        throws utilsException{
+        int ret = 0;
+        switch (type) {
+            case "Int":
+                ret = Consts.intSize;
+                list.add(NumberUtils.parseInt(s, pos, Consts.intSize));
+                break;
+            case "Long":
+                ret = Consts.longSize;
+                list.add(NumberUtils.parseLong(s, pos, Consts.longSize));
+                break;
+            case "String":
+                ret = Consts.stringSize;
+                list.add(s.substring(pos, pos + Consts.stringSize).trim());
+                break;
+            case "Float":
+                ret = Consts.floatSize;
+                list.add(NumberUtils.parseFloat(s, pos, Consts.floatSize));
+                break;
+            case "Double":
+                ret = Consts.doubleSize;
+                list.add(NumberUtils.parseDouble(s, pos, Consts.doubleSize));
+                break;
+        }
+        return ret;
     }
 
     public static int toBytes(byte[] bytes, int pos, Object value, String type)

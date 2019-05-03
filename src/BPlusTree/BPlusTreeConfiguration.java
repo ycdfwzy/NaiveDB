@@ -41,6 +41,10 @@ public class BPlusTreeConfiguration {
         for (int i = 0; i < this.columnType.size(); ++i) {
             this.rowSize += Type2Size(this.columnType.get(i));
         }
+
+        if ((Consts.columnNameSize + Consts.columnTypeSize) * columnName.size()
+                + Consts.longSize*3 + Consts.intSize*2 > this.pageSize)
+            throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
     }
 
     public static int Type2Size(String type)

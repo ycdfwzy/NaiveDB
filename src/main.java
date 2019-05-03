@@ -10,56 +10,69 @@ import java.util.Arrays;
 public class main {
 
     public static void main(String[] args)
-        throws IOException, BPlusException{
-//        File f = new File("test.txt");
-//        if (!f.exists()) {
-//            f.createNewFile();
-//        }
-//        BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(f));
-//        String db_name = "testDB";
-//        String table_name = "test";
-//        double col_num = 2.0/3;
-//        byte[] bytes = new byte[16];
-//        System.arraycopy(db_name.getBytes(), 0, bytes, 0, db_name.getBytes().length);
-//        out.write(bytes);
-//
-//        Arrays.fill(bytes, (byte)0);
-//        System.arraycopy(table_name.getBytes(), 0, bytes, 0, table_name.getBytes().length);
-//        out.write(bytes);
-//
-//        Arrays.fill(bytes, (byte)0);
-//        System.arraycopy(Double.toString(col_num).getBytes(), 0, bytes, 0, Integer.min(16,Double.toString(col_num).getBytes().length));
-//        out.write(bytes);
-//        out.flush();
-//        out.close();
+        throws Exception {
 
-//        FileInputStream fin = new FileInputStream("test.txt");
-//        fin.getChannel().position(16); // seek()
+        File file = new File("test.tree");
+        if (file.exists() && file.isFile())
+            file.delete();
+        file = new File("test.data");
+        if (file.exists() && file.isFile())
+            file.delete();
 
-//        while (in.read(bytes, 0, 16) != -1) {
-//            String s = new String(bytes);
-//            s = s.trim();
-//            if (NumberUtils.isInteger(s)){
-//                int x = Integer.parseInt(s);
-//                System.out.println("isInt: " + x);
-//            } else
-//            if (NumberUtils.isFloat(s)) {
-//                Double x = Double.parseDouble(s);
-//                System.out.println("isDouble: "+ x);
-//            } else {
-//                System.out.println(s);
-//            }
-//            System.out.println(s.length());
-//        }
-//        String column_0 = "ID";
-//        String columnType_0 = "Int";
-//        LinkedList columnNames = new LinkedList();
-//        LinkedList columnTypes = new LinkedList();
-//
-//        columnNames.add(column_0);
-//        columnTypes.add(columnType_0);
-//        BPlusTreeConfiguration conf = new BPlusTreeConfiguration((String)columnTypes.getFirst(), columnNames, columnTypes);
-//
-//        BPlusTreeNode node = new BPlusTreeNode(0, BPlusTreeNodeType.ROOT_LEAF_NODE);
+
+        LinkedList<String> name = new LinkedList<String>();
+        LinkedList<String> type = new LinkedList<String>();
+        name.add("id");
+        name.add("name");
+
+        type.add("Int");
+        type.add("String");
+
+        BPlusTreeConfiguration conf = new BPlusTreeConfiguration(256,"Int", name, type);
+        BPlusTree tree = new BPlusTree(conf);
+        tree.close();
+
+        tree = new BPlusTree("test.tree", "test.data");
+        String[] names = tree.getConfig().getColumnName();
+        String[] types = tree.getConfig().getColumnType();
+        for (int i = 0; i < names.length; ++i) {
+            System.out.printf("%s: %s\n", names[i], types[i]);
+        }
+
+        LinkedList values = new LinkedList();
+        values.add(0);
+        values.add("Mao");
+        tree.insert(values);
+
+        values.set(0, 1);
+        values.set(1, "Deng");
+        tree.insert(values);
+
+        values.set(0, 2);
+        values.set(1, "Jiang");
+        tree.insert(values);
+
+        values.set(0, 3);
+        values.set(1, "Hu");
+        tree.insert(values);
+
+        values.set(0, 4);
+        values.set(1, "Xi");
+        tree.insert(values);
+
+        values.set(0, -1);
+        values.set(1, "Pu");
+        tree.insert(values);
+
+        LinkedList<LinkedList> res = tree.searchAll();
+        for (LinkedList row: res) {
+            for (Object value: row) {
+                System.out.print(value);
+                System.out.printf(" ");
+            }
+            System.out.println();
+        }
+
+        tree.close();
     }
 }

@@ -2,11 +2,13 @@ package BPlusTree;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import utils.Consts;
 import utils.NumberUtils;
 import utils.utilsException;
@@ -22,6 +24,15 @@ public class BPlusTree {
     private ArrayList<Long> pageIndexPool;
     private long maxRowIndex;
     private ArrayList<Long> rowIndexPool;
+    private long firstLeaf, lastLeaf;
+
+    public void close()
+        throws Exception {
+        this.toFile();
+        System.out.println(treeFile.length());
+        this.treeFile.close();
+        this.dataFile.close();
+    }
 
     public BPlusTree(BPlusTreeConfiguration config)
             throws IOException, BPlusException, utilsException {
@@ -31,7 +42,9 @@ public class BPlusTree {
         this.allNodes = new ArrayList<BPlusTreeNode>();
         this.allNodes.add(this.root);
 
-        this.maxPageIndex = 1;
+        this.lastLeaf = 1;
+        this.firstLeaf = 1;
+        this.maxPageIndex = 0;
         this.pageIndexPool = new ArrayList<Long>();
         this.maxRowIndex = -1;
         this.rowIndexPool = new ArrayList<Long>();
@@ -45,12 +58,14 @@ public class BPlusTree {
             throws IOException, utilsException, BPlusException {
         treeFile = new RandomAccessFile(treeFilename, "rw");
         dataFile = new RandomAccessFile(dataFilename, "rw");
+//        System.out.println(dataFile.length());
         fromFile(treeFile, dataFile);
     }
 
     /*
         page#0 format:
-            pageSize|columnCnt|[columnNames]|[columnTypes]|rootPageIndex
+            pageSize|columnCnt|[columnNames]|[columnTypes]
+            |rootPageIndex|first_leaf|last_leaf
 
      */
     public void fromFile(RandomAccessFile treeFile,
@@ -60,13 +75,20 @@ public class BPlusTree {
         this.pageIndexPool = new ArrayList<Long>();
         this.rowIndexPool = new ArrayList<Long>();
 
-        String s;
-        byte[] block = new byte[Consts.defaultBlockSize];
+
+        // pageSize
+        byte[] tmp = new byte[16];
         treeFile.seek(0);
-        treeFile.read(block, 0, Consts.defaultBlockSize);
+        treeFile.read(tmp, 0, 16);
+        int pageSize = NumberUtils.parseInt(new String(tmp), 0, Consts.intSize);
+
+        String s;
+        byte[] block = new byte[pageSize];
+        treeFile.seek(0);
+        treeFile.read(block, 0, pageSize);
         s = new String(block);
 
-        int pageSize = NumberUtils.parseInt(s, 0, Consts.intSize);
+        // columnCnt
         int columnCnt = NumberUtils.parseInt(s, Consts.intSize, Consts.intSize);
         if (columnCnt < 1) {
             throw new BPlusException("Too few columns!");
@@ -75,28 +97,42 @@ public class BPlusTree {
         int pos = Consts.intSize * 2;
         LinkedList<String> columnNames = new LinkedList<String>();
         LinkedList<String> columnTypes = new LinkedList<String>();
+        // [columnNames]
         for (int i = 0; i < columnCnt; ++i) {
-            columnNames.add(s.substring(pos, Consts.columnNameSize).trim());
+            columnNames.add(s.substring(pos, pos+Consts.columnNameSize).trim());
             pos += Consts.columnNameSize;
         }
+
+        // [columnTypes]
         for (int i = 0; i < columnCnt; ++i) {
-            columnTypes.add(s.substring(pos, Consts.columnTypeSize).trim());
+            columnTypes.add(s.substring(pos, pos+Consts.columnTypeSize).trim());
             pos += Consts.columnTypeSize;
         }
         this.config = new BPlusTreeConfiguration(pageSize, columnTypes.get(0),
                                                 columnNames, columnTypes);
 
         // Todo: maybe some bugs
-        this.maxRowIndex = dataFile.length()/this.config.getRowSize();
-        this.maxPageIndex = treeFile.length()/this.config.getPageSize();
+        this.maxRowIndex = dataFile.length()/this.config.getRowSize() - 1;
+        this.maxPageIndex = treeFile.length()/this.config.getPageSize() - 1;
 
+        // rootPageIndex
         long rootPageIndex = NumberUtils.parseLong(s, pos, Consts.longSize);
         this.root = new BPlusTreeNode(treeFile, rootPageIndex, this.config);
+        this.allNodes = new ArrayList<BPlusTreeNode>();
+        extendCapacity(this.allNodes, (int)rootPageIndex+1);
+        this.allNodes.set((int)rootPageIndex, this.root);
+        pos += Consts.longSize;
+
+        // firstLeaf
+        this.firstLeaf = NumberUtils.parseLong(s, pos, Consts.longSize);
+        pos += Consts.longSize;
+        // lastLeaf
+        this.lastLeaf = NumberUtils.parseLong(s, pos, Consts.longSize);
     }
 
     public void toFile()
             throws IOException, utilsException, BPlusException{
-        byte[] block = new byte[Consts.defaultBlockSize];
+        byte[] block = new byte[this.config.getPageSize()];
         byte[] tmp;
         Arrays.fill(block, (byte)0);
 
@@ -127,8 +163,27 @@ public class BPlusTree {
             pos += Consts.columnTypeSize;
         }
 
+        // rootPageIndex
+        tmp = Long.toString(this.root.getPageIndex()).getBytes();
+        System.arraycopy(tmp, 0, block, pos, tmp.length);
+        pos += Consts.longSize;
+
+        // fistLeaf
+        tmp = Long.toString(this.firstLeaf).getBytes();
+        System.arraycopy(tmp, 0, block, pos, tmp.length);
+        pos += Consts.longSize;
+
+        // lastLeaf
+        tmp = Long.toString(this.lastLeaf).getBytes();
+        System.arraycopy(tmp, 0, block, pos, tmp.length);
+
         treeFile.seek(0);
-        treeFile.write(block, 0, Consts.defaultBlockSize);
+        treeFile.write(block, 0, this.config.getPageSize());
+
+        for (BPlusTreeNode node: allNodes)
+        if (node != null) {
+            node.toFile(treeFile, node.getPageIndex() * config.getPageSize());
+        }
     }
 
     public int getTreeDegree() {return config.getTreeDegree();}
@@ -137,6 +192,8 @@ public class BPlusTree {
 
     public void insert(LinkedList values)
             throws BPlusException, IOException, utilsException {
+//        System.out.println(values.size());
+//        System.out.println(config.getColumnType().length);
         if (values.size() != config.getColumnType().length) {
             throw new BPlusException("Too many/few values");
         }
@@ -147,6 +204,9 @@ public class BPlusTree {
         Object key = (Object) values.getFirst();
         if (root.isEmpty()) {
             root.addKeyAndPtr(key, rowNum);
+//            System.out.println("Before" + treeFile.length());
+            root.toFile(treeFile, config.getPageSize() * root.getPageIndex());
+//            System.out.println("After" + treeFile.length());
         } else
         {
             insert(root, key, rowNum);
@@ -178,6 +238,21 @@ public class BPlusTree {
         }
     }
 
+    public LinkedList<LinkedList> searchAll()
+        throws Exception{
+        LinkedList<LinkedList> ret = new LinkedList<LinkedList>();
+        long idx = this.firstLeaf;
+        while (idx > 0) {
+            BPlusTreeNode p = getNode(idx);
+            int n = p.getCurrentSize();
+            for (int i = 0; i < n; ++i)
+                ret.add(getData(dataFile, p.getPtr(i)));
+            idx = p.getNextPage();
+        }
+
+        return ret;
+    }
+
     public void search() {
 
     }
@@ -207,13 +282,11 @@ public class BPlusTree {
 
     private BPlusTreeNode getNode(long pageIndex)
             throws BPlusException, IOException, utilsException{
-        if (pageIndex < 0) {
-//            new BPlusTreeNode(treeFile, pageIndex);
+        if (pageIndex <= 0) {
             throw new BPlusException("Underflow pageIndex!");
         } else
         {
             extendCapacity(this.allNodes, (int)pageIndex+1);
-//            this.allNodes.ensureCapacity((int)pageIndex+1);
             if (allNodes.get((int)pageIndex) == null) {
                 allNodes.set((int)pageIndex, new BPlusTreeNode(treeFile, pageIndex, config));
             }
@@ -223,7 +296,6 @@ public class BPlusTree {
 
     private void updateNodes(BPlusTreeNode p, long pageIndex) {
         extendCapacity(this.allNodes, (int)pageIndex+1);
-//        this.allNodes.ensureCapacity((int)pageIndex+1);
         this.allNodes.set((int)pageIndex, p);
     }
 
@@ -235,8 +307,13 @@ public class BPlusTree {
             BPlusTreeNode newRoot = new BPlusTreeNode(newRootPageIndex, -1, BPlusTreeNodeType.ROOT_NODE, this.config);
             updateNodes(newRoot, newRootPageIndex);
 
+            if (p.isLeaf())
+                p.setNodeType(BPlusTreeNodeType.LEAF_NODE);
+            else if (p.isInternal())
+                p.setNodeType(BPlusTreeNodeType.INTERNAL_NODE);
             p.setParent(newRootPageIndex);
             newRoot.addKeyAndPtr(p.getKey(0), p.getPageIndex());
+            this.root = newRoot;
         }
 
         BPlusTreeNode q;
@@ -247,8 +324,10 @@ public class BPlusTree {
             p.setNodeType(BPlusTreeNodeType.LEAF_NODE);
             // insert into Node
             q = new BPlusTreeNode(newPageIndex, p.getParent(), nodeType, this.config, p.getNextPage(), p.getPageIndex());
-            getNode(q.getNextPage()).setPrevPage(newPageIndex);
-            q.setNextPage(newPageIndex);
+
+            if (p.getNextPage() > 0)
+                getNode(p.getNextPage()).setPrevPage(newPageIndex);
+            p.setNextPage(newPageIndex);
         } else
         if (p.isInternal()) {
             nodeType = BPlusTreeNodeType.INTERNAL_NODE;
@@ -261,6 +340,7 @@ public class BPlusTree {
             nodeType = BPlusTreeNodeType.INTERNAL_NODE;
             q = new BPlusTreeNode(newPageIndex, p.getParent(), nodeType, this.config);
         }
+        updateNodes(q, newPageIndex);
 
         int m = p.getCurrentSize();
         for (int i = m/2; i < m; ++i) {
@@ -272,8 +352,11 @@ public class BPlusTree {
             p.removeKeyAndPtr(m/2);
         }
 
-        BPlusTreeNode parent = getNode(p.getPageIndex());
+        BPlusTreeNode parent = getNode(p.getParent());
         parent.addKeyAndPtr(q.getKey(0), newPageIndex);
+
+        if (this.lastLeaf == p.getPageIndex())
+            this.lastLeaf = newPageIndex;
     }
 
     private long getNewPageIndex() {
@@ -301,5 +384,31 @@ public class BPlusTree {
         int n = arr.size();
         for (int i = n; i < minSize; ++i)
             arr.add(null);
+    }
+
+    public BPlusTreeConfiguration getConfig() {
+        return config;
+    }
+
+    private LinkedList getData(RandomAccessFile dataFile, long rowNum)
+        throws Exception{
+        LinkedList ret = new LinkedList();
+        int rowSize = config.getRowSize();
+        long offset = rowSize * rowNum;
+        byte[] row = new byte[rowSize];
+
+        dataFile.seek(offset);
+        dataFile.read(row, 0, rowSize);
+
+        String s = new String(row);
+
+        int n = config.getColumnSize();
+        String[] types = config.getColumnType();
+        int pos = 0;
+        for (int i = 0; i < n; ++i) {
+            pos += NumberUtils.fromBytes(ret, s, pos, types[i]);
+        }
+
+        return ret;
     }
 }

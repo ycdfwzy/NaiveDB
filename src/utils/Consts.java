@@ -2,7 +2,7 @@ package utils;
 
 public class Consts {
     public static int intSize = 16;          // bits of int stored in file
-    public static int longSize = 32;         // bits of long stored in file
+    public static int longSize = 24;         // bits of long stored in file
     public static int stringSize = 128;      // bits of string stored in file
     public static int floatSize = 32;        // bits of float stored in file
     public static int doubleSize = 64;       // bits of double stored in file
