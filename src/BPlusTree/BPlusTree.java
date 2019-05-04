@@ -2,13 +2,9 @@ package BPlusTree;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.reflect.AccessibleObject;
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 
-import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import utils.Consts;
 import utils.NumberUtils;
 import utils.utilsException;
@@ -19,7 +15,8 @@ public class BPlusTree {
     private RandomAccessFile dataFile;
     private BPlusTreeNode root;
     private BPlusTreeConfiguration config;
-    private ArrayList<BPlusTreeNode> allNodes;
+    private HashMap<Long, BPlusTreeNode> cachedNodes;
+    private HashMap<Long, LinkedList> cachedData;
     private long maxPageIndex;
     private ArrayList<Long> pageIndexPool;
     private long maxRowIndex;
@@ -29,7 +26,7 @@ public class BPlusTree {
     public void close()
         throws Exception {
         this.toFile();
-        System.out.println(treeFile.length());
+//        System.out.println(treeFile.length());
         this.treeFile.close();
         this.dataFile.close();
     }
@@ -39,8 +36,9 @@ public class BPlusTree {
         this.config = config;
         this.root = new BPlusTreeNode(1, -1,
                 BPlusTreeNodeType.ROOT_LEAF_NODE, config, -1, -1);
-        this.allNodes = new ArrayList<BPlusTreeNode>();
-        this.allNodes.add(this.root);
+        this.cachedNodes = new HashMap<Long, BPlusTreeNode>();
+        this.cachedNodes.put(this.root.getPageIndex(), this.root);
+        this.cachedData = new HashMap<Long, LinkedList>();
 
         this.lastLeaf = 1;
         this.firstLeaf = 1;
@@ -74,7 +72,6 @@ public class BPlusTree {
 
         this.pageIndexPool = new ArrayList<Long>();
         this.rowIndexPool = new ArrayList<Long>();
-
 
         // pageSize
         byte[] tmp = new byte[16];
@@ -118,9 +115,8 @@ public class BPlusTree {
         // rootPageIndex
         long rootPageIndex = NumberUtils.parseLong(s, pos, Consts.longSize);
         this.root = new BPlusTreeNode(treeFile, rootPageIndex, this.config);
-        this.allNodes = new ArrayList<BPlusTreeNode>();
-        extendCapacity(this.allNodes, (int)rootPageIndex+1);
-        this.allNodes.set((int)rootPageIndex, this.root);
+        this.cachedNodes = new HashMap<Long, BPlusTreeNode>();
+        this.cachedNodes.put(rootPageIndex, this.root);
         pos += Consts.longSize;
 
         // firstLeaf
@@ -128,6 +124,8 @@ public class BPlusTree {
         pos += Consts.longSize;
         // lastLeaf
         this.lastLeaf = NumberUtils.parseLong(s, pos, Consts.longSize);
+
+        this.cachedData = new HashMap<Long, LinkedList>();
     }
 
     public void toFile()
@@ -180,9 +178,15 @@ public class BPlusTree {
         treeFile.seek(0);
         treeFile.write(block, 0, this.config.getPageSize());
 
-        for (BPlusTreeNode node: allNodes)
-        if (node != null) {
-            node.toFile(treeFile, node.getPageIndex() * config.getPageSize());
+        // node write back
+        this.root.toFile(treeFile, this.root.getPageIndex() * config.getPageSize());
+        for (Map.Entry<Long, BPlusTreeNode> entry: this.cachedNodes.entrySet())
+        if (entry.getValue().getPageIndex() != this.root.getPageIndex()) {
+            entry.getValue().toFile(treeFile, entry.getKey() * config.getPageSize());
+        }
+        // data write back
+        for (Map.Entry<Long, LinkedList> entry: this.cachedData.entrySet()) {
+            write2Datafile(entry.getValue(), entry.getKey());
         }
     }
 
@@ -199,7 +203,8 @@ public class BPlusTree {
         }
 
         long rowNum = getNewRowIndex();
-        write2Datafile(values, rowNum);
+        updateCachedData(rowNum, values);
+//        write2Datafile(values, rowNum);
 
         Object key = (Object) values.getFirst();
         if (root.isEmpty()) {
@@ -225,7 +230,7 @@ public class BPlusTree {
             p.addKeyAndPtr(key, rowNum);
         } else
         {
-            long to = p.getKeyIndex(key);
+            long to = p.getPtrByKey(key);
             BPlusTreeNode q = getNode(to);
             insert(q, key, rowNum);
         }
@@ -246,7 +251,7 @@ public class BPlusTree {
             BPlusTreeNode p = getNode(idx);
             int n = p.getCurrentSize();
             for (int i = 0; i < n; ++i)
-                ret.add(getData(dataFile, p.getPtr(i)));
+                ret.add(getData(p.getPtr(i)));
             idx = p.getNextPage();
         }
 
@@ -257,12 +262,42 @@ public class BPlusTree {
 
     }
 
-    public void delete(Object key) {
-        // Todo: delete single key
+    public void delete(Object key)
+        throws BPlusException, IOException, utilsException {
+        delete(this.root, key);
     }
 
-    public void printTree() {
-        System.out.println(config.getKeyType());
+    private void delete(BPlusTreeNode p, Object key)
+        throws BPlusException, IOException, utilsException {
+        if (p.isLeaf()) {
+            long rowNum = p.getPtrByExactKey(key);
+            if (rowNum != -1) {
+                removeData(rowNum);
+                p.removeKeyAndPtr(key);
+            }
+        } else
+        {
+            long to = p.getPtrByKey(key);
+            BPlusTreeNode q = getNode(to);
+            delete(q, key);
+        }
+
+        // reBalance
+        if (p.isToMerge()) {
+            afterDelete(p);
+        }
+    }
+
+    public void printTree()
+        throws Exception {
+        LinkedList<LinkedList> res = this.searchAll();
+        for (LinkedList row: res) {
+            for (Object value: row) {
+                System.out.print(value);
+                System.out.printf(" ");
+            }
+            System.out.println();
+        }
     }
 
     public void write2Datafile(LinkedList values, long rowNum)
@@ -280,23 +315,8 @@ public class BPlusTree {
         dataFile.write(rowData, 0, config.getRowSize());
     }
 
-    private BPlusTreeNode getNode(long pageIndex)
-            throws BPlusException, IOException, utilsException{
-        if (pageIndex <= 0) {
-            throw new BPlusException("Underflow pageIndex!");
-        } else
-        {
-            extendCapacity(this.allNodes, (int)pageIndex+1);
-            if (allNodes.get((int)pageIndex) == null) {
-                allNodes.set((int)pageIndex, new BPlusTreeNode(treeFile, pageIndex, config));
-            }
-            return allNodes.get((int)pageIndex);
-        }
-    }
-
     private void updateNodes(BPlusTreeNode p, long pageIndex) {
-        extendCapacity(this.allNodes, (int)pageIndex+1);
-        this.allNodes.set((int)pageIndex, p);
+        this.cachedNodes.put(pageIndex, p);
     }
 
     private void splitNode(BPlusTreeNode p)
@@ -359,6 +379,101 @@ public class BPlusTree {
             this.lastLeaf = newPageIndex;
     }
 
+    private void afterDelete(BPlusTreeNode p)
+        throws BPlusException, IOException, utilsException {
+        if (p.isRoot()) {
+            this.root = getNode(p.getPtr(0));
+            if (this.root.isLeaf()) {
+                this.root.setNodeType(BPlusTreeNodeType.ROOT_LEAF_NODE);
+            } else
+            if (this.root.isInternal()) {
+                this.root.setNodeType(BPlusTreeNodeType.ROOT_NODE);
+            }
+        } else
+        {
+            BPlusTreeNode parent = getNode(p.getParent());
+            int idx = parent.getPtrIndex(p.getPageIndex());
+            if (idx == 0) { // no previous siblings
+                BPlusTreeNode siblings = getNode(parent.getPtr(idx+1));
+                if (siblings.getCurrentSize() + p.getCurrentSize() <= config.getTreeDegree()) {
+                    // merge
+                    merge(parent, p, siblings, idx+1);
+                } else
+                {
+                    Object key = siblings.getKey(0);
+                    long ptr = siblings.getPtr(0);
+                    p.addKeyAndPtr(key, ptr);
+                    if (!p.isLeaf())
+                        getNode(ptr).setParent(p.getPageIndex());
+                    siblings.removeKeyAndPtr(0);
+                    parent.setKey(idx+1, siblings.getKey(0));
+                }
+            } else
+            {   // otherwise
+                BPlusTreeNode siblings = getNode(parent.getPtr(idx-1));
+                if (siblings.getCurrentSize() + p.getCurrentSize() <= config.getTreeDegree()) {
+                    // merge
+                    merge(parent, siblings, p, idx);
+                } else
+                {
+                    int n = siblings.getCurrentSize();
+                    Object key = siblings.getKey(n-1);
+                    long ptr = siblings.getPtr(n-1);
+                    p.addKeyAndPtr(key, ptr);
+                    if (!p.isLeaf())
+                        getNode(ptr).setParent(p.getPageIndex());
+                    siblings.removeKeyAndPtr(n-1);
+                    parent.setKey(idx, p.getKey(0));
+                }
+            }
+        }
+    }
+
+    private void merge(BPlusTreeNode parent, BPlusTreeNode p, BPlusTreeNode q, int qIndex)
+        throws IOException, BPlusException, utilsException {
+        int n = q.getCurrentSize();
+        for (int i = 0; i < n; ++i) {
+            Object key = q.getKey(i);
+            long ptr = q.getPtr(i);
+            p.addKeyAndPtr(key, ptr);
+            if (!p.isLeaf())
+                getNode(ptr).setParent(p.getPageIndex());
+        }
+        if (q.isLeaf()) {
+            p.setNextPage(q.getNextPage());
+            if (q.getNextPage() > 0) {
+                getNode(q.getNextPage()).setPrevPage(p.getPageIndex());
+            }
+            if (q.getPageIndex() == this.lastLeaf) {
+                this.lastLeaf = p.getPageIndex();
+            }
+        }
+        parent.removeKeyAndPtr(qIndex);
+        removeNode(q.getPageIndex());
+    }
+
+    private void removeNode(long pageIndex)
+        throws IOException {
+        int pageSize = config.getPageSize();
+        byte[] bytes = new byte[pageSize];
+        Arrays.fill(bytes, (byte)0);
+        this.treeFile.seek(pageIndex * pageSize);
+        this.treeFile.write(bytes, 0, pageSize);
+
+        this.cachedNodes.remove(pageIndex);
+    }
+
+    private void removeData(long rowNum)
+        throws IOException {
+        int rowSize = config.getRowSize();
+        byte[] bytes = new byte[rowSize];
+        Arrays.fill(bytes, (byte)0);
+        this.dataFile.seek(rowNum * rowSize);
+        this.dataFile.write(bytes, 0, rowSize);
+
+        this.cachedData.remove(rowNum);
+    }
+
     private long getNewPageIndex() {
         if (pageIndexPool.isEmpty()) {
             maxPageIndex += 1;
@@ -379,19 +494,39 @@ public class BPlusTree {
         }
     }
 
-    private void extendCapacity(ArrayList arr, int minSize) {
-        arr.ensureCapacity(minSize);
-        int n = arr.size();
-        for (int i = n; i < minSize; ++i)
-            arr.add(null);
-    }
-
     public BPlusTreeConfiguration getConfig() {
         return config;
     }
 
-    private LinkedList getData(RandomAccessFile dataFile, long rowNum)
-        throws Exception{
+    private BPlusTreeNode getNode(long pageIndex)
+            throws BPlusException, IOException, utilsException{
+        if (pageIndex <= 0) {
+            throw new BPlusException("Underflow pageIndex!");
+        } else
+        {
+            if (!this.cachedNodes.containsKey(pageIndex)) {
+                // remove some node cache
+                while (this.cachedNodes.size() * config.getPageSize() > Consts.memoryNodeLimitation) {
+                    for (Map.Entry<Long, BPlusTreeNode> entry: this.cachedNodes.entrySet()) {
+                        entry.getValue().toFile(treeFile, entry.getKey() * config.getPageSize());
+                        this.cachedNodes.remove(entry.getKey());
+                        break;
+                    }
+                }
+                this.cachedNodes.put(pageIndex, new BPlusTreeNode(treeFile, pageIndex, config));
+            }
+            return cachedNodes.get(pageIndex);
+        }
+    }
+
+    private LinkedList getData(long rowNum)
+        throws BPlusException, IOException, utilsException{
+        if (rowNum < 0) {
+            throw new BPlusException("Underflow row number!");
+        }
+        if (cachedData.containsKey(rowNum)) {
+            return cachedData.get(rowNum);
+        }
         LinkedList ret = new LinkedList();
         int rowSize = config.getRowSize();
         long offset = rowSize * rowNum;
@@ -408,7 +543,23 @@ public class BPlusTree {
         for (int i = 0; i < n; ++i) {
             pos += NumberUtils.fromBytes(ret, s, pos, types[i]);
         }
+        updateCachedData(rowNum, ret);
 
         return ret;
+    }
+
+    private void updateCachedData(long rowNum, LinkedList value)
+        throws IOException, BPlusException{
+        if (!this.cachedData.containsKey(rowNum)) {
+            // remove some data cache
+            while (config.getRowSize() * this.cachedData.size() > Consts.memoryDataLimitation) {
+                for (Map.Entry<Long, LinkedList> entry : this.cachedData.entrySet()) {
+                    write2Datafile(entry.getValue(), entry.getKey());
+                    this.cachedNodes.remove(entry.getKey());
+                    break;
+                }
+            }
+        }
+        this.cachedData.put(rowNum, value);
     }
 }

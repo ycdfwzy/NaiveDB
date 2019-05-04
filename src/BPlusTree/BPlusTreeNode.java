@@ -153,10 +153,10 @@ public class BPlusTreeNode {
 
     public boolean isToMerge() {
         if (isRoot()) {
-            return !isLeaf() && isEmpty();
-        }
-        else {
-            return keyList.size() < this.conf.getTreeDegree() / 2;
+            return !isLeaf() && keyList.size() < 2;
+        } else
+        {
+            return keyList.size() < (this.conf.getTreeDegree()+1) / 2;
         }
     }
 
@@ -192,11 +192,30 @@ public class BPlusTreeNode {
         }
     }
 
-    public long getKeyIndex(Object key) {
+    public long getPtrByKey(Object key) {
         int idx = Integer.max(0, binarySearch(key, conf.getKeyType()));
         if (keyList.size() < idx)
             return -1;
+
+        if (idx > 0 && compareKey(keyList.get(idx), key, conf.getKeyType()) == 1)
+            idx -= 1;
         return ptrList.get(idx);
+    }
+
+    public long getPtrByExactKey(Object key) {
+        int idx = binarySearch(key, conf.getKeyType());
+        if (idx < 0 || keyList.size() < idx)
+            return -1;
+        if (compareKey(keyList.get(idx), key, conf.getKeyType()) != 0)
+            return -1;
+        return ptrList.get(idx);
+    }
+
+    public int getPtrIndex(long ptr) {
+        for (int i = 0; i < ptrList.size(); ++i)
+            if (ptr == ptrList.get(i))
+                return i;
+        return -1;
     }
 
     private int binarySearch(Object key, String keyType) {
@@ -272,11 +291,6 @@ public class BPlusTreeNode {
         ptrList.remove(idx);
     }
 
-    public long getPtrByKey(Object key) {
-        int idx = binarySearch(key, conf.getKeyType());
-        return ptrList.get(idx);
-    }
-
     public void addKeyAndPtr(Object key, long ptr) {
         int idx = addKey(key);
         addPtr(idx, ptr);
@@ -289,8 +303,10 @@ public class BPlusTreeNode {
 
     public void removeKeyAndPtr(Object key) {
         int idx = binarySearch(key, conf.getKeyType());
-        keyList.remove(idx);
-        ptrList.remove(idx);
+        if (compareKey(key, keyList.get(idx), conf.getKeyType()) == 0) {
+            keyList.remove(idx);
+            ptrList.remove(idx);
+        }
     }
 
 

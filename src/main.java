@@ -39,39 +39,44 @@ public class main {
             System.out.printf("%s: %s\n", names[i], types[i]);
         }
 
-        LinkedList values = new LinkedList();
-        values.add(0);
-        values.add("Mao");
-        tree.insert(values);
+        LinkedList values0 = new LinkedList();
+        values0.add(0);
+        values0.add("Mao");
+        tree.insert(values0);
 
-        values.set(0, 1);
-        values.set(1, "Deng");
-        tree.insert(values);
+        LinkedList values1 = new LinkedList();
+        values1.add(1);
+        values1.add("Deng");
+        tree.insert(values1);
 
-        values.set(0, 2);
-        values.set(1, "Jiang");
-        tree.insert(values);
+        LinkedList values2 = new LinkedList();
+        values2.add(2);
+        values2.add("Jiang");
+        tree.insert(values2);
 
-        values.set(0, 3);
-        values.set(1, "Hu");
-        tree.insert(values);
+        LinkedList values3 = new LinkedList();
+        values3.add(3);
+        values3.add("Hu");
+        tree.insert(values3);
 
-        values.set(0, 4);
-        values.set(1, "Xi");
-        tree.insert(values);
+        LinkedList values4 = new LinkedList();
+        values4.add(4);
+        values4.add("Xi");
+        tree.insert(values4);
 
-        values.set(0, -1);
-        values.set(1, "Pu");
-        tree.insert(values);
+        LinkedList values5 = new LinkedList();
+        values5.add(-1);
+        values5.add("Pu");
+        tree.insert(values5);
 
-        LinkedList<LinkedList> res = tree.searchAll();
-        for (LinkedList row: res) {
-            for (Object value: row) {
-                System.out.print(value);
-                System.out.printf(" ");
-            }
-            System.out.println();
-        }
+        tree.delete(-1);
+        tree.delete(2);
+        tree.delete(1);
+        tree.delete(0);
+        tree.delete(3);
+        tree.delete(4);
+
+        tree.printTree();
 
         tree.close();
     }

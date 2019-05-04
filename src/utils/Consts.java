@@ -12,4 +12,6 @@ public class Consts {
     public static int defaultBlockSize = 4096;
     public static int columnNameSize = 64;
     public static int columnTypeSize = 8;
+    public static int memoryNodeLimitation = 1024*1024; // bytes of node stored in memory
+    public static int memoryDataLimitation = 1024*1024; // bytes of data stored in memory
 }
