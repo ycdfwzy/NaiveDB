@@ -569,7 +569,7 @@ public class BPlusTree {
         String[] types = config.getColumnType();
         int pos = 0;
         for (int i = 0; i < n; ++i) {
-            pos += NumberUtils.fromBytes(ret, s, pos, types[i]);
+            pos += NumberUtils.fromBytes(ret, s, pos, types[i], true);
         }
         updateCachedData(rowNum, ret);
 

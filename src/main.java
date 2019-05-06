@@ -71,7 +71,7 @@ public class main {
 
         LinkedList modified = new LinkedList();
         modified.add(2);
-        modified.add("Ha");
+        modified.add(null);
         tree.update(modified);
 
 //        tree.delete(-1);

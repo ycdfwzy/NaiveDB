@@ -1,6 +1,7 @@
 package utils;
 
 import BPlusTree.BPlusException;
+import BPlusTree.BPlusTreeConfiguration;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -36,53 +37,80 @@ public class NumberUtils {
         return (isInteger(s.substring(0, idx)) && isPureInteger(s.substring(idx+1)));
     }
 
-    public static int parseInt(String s, int startIndex, int len)
+    public static Integer parseInt(String s, int startIndex, int len, boolean isData)
         throws utilsException {
         String t = s.substring(startIndex, startIndex+len).trim();
+        if (isData && t.isEmpty()) {
+            return null;
+        }
         if (isInteger(t)) {
             return Integer.parseInt(t);
         }
         throw new utilsException(t + " is not a Int");
     }
 
-    public static long parseLong(String s, int startIndex, int len)
+    public static Integer parseInt(String s, int startIndex, int len)
+            throws utilsException {
+        return parseInt(s, startIndex, len, false);
+    }
+
+    public static Long parseLong(String s, int startIndex, int len, boolean isData)
             throws utilsException {
         String t = s.substring(startIndex, startIndex+len).trim();
+        if (isData && t.isEmpty()) {
+            return null;
+        }
         if (isInteger(t)) {
             return Long.parseLong(t);
         }
         throw new utilsException(t + " is not a Long");
     }
 
-    public static float parseFloat(String s, int startIndex, int len)
+    public static Long parseLong(String s, int startIndex, int len)
+            throws utilsException {
+        return parseLong(s, startIndex, len, false);
+    }
+
+    public static Float parseFloat(String s, int startIndex, int len, boolean isData)
             throws utilsException {
         String t = s.substring(startIndex, startIndex+len).trim();
+        if (isData && t.isEmpty()) {
+            return null;
+        }
         if (isFloat(t)) {
             return Float.parseFloat(t);
         }
         throw new utilsException(t + " is not a Long");
     }
 
-    public static Double parseDouble(String s, int startIndex, int len)
+    public static Float parseFloat(String s, int startIndex, int len)
+            throws utilsException {
+        return parseFloat(s, startIndex, len, false);
+    }
+
+    public static Double parseDouble(String s, int startIndex, int len, boolean isData)
             throws utilsException {
         String t = s.substring(startIndex, startIndex+len).trim();
+        if (isData && t.isEmpty()) {
+            return null;
+        }
         if (isFloat(t)) {
             return Double.parseDouble(t);
         }
         throw new utilsException(t + " is not a Long");
     }
 
-    public static int fromBytes(List list, String s, int pos, String type)
+    public static int fromBytes(List list, String s, int pos, String type, boolean isData)
         throws utilsException{
         int ret = 0;
         switch (type) {
             case "Int":
                 ret = Consts.intSize;
-                list.add(NumberUtils.parseInt(s, pos, Consts.intSize));
+                list.add(NumberUtils.parseInt(s, pos, Consts.intSize, isData));
                 break;
             case "Long":
                 ret = Consts.longSize;
-                list.add(NumberUtils.parseLong(s, pos, Consts.longSize));
+                list.add(NumberUtils.parseLong(s, pos, Consts.longSize, isData));
                 break;
             case "String":
                 ret = Consts.stringSize;
@@ -90,11 +118,11 @@ public class NumberUtils {
                 break;
             case "Float":
                 ret = Consts.floatSize;
-                list.add(NumberUtils.parseFloat(s, pos, Consts.floatSize));
+                list.add(NumberUtils.parseFloat(s, pos, Consts.floatSize, isData));
                 break;
             case "Double":
                 ret = Consts.doubleSize;
-                list.add(NumberUtils.parseDouble(s, pos, Consts.doubleSize));
+                list.add(NumberUtils.parseDouble(s, pos, Consts.doubleSize, isData));
                 break;
         }
         return ret;
@@ -104,34 +132,37 @@ public class NumberUtils {
         throws BPlusException {
         int ret = 0;
         byte[] tmp;
+        if (value == null) {
+            return BPlusTreeConfiguration.Type2Size(type);
+        }
         switch (type) {
             case "Int":
-                ret = Consts.intSize;
+//                ret = Consts.intSize;
                 tmp = Integer.toString((int)value).getBytes();
                 break;
             case "Long":
-                ret = Consts.longSize;
+//                ret = Consts.longSize;
                 tmp = Long.toString((long)value).getBytes();
                 break;
             case "String":
-                ret = Consts.stringSize;
+//                ret = Consts.stringSize;
                 tmp = value.toString().getBytes();
                 if (tmp.length > Consts.stringSize) {
                     throw new BPlusException("String data is too long!");
                 }
                 break;
             case "Float":
-                ret = Consts.floatSize;
+//                ret = Consts.floatSize;
                 tmp = Float.toString((float)value).getBytes();
                 break;
             case "Double":
-                ret = Consts.doubleSize;
+//                ret = Consts.doubleSize;
                 tmp = Double.toString((double)value).getBytes();
                 break;
             default:
                 throw new BPlusException("Unknown Type " + type);
         }
         System.arraycopy(tmp, 0, bytes, pos, tmp.length);
-        return ret;
+        return BPlusTreeConfiguration.Type2Size(type);
     }
 }

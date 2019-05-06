@@ -97,7 +97,7 @@ public class BPlusTreeNode {
             if (pageS.substring(pos).startsWith("\0")) {
                 break;
             }
-            pos += NumberUtils.fromBytes(this.keyList, pageS, pos, conf.getKeyType());
+            pos += NumberUtils.fromBytes(this.keyList, pageS, pos, conf.getKeyType(), false);
             long ptr = NumberUtils.parseLong(pageS, pos, Consts.pointSize);
             this.ptrList.add(ptr);
             pos += Consts.pointSize;
