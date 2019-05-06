@@ -5,6 +5,7 @@ import utils.Consts;
 
 public class BPlusTreeConfiguration {
 
+    private String filename;
     private int pageSize;
     private String keyType;
     private int keySize;
@@ -14,19 +15,22 @@ public class BPlusTreeConfiguration {
     private LinkedList<String> columnType;
     private LinkedList<String> columnName;
 
-    public BPlusTreeConfiguration(String keyType,
+    public BPlusTreeConfiguration(String filename,
+                                  String keyType,
                                   LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
-        this(Consts.defaultBlockSize, keyType, columnName, columnType);
+        this(Consts.defaultBlockSize, filename, keyType, columnName, columnType);
     }
 
     public BPlusTreeConfiguration(int pageSize,
+                                  String filename,
                                   String keyType,
                                   LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
         this.pageSize = pageSize;
+        this.filename = filename;
         this.keyType = keyType;
         this.keySize = Type2Size(this.keyType);
         // header = nodeType|parent_ptr|next_page|prev_page
@@ -80,4 +84,5 @@ public class BPlusTreeConfiguration {
     public int getColumnSize() {return columnName.size();}
     public String[] getColumnType() {return columnType.toArray(new String[0]);}
     public String[] getColumnName() {return columnName.toArray(new String[0]);}
+    public String getFilename() {return filename;}
 }

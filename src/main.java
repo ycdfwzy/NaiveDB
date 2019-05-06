@@ -28,11 +28,11 @@ public class main {
         type.add("Int");
         type.add("String");
 
-        BPlusTreeConfiguration conf = new BPlusTreeConfiguration(256,"Int", name, type);
+        BPlusTreeConfiguration conf = new BPlusTreeConfiguration(256,"test","Int", name, type);
         BPlusTree tree = new BPlusTree(conf);
         tree.close();
 
-        tree = new BPlusTree("test.tree", "test.data");
+        tree = new BPlusTree("test");
         String[] names = tree.getConfig().getColumnName();
         String[] types = tree.getConfig().getColumnType();
         for (int i = 0; i < names.length; ++i) {
@@ -69,12 +69,17 @@ public class main {
         values5.add("Pu");
         tree.insert(values5);
 
-        tree.delete(-1);
-        tree.delete(2);
-        tree.delete(1);
-        tree.delete(0);
-        tree.delete(3);
-        tree.delete(4);
+        LinkedList modified = new LinkedList();
+        modified.add(2);
+        modified.add("Ha");
+        tree.update(modified);
+
+//        tree.delete(-1);
+//        tree.delete(2);
+//        tree.delete(1);
+//        tree.delete(0);
+//        tree.delete(3);
+//        tree.delete(4);
 
         tree.printTree();
 

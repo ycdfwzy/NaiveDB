@@ -1,10 +1,12 @@
 package BPlusTree;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
 
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
+import sun.awt.image.ImageWatched;
 import utils.Consts;
 import utils.NumberUtils;
 import utils.utilsException;
@@ -26,7 +28,6 @@ public class BPlusTree {
     public void close()
         throws Exception {
         this.toFile();
-//        System.out.println(treeFile.length());
         this.treeFile.close();
         this.dataFile.close();
     }
@@ -46,18 +47,20 @@ public class BPlusTree {
         this.pageIndexPool = new ArrayList<Long>();
         this.maxRowIndex = -1;
         this.rowIndexPool = new ArrayList<Long>();
-        this.treeFile = new RandomAccessFile("test.tree", "rw");
-        this.dataFile = new RandomAccessFile("test.data", "rw");
+        this.treeFile = new RandomAccessFile(config.getFilename()+".tree", "rw");
+        this.dataFile = new RandomAccessFile(config.getFilename()+".data", "rw");
         this.toFile();
     }
 
-    public BPlusTree(String treeFilename,
-                     String dataFilename)
+    public BPlusTree(String filename)
             throws IOException, utilsException, BPlusException {
-        treeFile = new RandomAccessFile(treeFilename, "rw");
-        dataFile = new RandomAccessFile(dataFilename, "rw");
-//        System.out.println(dataFile.length());
-        fromFile(treeFile, dataFile);
+        if (new File(filename+".tree").exists() &&
+            new File(filename+".data").exists()) {
+            fromFile(filename);
+        } else
+        {
+            throw new BPlusException(filename + ".tree or " + filename + ".data does not exist!");
+        }
     }
 
     /*
@@ -66,9 +69,11 @@ public class BPlusTree {
             |rootPageIndex|first_leaf|last_leaf
 
      */
-    public void fromFile(RandomAccessFile treeFile,
-                         RandomAccessFile dataFile)
+    public void fromFile(String filename)
         throws IOException, utilsException, BPlusException {
+
+        this.treeFile = new RandomAccessFile(filename+".tree", "rw");
+        this.dataFile = new RandomAccessFile(filename+".data", "rw");
 
         this.pageIndexPool = new ArrayList<Long>();
         this.rowIndexPool = new ArrayList<Long>();
@@ -105,10 +110,10 @@ public class BPlusTree {
             columnTypes.add(s.substring(pos, pos+Consts.columnTypeSize).trim());
             pos += Consts.columnTypeSize;
         }
-        this.config = new BPlusTreeConfiguration(pageSize, columnTypes.get(0),
+        this.config = new BPlusTreeConfiguration(pageSize, filename,
+                                                columnTypes.get(0),
                                                 columnNames, columnTypes);
 
-        // Todo: maybe some bugs
         this.maxRowIndex = dataFile.length()/this.config.getRowSize() - 1;
         this.maxPageIndex = treeFile.length()/this.config.getPageSize() - 1;
 
@@ -194,24 +199,47 @@ public class BPlusTree {
 
     public String getKeyType() {return config.getKeyType();}
 
+    public void update(LinkedList values)
+            throws BPlusException, IOException, utilsException {
+        if (values.size() != config.getColumnSize()) {
+            throw new BPlusException("Too many/few values");
+        }
+
+        Object key = values.getFirst();
+        this.update(this.root, key, values);
+    }
+
+    private void update(BPlusTreeNode p, Object key, LinkedList values)
+            throws BPlusException, IOException, utilsException{
+        if (p.isLeaf()) {
+            long rowNum = p.getPtrByExactKey(key);
+            if (rowNum != -1) {
+                getData(rowNum);
+                cachedData.put(rowNum, values);
+            }
+        } else
+        {
+            long to = p.getPtrByKey(key);
+            BPlusTreeNode q = getNode(to);
+            update(q, key, values);
+        }
+    }
+
     public void insert(LinkedList values)
             throws BPlusException, IOException, utilsException {
 //        System.out.println(values.size());
 //        System.out.println(config.getColumnType().length);
-        if (values.size() != config.getColumnType().length) {
+        if (values.size() != config.getColumnSize()) {
             throw new BPlusException("Too many/few values");
         }
 
         long rowNum = getNewRowIndex();
         updateCachedData(rowNum, values);
-//        write2Datafile(values, rowNum);
 
-        Object key = (Object) values.getFirst();
+        Object key = values.getFirst();
         if (root.isEmpty()) {
             root.addKeyAndPtr(key, rowNum);
-//            System.out.println("Before" + treeFile.length());
             root.toFile(treeFile, config.getPageSize() * root.getPageIndex());
-//            System.out.println("After" + treeFile.length());
         } else
         {
             insert(root, key, rowNum);
