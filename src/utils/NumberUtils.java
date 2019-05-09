@@ -114,7 +114,11 @@ public class NumberUtils {
                 break;
             case "String":
                 ret = Consts.stringSize;
-                list.add(s.substring(pos, pos + Consts.stringSize).trim());
+                String tmp = s.substring(pos, pos + Consts.stringSize).trim();
+                if (tmp.startsWith("0"))
+                    list.add(tmp.substring(1));
+                else
+                    list.add(null);
                 break;
             case "Float":
                 ret = Consts.floatSize;
@@ -130,39 +134,37 @@ public class NumberUtils {
 
     public static int toBytes(byte[] bytes, int pos, Object value, String type)
         throws BPlusException {
-        int ret = 0;
         byte[] tmp;
         if (value == null) {
-            return BPlusTreeConfiguration.Type2Size(type);
+            if (type == "String") {
+                tmp = "1".getBytes();
+                System.arraycopy(tmp, 0, bytes, pos, tmp.length);
+            }
+            return Consts.Type2Size(type);
         }
         switch (type) {
             case "Int":
-//                ret = Consts.intSize;
                 tmp = Integer.toString((int)value).getBytes();
                 break;
             case "Long":
-//                ret = Consts.longSize;
                 tmp = Long.toString((long)value).getBytes();
                 break;
             case "String":
-//                ret = Consts.stringSize;
-                tmp = value.toString().getBytes();
+                tmp = ("0"+value.toString()).getBytes();
                 if (tmp.length > Consts.stringSize) {
                     throw new BPlusException("String data is too long!");
                 }
                 break;
             case "Float":
-//                ret = Consts.floatSize;
                 tmp = Float.toString((float)value).getBytes();
                 break;
             case "Double":
-//                ret = Consts.doubleSize;
                 tmp = Double.toString((double)value).getBytes();
                 break;
             default:
                 throw new BPlusException("Unknown Type " + type);
         }
         System.arraycopy(tmp, 0, bytes, pos, tmp.length);
-        return BPlusTreeConfiguration.Type2Size(type);
+        return Consts.Type2Size(type);
     }
 }

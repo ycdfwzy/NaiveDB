@@ -84,5 +84,9 @@ public class main {
         tree.printTree();
 
         tree.close();
+
+        tree = new BPlusTree("test");
+        tree.printTree();
+        tree.close();
     }
 }
