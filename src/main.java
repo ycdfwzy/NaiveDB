@@ -25,7 +25,7 @@ public class main {
         LinkedList<String> type = new LinkedList<String>();
 
         type.add("Int");
-        type.add("String");
+        type.add("String8");
 
         BPlusTreeConfiguration conf = new BPlusTreeConfiguration(256,"test","Int", type);
         BPlusTree tree = new BPlusTree(conf);
@@ -74,9 +74,9 @@ public class main {
 
 //        tree.delete(-1);
 //        tree.delete(2);
-        tree.delete(1);
+//        tree.delete(1);
 //        tree.delete(0);
-        tree.delete(3);
+//        tree.delete(3);
 //        tree.delete(4);
 
         tree.printTree();

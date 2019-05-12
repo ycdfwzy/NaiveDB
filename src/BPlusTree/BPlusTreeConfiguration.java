@@ -2,6 +2,7 @@ package BPlusTree;
 
 import java.util.LinkedList;
 import utils.Consts;
+import utils.utilsException;
 
 public class BPlusTreeConfiguration {
 
@@ -18,7 +19,7 @@ public class BPlusTreeConfiguration {
     public BPlusTreeConfiguration(String filename,
                                   String keyType,
                                   LinkedList<String> columnType)
-            throws BPlusException {
+            throws BPlusException, utilsException {
         this(Consts.defaultBlockSize, filename, keyType, columnType);
     }
 
@@ -26,7 +27,7 @@ public class BPlusTreeConfiguration {
                                   String filename,
                                   String keyType,
                                   LinkedList<String> columnType)
-            throws BPlusException {
+            throws BPlusException, utilsException {
         this.pageSize = pageSize;
         this.filename = filename;
         this.keyType = keyType;
@@ -43,9 +44,9 @@ public class BPlusTreeConfiguration {
             this.rowSize += Consts.Type2Size(this.columnType.get(i));
         }
 
-        if ((Consts.columnNameSize + Consts.columnTypeSize) * columnType.size()
-                + Consts.longSize*3 + Consts.intSize*2 > this.pageSize)
-            throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
+//        if ((Consts.columnNameSize + Consts.columnTypeSize) * columnType.size()
+//                + Consts.longSize*3 + Consts.intSize*2 > this.pageSize)
+//            throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
     }
 
     public int getTreeDegree() {return treeDegree;}

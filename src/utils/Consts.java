@@ -1,7 +1,5 @@
 package utils;
 
-import BPlusTree.BPlusException;
-
 public class Consts {
     public static int intSize = 16;          // bits of int stored in file
     public static int longSize = 24;         // bits of long stored in file
@@ -13,12 +11,12 @@ public class Consts {
     public static int parentSize = pointSize;
     public static int defaultBlockSize = 4096;
     public static int columnNameSize = 64;
-    public static int columnTypeSize = 8;
+    public static int columnTypeSize = 10;
     public static int memoryNodeLimitation = 1024*1024; // bytes of node stored in memory
     public static int memoryDataLimitation = 1024*1024; // bytes of data stored in memory
 
     public static int Type2Size(String type)
-            throws BPlusException {
+            throws utilsException {
         int ret;
         switch (type) {
             case "Int":
@@ -37,7 +35,17 @@ public class Consts {
                 ret = Consts.doubleSize;
                 break;
             default:
-                throw new BPlusException("Unknown type '" + type + "'");
+                if (type.startsWith("String")) {
+                    if (NumberUtils.isPureInteger(type.substring(6))) {
+                        ret = NumberUtils.parseInt(type.substring(6), 0, type.substring(6).length())+1;
+                    } else
+                    {
+                        throw new utilsException("Unknown type '" + type + "'");
+                    }
+                } else
+                {
+                    throw new utilsException("Unknown type '" + type + "'");
+                }
         }
         return ret;
     }

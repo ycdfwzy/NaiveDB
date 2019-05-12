@@ -108,7 +108,7 @@ public class BPlusTreeNode {
     }
 
     public void toFile(RandomAccessFile output, long offset)
-        throws IOException, BPlusException {
+        throws IOException, utilsException {
         int pageSize = conf.getPageSize();
         byte[] pageB = new byte[pageSize];
         byte[] tmp;
@@ -349,10 +349,8 @@ public class BPlusTreeNode {
             case "Double":
                 compare = (double) a > (double) b ? 1 : -1;
                 break;
-            case "String":
+            default:    // String***
                 compare = a.toString().compareTo(b.toString());
-                break;
-            default:
                 break;
         }
         return compare;

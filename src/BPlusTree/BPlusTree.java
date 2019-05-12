@@ -134,9 +134,8 @@ public class BPlusTree {
     }
 
     private void fromHeaderFile(String filename)
-            throws IOException, BPlusException, utilsException{
+            throws IOException, BPlusException, utilsException {
 
-        byte[] tmp = new byte[Consts.stringSize];
         BufferedInputStream input = new BufferedInputStream(new FileInputStream(this.headerFile));
 
         // pageSize
@@ -318,7 +317,7 @@ public class BPlusTree {
     }
 
     public void write2Datafile(LinkedList values, long rowNum)
-        throws IOException, BPlusException {
+        throws IOException, utilsException {
 
         byte[] rowData = new byte[config.getRowSize()];
         Arrays.fill(rowData, (byte)0);
@@ -565,7 +564,7 @@ public class BPlusTree {
     }
 
     private void updateCachedData(long rowNum, LinkedList value)
-        throws IOException, BPlusException{
+        throws IOException, utilsException {
         if (!this.cachedData.containsKey(rowNum)) {
             // remove some data cache
             while (config.getRowSize() * this.cachedData.size() > Consts.memoryDataLimitation) {

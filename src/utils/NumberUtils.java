@@ -1,8 +1,5 @@
 package utils;
 
-import BPlusTree.BPlusException;
-import BPlusTree.BPlusTreeConfiguration;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
@@ -218,14 +215,6 @@ public class NumberUtils {
                 ret = Consts.longSize;
                 list.add(NumberUtils.parseLong(s, pos, Consts.longSize, isData));
                 break;
-            case "String":
-                ret = Consts.stringSize;
-                String tmp = s.substring(pos, pos + Consts.stringSize).trim();
-                if (tmp.startsWith("0"))
-                    list.add(tmp.substring(1));
-                else
-                    list.add(null);
-                break;
             case "Float":
                 ret = Consts.floatSize;
                 list.add(NumberUtils.parseFloat(s, pos, Consts.floatSize, isData));
@@ -234,15 +223,24 @@ public class NumberUtils {
                 ret = Consts.doubleSize;
                 list.add(NumberUtils.parseDouble(s, pos, Consts.doubleSize, isData));
                 break;
+            default:
+                if (type.startsWith("String")) {
+                    ret = Consts.Type2Size(type);
+                    String tmp = s.substring(pos, pos + ret).trim();
+                    if (tmp.startsWith("0"))
+                        list.add(tmp.substring(1));
+                    else
+                        list.add(null);
+                }
         }
         return ret;
     }
 
     public static int toBytes(byte[] bytes, int pos, Object value, String type)
-        throws BPlusException {
+        throws utilsException {
         byte[] tmp;
         if (value == null) {
-            if (type == "String") {
+            if (type.startsWith("String")) {
                 tmp = "1".getBytes();
                 System.arraycopy(tmp, 0, bytes, pos, tmp.length);
             }
@@ -255,12 +253,7 @@ public class NumberUtils {
             case "Long":
                 tmp = Long.toString((long)value).getBytes();
                 break;
-            case "String":
-                tmp = ("0"+value.toString()).getBytes();
-                if (tmp.length > Consts.stringSize) {
-                    throw new BPlusException("String data is too long!");
-                }
-                break;
+
             case "Float":
                 tmp = Float.toString((float)value).getBytes();
                 break;
@@ -268,7 +261,14 @@ public class NumberUtils {
                 tmp = Double.toString((double)value).getBytes();
                 break;
             default:
-                throw new BPlusException("Unknown Type " + type);
+                if (type.startsWith("String")) {
+                    tmp = ("0" + value.toString()).getBytes();
+                    if (tmp.length > Consts.Type2Size(type)) {
+                        throw new utilsException("String data is too long!");
+                    }
+                } else {
+                    throw new utilsException("Unknown Type " + type);
+                }
         }
         System.arraycopy(tmp, 0, bytes, pos, tmp.length);
         return Consts.Type2Size(type);
