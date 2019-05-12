@@ -327,6 +327,9 @@ public class BPlusTreeNode {
             throw new BPlusException("Cannot convert Internal Node to Leaf");
         }
         this.nodeType = nodeType;
+        if (!this.isLeaf()) {
+            this.nextPage = this.prevPage = -1;
+        }
     }
 
     public static int compareKey(Object a, Object b, String keyType) {

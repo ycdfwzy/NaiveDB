@@ -18,25 +18,23 @@ public class main {
         file = new File("test.data");
         if (file.exists() && file.isFile())
             file.delete();
+        file = new File("test.header");
+        if (file.exists() && file.isFile())
+            file.delete();
 
-
-        LinkedList<String> name = new LinkedList<String>();
         LinkedList<String> type = new LinkedList<String>();
-        name.add("id");
-        name.add("name");
 
         type.add("Int");
         type.add("String");
 
-        BPlusTreeConfiguration conf = new BPlusTreeConfiguration(256,"test","Int", name, type);
+        BPlusTreeConfiguration conf = new BPlusTreeConfiguration(256,"test","Int", type);
         BPlusTree tree = new BPlusTree(conf);
         tree.close();
 
         tree = new BPlusTree("test");
-        String[] names = tree.getConfig().getColumnName();
-        String[] types = tree.getConfig().getColumnType();
-        for (int i = 0; i < names.length; ++i) {
-            System.out.printf("%s: %s\n", names[i], types[i]);
+        int n = tree.getConfig().getColumnSize();
+        for (int i = 0; i < n; ++i) {
+            System.out.printf("%s\n", tree.getConfig().getColumnType(i));
         }
 
         LinkedList values0 = new LinkedList();
@@ -76,17 +74,13 @@ public class main {
 
 //        tree.delete(-1);
 //        tree.delete(2);
-//        tree.delete(1);
+        tree.delete(1);
 //        tree.delete(0);
-//        tree.delete(3);
+        tree.delete(3);
 //        tree.delete(4);
 
         tree.printTree();
 
-        tree.close();
-
-        tree = new BPlusTree("test");
-        tree.printTree();
         tree.close();
     }
 }

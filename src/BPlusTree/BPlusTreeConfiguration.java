@@ -17,16 +17,14 @@ public class BPlusTreeConfiguration {
 
     public BPlusTreeConfiguration(String filename,
                                   String keyType,
-                                  LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
-        this(Consts.defaultBlockSize, filename, keyType, columnName, columnType);
+        this(Consts.defaultBlockSize, filename, keyType, columnType);
     }
 
     public BPlusTreeConfiguration(int pageSize,
                                   String filename,
                                   String keyType,
-                                  LinkedList<String> columnName,
                                   LinkedList<String> columnType)
             throws BPlusException {
         this.pageSize = pageSize;
@@ -39,14 +37,13 @@ public class BPlusTreeConfiguration {
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
         }
 
-        this.columnName = columnName;
         this.columnType = columnType;
         this.rowSize = 0;
         for (int i = 0; i < this.columnType.size(); ++i) {
             this.rowSize += Consts.Type2Size(this.columnType.get(i));
         }
 
-        if ((Consts.columnNameSize + Consts.columnTypeSize) * columnName.size()
+        if ((Consts.columnNameSize + Consts.columnTypeSize) * columnType.size()
                 + Consts.longSize*3 + Consts.intSize*2 > this.pageSize)
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
     }
@@ -56,8 +53,8 @@ public class BPlusTreeConfiguration {
     public int getKeySize() {return keySize;}
     public int getPageSize() {return pageSize;}
     public int getRowSize() {return rowSize;}
-    public int getColumnSize() {return columnName.size();}
-    public String[] getColumnType() {return columnType.toArray(new String[0]);}
-    public String[] getColumnName() {return columnName.toArray(new String[0]);}
+    public int getColumnSize() {return columnType.size();}
+    public String getColumnType(int i) {return columnType.get(i);}
+//    public String[] getColumnName() {return columnName.toArray(new String[0]);}
     public String getFilename() {return filename;}
 }
