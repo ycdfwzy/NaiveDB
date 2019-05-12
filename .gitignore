@@ -37,6 +37,7 @@ hs_err_pid*
 *.txt
 *.tree
 *.data
+*.header
 
 # output
 out/*
