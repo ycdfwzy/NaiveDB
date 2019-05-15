@@ -274,8 +274,26 @@ public class BPlusTree {
         return ret;
     }
 
-    public void search() {
+    public LinkedList<LinkedList> search(Object key)
+            throws BPlusException, IOException, utilsException {
+        return this.search(this.root, key);
+    }
 
+    private LinkedList<LinkedList> search(BPlusTreeNode p, Object key)
+            throws BPlusException, IOException, utilsException {
+        if (p.isLeaf()) {
+            LinkedList<LinkedList> ret = new LinkedList<LinkedList>();
+            long rowNum = p.getPtrByExactKey(key);
+            if (rowNum != -1) {
+                ret.add(getData(rowNum));
+            }
+            return ret;
+        } else
+        {
+            long to = p.getPtrByKey(key);
+            BPlusTreeNode q = getNode(to);
+            return search(q, key);
+        }
     }
 
     public void delete(Object key)

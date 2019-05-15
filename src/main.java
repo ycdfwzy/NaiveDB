@@ -81,6 +81,16 @@ public class main {
 
         tree.printTree();
 
+        LinkedList<LinkedList> res = tree.search(1);
+        System.out.println(res.size());
+        for (LinkedList list: res) {
+            for (Object value: list) {
+                System.out.print(value);
+                System.out.print(" ");
+            }
+            System.out.println();
+        }
+
         tree.close();
     }
 }
