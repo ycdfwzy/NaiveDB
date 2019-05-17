@@ -14,7 +14,7 @@ public class BPlusTreeConfiguration {
     private int rowSize;
 
     private LinkedList<String> columnType;
-    private LinkedList<String> columnName;
+//    private LinkedList<String> columnName;
 
     public BPlusTreeConfiguration(String filename,
                                   String keyType,
@@ -36,6 +36,10 @@ public class BPlusTreeConfiguration {
         this.treeDegree = (pageSize - Consts.nodeTypeSize - Consts.parentSize*3) / (keySize + Consts.pointSize);
         if (this.treeDegree < 3) {
             throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
+        }
+
+        if (columnType.isEmpty() || !keyType.equals(columnType.get(0))) {
+            throw new BPlusException("key-type is not equal to first column-type!");
         }
 
         this.columnType = columnType;

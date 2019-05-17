@@ -81,7 +81,7 @@ public class main {
 
         tree.printTree();
 
-        LinkedList<LinkedList> res = tree.search(1);
+        LinkedList<LinkedList> res = tree.search(2, true, 4, false);
         System.out.println(res.size());
         for (LinkedList list: res) {
             for (Object value: list) {

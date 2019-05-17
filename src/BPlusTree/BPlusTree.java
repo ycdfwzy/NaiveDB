@@ -64,7 +64,7 @@ public class BPlusTree {
 
     /*
         header format:
-            pageSize|columnCnt|[columnNames]|[columnTypes]
+            pageSize|columnCnt|[columnTypes]
             |rootPageIndex|first_leaf|last_leaf
             |blankPageCnt|[blankPageIndex]
 
@@ -204,7 +204,8 @@ public class BPlusTree {
             if (rowNum != -1) {
                 getData(rowNum);
                 cachedData.put(rowNum, values);
-            }
+            } else
+                throw new BPlusException("Can't find primary key '" + key.toString() + "'!");
         } else
         {
             long to = p.getPtrByKey(key);
@@ -243,7 +244,10 @@ public class BPlusTree {
     private void insert(BPlusTreeNode p, Object key, long rowNum)
             throws BPlusException, IOException, utilsException {
         if (p.isLeaf()) {
-            p.addKeyAndPtr(key, rowNum);
+            if (p.getPtrByExactKey(key) == -1) {
+                p.addKeyAndPtr(key, rowNum);
+            } else
+                throw new BPlusException("Duplicate primary key '" + key.toString() + "' found!");
         } else
         {
             long to = p.getPtrByKey(key);
@@ -274,9 +278,46 @@ public class BPlusTree {
         return ret;
     }
 
+    public LinkedList<LinkedList> search(Object low, boolean eql, Object up, boolean eqr)
+            throws BPlusException, IOException, utilsException {
+        if (eql) {
+            if (eqr) {
+                return searchRange(this.root, low, 0, up, 0);
+            } else
+            {
+                return searchRange(this.root, low, 0, up, -1);
+            }
+        } else
+        {
+            if (eqr) {
+                return searchRange(this.root, low, 1, up, 0);
+            } else
+            {
+                return searchRange(this.root, low, 1, up, -1);
+            }
+        }
+    }
+
+    public LinkedList<LinkedList> search(Object key, String type)
+            throws BPlusException, IOException, utilsException {
+        switch (type) {
+            case "EQ":  // key ==
+                return search(this.root, key);
+            case "LT": // < key
+                return searchRange(this.root, null, 0, key, -1);
+            case "GT": // > key
+                return searchRange(this.root, key, 1, null, 0);
+            case "NLT": // >= key
+                return searchRange(this.root, key, 0, null, 0);
+            case "NGT": // <= key
+                return searchRange(this.root, null, 0, key, 0);
+        }
+        throw new BPlusException("Unknown search type '" + type + "'");
+    }
+
     public LinkedList<LinkedList> search(Object key)
             throws BPlusException, IOException, utilsException {
-        return this.search(this.root, key);
+        return search(key, "EQ");
     }
 
     private LinkedList<LinkedList> search(BPlusTreeNode p, Object key)
@@ -293,6 +334,34 @@ public class BPlusTree {
             long to = p.getPtrByKey(key);
             BPlusTreeNode q = getNode(to);
             return search(q, key);
+        }
+    }
+
+    private LinkedList<LinkedList> searchRange(BPlusTreeNode p, Object low, int k1, Object up, int k2)
+            throws BPlusException, IOException, utilsException {
+        LinkedList<LinkedList> ret = new LinkedList<LinkedList>();
+        int n = p.getCurrentSize();
+        if (p.isLeaf()) {
+            for (int i = 0; i < n; ++i)
+                if (this.inRange(p.getKey(i), low, k1, up, k2)) {
+                    ret.add(this.getData(p.getPtr(i)));
+                }
+            return ret;
+        } else
+        {
+            for (int i = 0; i < n; ++i) {
+                // key(i) > up
+                if (BPlusTreeNode.compareKey(p.getKey(i), up, this.config.getKeyType()) > k2) {
+                    continue;
+                }
+                // key(i+1) < low
+                if (i < n-1 && BPlusTreeNode.compareKey(p.getKey(i+1), low, this.config.getKeyType()) < k1) {
+                    continue;
+                }
+                BPlusTreeNode q = getNode(p.getPtr(i));
+                ret.addAll(searchRange(q, low, k1, up, k2));
+            }
+            return ret;
         }
     }
 
@@ -594,5 +663,10 @@ public class BPlusTree {
             }
         }
         this.cachedData.put(rowNum, value);
+    }
+
+    private boolean inRange(Object value, Object low, int k1, Object up, int k2) {
+        return (BPlusTreeNode.compareKey(value, low, config.getKeyType()) >= k1 &&
+            BPlusTreeNode.compareKey(value, up, config.getKeyType()) <= k2);
     }
 }
