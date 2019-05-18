@@ -14,6 +14,8 @@ public class Consts {
     public static int columnTypeSize = 10;
     public static int memoryNodeLimitation = 1024*1024; // bytes of node stored in memory
     public static int memoryDataLimitation = 1024*1024; // bytes of data stored in memory
+    public static int databaseNameSize = 32;
+    public static int tableNameSize = 32;
 
     public static int Type2Size(String type)
             throws utilsException {

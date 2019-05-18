@@ -4,12 +4,20 @@ JAR_PKG = naivedb.jar
 # entry
 ENTRY_POINT = main
 
+# test entry
+TEST_ENTRY = Test.TestRunner
+
 # source base dir
 BASE_DIR = src
 
 PACKAGES = \
 	utils \
-	BPlusTree
+	BPlusTree \
+	Database \
+	Table \
+	Test
+
+JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar
 
 mainFunc = main
 
@@ -28,9 +36,9 @@ build:
 	@for name in $(PACKAGES); \
 	do \
 		echo "compiling $$name";\
-		javac -cp out -d out $(JFLAGS) $(BASE_DIR)/$$name/*.java; \
+		javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$$name/*.java; \
 	done
-	@javac -cp out -d out $(JFLAGS) $(BASE_DIR)/$(mainFunc).java;
+	@javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$(mainFunc).java;
 
 rebuild: clean build
 
@@ -38,7 +46,10 @@ clean:
 	rm -frv out/*
 
 run:
-	@java -cp out $(ENTRY_POINT)
+	@java -cp out$(JARS) $(ENTRY_POINT)
+
+test:
+	@java -cp out$(JARS) $(TEST_ENTRY)
 
 jar:
 	jar cvfe $(JAR_PKG) $(ENTRY_POINT) -C out .
