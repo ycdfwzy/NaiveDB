@@ -17,4 +17,14 @@ public class DatabaseTest {
     //     Assert.assertEquals(1, 1);
     // }
 
+    @Test
+    public void suibianTest() throws Exception {
+        DatabaseManager.initial();
+        DatabaseManager.create("wangzeyu");
+        System.out.println(DatabaseManager.getDatabases());
+        // DatabaseManager.drop("wangzeyu");
+        DatabaseManager.close();
+        Assert.assertEquals(1, 1);
+    }
+
 }

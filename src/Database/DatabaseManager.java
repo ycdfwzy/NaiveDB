@@ -4,7 +4,8 @@
 
 package Database;
 import utils.Consts;
-import utils.NumberUtils;
+import utils.StreamUtils;
+import utils.FileUtils;
 import Database.Database;
 import java.io.*;
 import java.util.*;
@@ -16,20 +17,20 @@ public class DatabaseManager {
     private static String baseDir = "data";
     private static String metaPath = "data/db.meta";
     private static HashSet<String> databases = null;
+    private static Logger logger = MyLogger.getLogger("database");
 
     /*
         initiate database system, must call once on session begin, read or create database metainfo
         database meta format: dbCnt|[dbNames]
      */
     public static void initial() throws IOException, Exception {
-        Logger log = MyLogger.getLogger("database");
 
         // check base Dir
         File dbDir = new File(baseDir);
         if (dbDir.exists() && dbDir.isFile()) throw new Exception("please remove file: \'data\'.");
         if (!dbDir.exists()) {
             dbDir.mkdir();
-            log.info("data directory created");
+            logger.info("data directory created");
         }
         
         // check meta file
@@ -37,21 +38,21 @@ public class DatabaseManager {
         if (!metaFile.exists()) {
             metaFile.createNewFile();
             databases = new HashSet<String>();
-            log.info("meta info file created");
+            logger.info("meta info file created");
         }
         else {
             // read info
             BufferedInputStream input = new BufferedInputStream(new FileInputStream(metaFile));
 
             // cnt
-            int db_cnt = NumberUtils.readInt(input);
+            int db_cnt = StreamUtils.readInt(input);
             databases = new HashSet<String>();
             for (int i = 0; i < db_cnt; i++) {
-                String name = NumberUtils.readString(input, Consts.databaseNameSize);
+                String name = StreamUtils.readString(input, Consts.databaseNameSize);
                 databases.add(name);
             }
             input.close();
-            log.info("meta info loaded");
+            logger.info("meta info loaded");
         }
     }
 
@@ -64,14 +65,14 @@ public class DatabaseManager {
         BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(metaFile));
 
         // db cnt
-        NumberUtils.writeInt(output, databases.size());
+        StreamUtils.writeInt(output, databases.size());
 
         // [db names]
         for (String name: databases) {
-            NumberUtils.writeString(output, name, Consts.databaseNameSize);
+            StreamUtils.writeString(output, name, Consts.databaseNameSize);
         }
         output.close();
-        MyLogger.getLogger("database").info("database metainfo write successful.");
+        logger.info("database metainfo write successful.");
     }
 
     // create a database
@@ -95,7 +96,7 @@ public class DatabaseManager {
 
         File db = new File(getDatabasePath(db_name));
         if (!db.exists()) throw new Exception("database dir does not exists!");
-        db.delete();
+        FileUtils.deleteAll(db);
 
         databases.remove(db_name);
     }

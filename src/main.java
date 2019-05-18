@@ -14,7 +14,11 @@ public class main {
 
     public static void main(String[] args)
         throws Exception {
-            System.out.println("hello");
+            DatabaseManager.initial();
+            // DatabaseManager.create("wangzeyu");
+            System.out.println(DatabaseManager.getDatabases());
+            DatabaseManager.drop("wangzeyu");
+            DatabaseManager.close();
 
 //         File file = new File("test.tree");
 //         if (file.exists() && file.isFile())

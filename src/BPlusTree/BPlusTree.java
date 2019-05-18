@@ -5,6 +5,7 @@ import java.util.*;
 
 import utils.Consts;
 import utils.NumberUtils;
+import utils.StreamUtils;
 import utils.utilsException;
 
 public class BPlusTree {
@@ -93,29 +94,29 @@ public class BPlusTree {
         int pos = 0;
         int n = this.config.getColumnSize();
         // pageSize
-        NumberUtils.writeInt(output, this.config.getPageSize());
+        StreamUtils.writeInt(output, this.config.getPageSize());
 
         // columnCnt
-        NumberUtils.writeInt(output, n);
+        StreamUtils.writeInt(output, n);
 
         // [columnTypes]
         for (int i = 0; i < n; ++i) {
-            NumberUtils.writeString(output, this.config.getColumnType(i), Consts.columnTypeSize);
+            StreamUtils.writeString(output, this.config.getColumnType(i), Consts.columnTypeSize);
         }
 
         // rootPageIndex
-        NumberUtils.writeLong(output, this.root.getPageIndex());
+        StreamUtils.writeLong(output, this.root.getPageIndex());
 
         // fistLeaf
-        NumberUtils.writeLong(output, this.firstLeaf);
+        StreamUtils.writeLong(output, this.firstLeaf);
 
         // lastLeaf
-        NumberUtils.writeLong(output, this.lastLeaf);
+        StreamUtils.writeLong(output, this.lastLeaf);
 
         // blankPageCnt
-        NumberUtils.writeInt(output, this.pageIndexPool.size());
+        StreamUtils.writeInt(output, this.pageIndexPool.size());
         for (long pageIndex: this.pageIndexPool) {
-            NumberUtils.writeLong(output, pageIndex);
+            StreamUtils.writeLong(output, pageIndex);
         }
         output.close();
 
@@ -139,10 +140,10 @@ public class BPlusTree {
         BufferedInputStream input = new BufferedInputStream(new FileInputStream(this.headerFile));
 
         // pageSize
-        int pageSize = NumberUtils.readInt(input);
+        int pageSize = StreamUtils.readInt(input);
 
         // columnCnt
-        int columnCnt = NumberUtils.readInt(input);
+        int columnCnt = StreamUtils.readInt(input);
         if (columnCnt < 1) {
             throw new BPlusException("Too few columns!");
         }
@@ -151,7 +152,7 @@ public class BPlusTree {
 
         // [columnTypes]
         for (int i = 0; i < columnCnt; ++i) {
-            String type = NumberUtils.readString(input, Consts.columnTypeSize);
+            String type = StreamUtils.readString(input, Consts.columnTypeSize);
             columnTypes.add(type);
         }
         this.config = new BPlusTreeConfiguration(pageSize, filename,
@@ -162,20 +163,20 @@ public class BPlusTree {
         this.maxPageIndex = treeFile.length()/this.config.getPageSize() - 1;
 
         // rootPageIndex
-        long rootPageIndex = NumberUtils.readLong(input);
+        long rootPageIndex = StreamUtils.readLong(input);
         this.root = new BPlusTreeNode(treeFile, rootPageIndex, this.config);
 
         // firstLeaf
-        this.firstLeaf = NumberUtils.readLong(input);
+        this.firstLeaf = StreamUtils.readLong(input);
         // lastLeaf
-        this.lastLeaf = NumberUtils.readLong(input);
+        this.lastLeaf = StreamUtils.readLong(input);
 
         // blankPageCnt
-        int blankPageCnt = NumberUtils.readInt(input);
+        int blankPageCnt = StreamUtils.readInt(input);
         this.pageIndexPool = new ArrayList<Long>();
         // [blankPage]
         for (int i = 0; i < blankPageCnt; ++i) {
-            long pageIndex = NumberUtils.readLong(input);
+            long pageIndex = StreamUtils.readLong(input);
             this.pageIndexPool.add(pageIndex);
         }
         input.close();
