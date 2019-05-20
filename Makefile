@@ -2,25 +2,31 @@
 JAR_PKG = naivedb.jar
 
 # entry
-ENTRY_POINT = main
+ENTRY_POINT = org.naivedb.main
 
 # test entry
-TEST_ENTRY = Test.TestRunner
+TEST_ENTRY = org.naivedb.Test.TestRunner
 
 # source base dir
-BASE_DIR = src
+BASE_DIR = src/org/naivedb
 
+# package postfixs
 PACKAGES = \
 	utils \
+	Type \
+	Persistence \
 	BPlusTree \
-	Database \
 	Table \
+	Database \
 	Test
 
-JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar
-
+# entry function postfix
 mainFunc = main
 
+# needed jar packages
+JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar
+
+# javac command
 JAVAC = javac
 
 JFLAGS = -encoding UTF-8

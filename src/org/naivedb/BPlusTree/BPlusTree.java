@@ -1,12 +1,12 @@
-package BPlusTree;
+package org.naivedb.BPlusTree;
 
 import java.io.*;
 import java.util.*;
 
-import utils.Consts;
-import utils.NumberUtils;
-import utils.StreamUtils;
-import utils.utilsException;
+import org.naivedb.utils.Consts;
+import org.naivedb.utils.NumberUtils;
+import org.naivedb.utils.StreamUtils;
+import org.naivedb.utils.NDException;
 
 public class BPlusTree {
 
@@ -31,7 +31,7 @@ public class BPlusTree {
     }
 
     public BPlusTree(BPlusTreeConfiguration config)
-            throws IOException, BPlusException, utilsException {
+            throws IOException, NDException {
         this.config = config;
         this.root = new BPlusTreeNode(0, -1,
                 BPlusTreeNodeType.ROOT_LEAF_NODE, config, -1, -1);
@@ -52,13 +52,13 @@ public class BPlusTree {
     }
 
     public BPlusTree(String filename)
-            throws IOException, utilsException, BPlusException {
+            throws IOException, NDException {
         if (new File(filename+".header").exists() &&
             new File(filename+".tree").exists()) {
             fromFile(filename);
         } else
         {
-            throw new BPlusException(filename + ".header or " + filename + ".tree does not exist!");
+            throw new NDException(filename + ".header or " + filename + ".tree does not exist!");
         }
     }
 
@@ -70,7 +70,7 @@ public class BPlusTree {
 
      */
     private void fromFile(String filename)
-        throws IOException, utilsException, BPlusException {
+        throws IOException, NDException {
 
         this.headerFile = new File(filename+".header");
         this.treeFile = new RandomAccessFile(filename+".tree", "rw");
@@ -84,7 +84,7 @@ public class BPlusTree {
     }
 
     private void toFile()
-            throws IOException, utilsException, BPlusException{
+            throws IOException, NDException{
         byte[] block = new byte[this.config.getPageSize()];
         Arrays.fill(block, (byte)0);
         BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(this.headerFile));
@@ -133,7 +133,7 @@ public class BPlusTree {
     }
 
     private void fromHeaderFile(String filename)
-            throws IOException, BPlusException, utilsException {
+            throws IOException, NDException {
 
         BufferedInputStream input = new BufferedInputStream(new FileInputStream(this.headerFile));
 
@@ -143,7 +143,7 @@ public class BPlusTree {
         // columnCnt
         int columnCnt = StreamUtils.readInt(input);
         if (columnCnt < 1) {
-            throw new BPlusException("Too few columns!");
+            throw new NDException("Too few columns!");
         }
 
         LinkedList<String> columnTypes = new LinkedList<String>();
@@ -187,20 +187,20 @@ public class BPlusTree {
     public String getKeyType() {return config.getKeyType();}
 
     public void update(Object oldKey, Object newKey, long rowNum)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException, NDException {
         this.delete(oldKey);
         this.insert(newKey, rowNum);
     }
 
 //    private void update(BPlusTreeNode p, Object key, LinkedList values)
-//            throws BPlusException, IOException, utilsException{
+//            throws NDException, IOException, NDException{
 //        if (p.isLeaf()) {
 //            long rowNum = p.getPtrByExactKey(key);
 //            if (rowNum != -1) {
 //                getData(rowNum);
 //                cachedData.put(rowNum, values);
 //            } else
-//                throw new BPlusException("Can't find primary key '" + key.toString() + "'!");
+//                throw new NDException("Can't find primary key '" + key.toString() + "'!");
 //        } else
 //        {
 //            long to = p.getPtrByKey(key);
@@ -210,7 +210,7 @@ public class BPlusTree {
 //    }
 
     public void insert(Object key, long rowNum)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
 //        long rowNum = getNewRowIndex();
 //        updateCachedData(rowNum, values);
 
@@ -230,12 +230,12 @@ public class BPlusTree {
         --- rowNum    row number in datafile(store in leaf node)
      */
     private void insert(BPlusTreeNode p, Object key, long rowNum)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
         if (p.isLeaf()) {
             if (p.getPtrByExactKey(key) == -1) {
                 p.addKeyAndPtr(key, rowNum);
             } else
-                throw new BPlusException("Duplicate primary key '" + key.toString() + "' found!");
+                throw new NDException("Duplicate primary key '" + key.toString() + "' found!");
         } else
         {
             long to = p.getPtrByKey(key);
@@ -267,7 +267,7 @@ public class BPlusTree {
     }
 
     public LinkedList<Long> search(Object low, boolean eql, Object up, boolean eqr)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
         if (eql) {
             if (eqr) {
                 return searchRange(this.root, low, 0, up, 0);
@@ -287,7 +287,7 @@ public class BPlusTree {
     }
 
     public LinkedList<Long> search(Object key, String type)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
         switch (type) {
             case "EQ":  // key ==
                 return search(this.root, key);
@@ -300,16 +300,16 @@ public class BPlusTree {
             case "NGT": // <= key
                 return searchRange(this.root, null, 0, key, 0);
         }
-        throw new BPlusException("Unknown search type '" + type + "'");
+        throw new NDException("Unknown search type '" + type + "'");
     }
 
     public LinkedList<Long> search(Object key)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
         return search(key, "EQ");
     }
 
     private LinkedList<Long> search(BPlusTreeNode p, Object key)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
         if (p.isLeaf()) {
             LinkedList<Long> ret = new LinkedList<Long>();
             long rowNum = p.getPtrByExactKey(key);
@@ -326,7 +326,7 @@ public class BPlusTree {
     }
 
     private LinkedList<Long> searchRange(BPlusTreeNode p, Object low, int k1, Object up, int k2)
-            throws BPlusException, IOException, utilsException {
+            throws NDException, IOException {
         LinkedList<Long> ret = new LinkedList<Long>();
         int n = p.getCurrentSize();
         if (p.isLeaf()) {
@@ -354,12 +354,12 @@ public class BPlusTree {
     }
 
     public void delete(Object key)
-        throws BPlusException, IOException, utilsException {
+        throws NDException, IOException {
         delete(this.root, key);
     }
 
     private void delete(BPlusTreeNode p, Object key)
-        throws BPlusException, IOException, utilsException {
+        throws NDException, IOException {
         if (p.isLeaf()) {
             long rowNum = p.getPtrByExactKey(key);
             if (rowNum != -1) {
@@ -388,7 +388,7 @@ public class BPlusTree {
     }
 
 //    public void write2Datafile(LinkedList values, long rowNum)
-//        throws IOException, utilsException {
+//        throws IOException, NDException {
 //
 //        byte[] rowData = new byte[config.getRowSize()];
 //        Arrays.fill(rowData, (byte)0);
@@ -407,7 +407,7 @@ public class BPlusTree {
     }
 
     private void splitNode(BPlusTreeNode p)
-        throws BPlusException, IOException, utilsException {
+        throws NDException, IOException {
         if (p.isRoot()) {
             long newRootPageIndex = getNewPageIndex();
 
@@ -467,7 +467,7 @@ public class BPlusTree {
     }
 
     private void afterDelete(BPlusTreeNode p)
-        throws BPlusException, IOException, utilsException {
+        throws NDException, IOException {
         if (p.isRoot()) {
             this.root = getNode(p.getPtr(0));
             if (this.root.isLeaf()) {
@@ -517,7 +517,7 @@ public class BPlusTree {
     }
 
     private void merge(BPlusTreeNode parent, BPlusTreeNode p, BPlusTreeNode q, int qIndex)
-        throws IOException, BPlusException, utilsException {
+        throws IOException, NDException {
         int n = q.getCurrentSize();
         for (int i = 0; i < n; ++i) {
             Object key = q.getKey(i);
@@ -586,9 +586,9 @@ public class BPlusTree {
     }
 
     private BPlusTreeNode getNode(long pageIndex)
-            throws BPlusException, IOException, utilsException{
+            throws NDException, IOException{
         if (pageIndex < 0) {
-            throw new BPlusException("Underflow pageIndex!");
+            throw new NDException("Underflow pageIndex!");
         } else
         {
             if (!this.cachedNodes.containsKey(pageIndex)) {
@@ -607,9 +607,9 @@ public class BPlusTree {
     }
 
 //    private LinkedList getData(long rowNum)
-//        throws BPlusException, IOException, utilsException{
+//        throws NDException, IOException, NDException{
 //        if (rowNum < 0) {
-//            throw new BPlusException("Underflow row number!");
+//            throw new NDException("Underflow row number!");
 //        }
 //        if (cachedData.containsKey(rowNum)) {
 //            return cachedData.get(rowNum);
@@ -635,7 +635,7 @@ public class BPlusTree {
 //    }
 
 //    private void updateCachedData(long rowNum, LinkedList value)
-//        throws IOException, utilsException {
+//        throws IOException, NDException {
 //        if (!this.cachedData.containsKey(rowNum)) {
 //            // remove some data cache
 //            while (config.getRowSize() * this.cachedData.size() > Consts.memoryDataLimitation) {

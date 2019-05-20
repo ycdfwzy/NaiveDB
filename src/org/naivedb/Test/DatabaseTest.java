@@ -1,8 +1,8 @@
-package Test;
+package org.naivedb.Test;
 
 import org.junit.Test;
 import org.junit.Assert;
-import Database.DatabaseManager;
+import org.naivedb.Database.DatabaseManager;
 
 public class DatabaseTest {
     // example for test

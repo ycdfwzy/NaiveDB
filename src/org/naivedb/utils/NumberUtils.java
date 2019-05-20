@@ -1,4 +1,4 @@
-package utils;
+package org.naivedb.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,7 +39,7 @@ public class NumberUtils {
     }
 
     public static Integer parseInt(String s, int startIndex, int len, boolean isData)
-        throws utilsException {
+        throws NDException {
         String t = s.substring(startIndex, startIndex+len).trim();
         if (isData && t.isEmpty()) {
             return null;
@@ -47,16 +47,16 @@ public class NumberUtils {
         if (isInteger(t)) {
             return Integer.parseInt(t);
         }
-        throw new utilsException(t + " is not a Int");
+        throw new NDException(t + " is not a Int");
     }
 
     public static Integer parseInt(String s, int startIndex, int len)
-            throws utilsException {
+            throws NDException {
         return parseInt(s, startIndex, len, false);
     }
 
     public static Long parseLong(String s, int startIndex, int len, boolean isData)
-            throws utilsException {
+            throws NDException {
         String t = s.substring(startIndex, startIndex+len).trim();
         if (isData && t.isEmpty()) {
             return null;
@@ -64,16 +64,16 @@ public class NumberUtils {
         if (isInteger(t)) {
             return Long.parseLong(t);
         }
-        throw new utilsException(t + " is not a Long");
+        throw new NDException(t + " is not a Long");
     }
 
     public static Long parseLong(String s, int startIndex, int len)
-            throws utilsException {
+            throws NDException {
         return parseLong(s, startIndex, len, false);
     }
 
     public static Float parseFloat(String s, int startIndex, int len, boolean isData)
-            throws utilsException {
+            throws NDException {
         String t = s.substring(startIndex, startIndex+len).trim();
         if (isData && t.isEmpty()) {
             return null;
@@ -81,16 +81,16 @@ public class NumberUtils {
         if (isFloat(t)) {
             return Float.parseFloat(t);
         }
-        throw new utilsException(t + " is not a Long");
+        throw new NDException(t + " is not a Long");
     }
 
     public static Float parseFloat(String s, int startIndex, int len)
-            throws utilsException {
+            throws NDException {
         return parseFloat(s, startIndex, len, false);
     }
 
     public static Double parseDouble(String s, int startIndex, int len, boolean isData)
-            throws utilsException {
+            throws NDException {
         String t = s.substring(startIndex, startIndex+len).trim();
         if (isData && t.isEmpty()) {
             return null;
@@ -98,17 +98,17 @@ public class NumberUtils {
         if (isFloat(t)) {
             return Double.parseDouble(t);
         }
-        throw new utilsException(t + " is not a Long");
+        throw new NDException(t + " is not a Long");
     }
 
     public static Double parseDouble(String s, int startIndex, int len)
-            throws utilsException {
+            throws NDException {
         return parseDouble(s, startIndex, len, false);
     }
 
 
     public static int fromBytes(List list, String s, int pos, String type, boolean isData)
-        throws utilsException{
+        throws NDException{
         int ret = 0;
         switch (type) {
             case "Int":
@@ -141,7 +141,7 @@ public class NumberUtils {
     }
 
     public static int toBytes(byte[] bytes, int pos, Object value, String type)
-        throws utilsException {
+        throws NDException {
         byte[] tmp;
         if (value == null) {
             if (type.startsWith("String")) {
@@ -168,10 +168,10 @@ public class NumberUtils {
                 if (type.startsWith("String")) {
                     tmp = ("0" + value.toString()).getBytes();
                     if (tmp.length > Consts.Type2Size(type)) {
-                        throw new utilsException("String data is too long!");
+                        throw new NDException("String data is too long!");
                     }
                 } else {
-                    throw new utilsException("Unknown Type " + type);
+                    throw new NDException("Unknown Type " + type);
                 }
         }
         System.arraycopy(tmp, 0, bytes, pos, tmp.length);

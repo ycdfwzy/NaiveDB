@@ -1,4 +1,4 @@
-package utils;
+package org.naivedb.utils;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -8,7 +8,7 @@ import java.io.IOException;
 public class StreamUtils {
 
     public static int readInt(BufferedInputStream input)
-        throws IOException, utilsException {
+        throws IOException, NDException {
         byte[] tmp = new byte[Consts.intSize];
         input.read(tmp, 0, Consts.intSize);
         String st = new String(tmp);
@@ -16,7 +16,7 @@ public class StreamUtils {
     }
 
     public static long readLong(BufferedInputStream input)
-            throws IOException, utilsException {
+            throws IOException, NDException {
         byte[] tmp = new byte[Consts.longSize];
         input.read(tmp, 0, Consts.longSize);
         String st = new String(tmp).trim();
@@ -24,7 +24,7 @@ public class StreamUtils {
     }
 
     public static float readFloat(BufferedInputStream input)
-            throws IOException, utilsException {
+            throws IOException, NDException {
         byte[] tmp = new byte[Consts.floatSize];
         input.read(tmp, 0, Consts.floatSize);
         String st = new String(tmp).trim();
@@ -32,7 +32,7 @@ public class StreamUtils {
     }
 
     public static double readDouble(BufferedInputStream input)
-            throws IOException, utilsException {
+            throws IOException, NDException {
         byte[] tmp = new byte[Consts.doubleSize];
         input.read(tmp, 0, Consts.doubleSize);
         String st = new String(tmp).trim();

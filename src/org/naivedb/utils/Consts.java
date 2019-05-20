@@ -1,4 +1,4 @@
-package utils;
+package org.naivedb.utils;
 
 public class Consts {
     public static int intSize = 16;          // bits of int stored in file
@@ -18,7 +18,7 @@ public class Consts {
     public static int tableNameSize = 32;
 
     public static int Type2Size(String type)
-            throws utilsException {
+            throws NDException {
         int ret;
         switch (type) {
             case "Int":
@@ -42,11 +42,11 @@ public class Consts {
                         ret = NumberUtils.parseInt(type.substring(6), 0, type.substring(6).length())+1;
                     } else
                     {
-                        throw new utilsException("Unknown type '" + type + "'");
+                        throw new NDException("Unknown type '" + type + "'");
                     }
                 } else
                 {
-                    throw new utilsException("Unknown type '" + type + "'");
+                    throw new NDException("Unknown type '" + type + "'");
                 }
         }
         return ret;

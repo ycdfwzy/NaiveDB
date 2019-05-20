@@ -1,8 +1,8 @@
-package BPlusTree;
+package org.naivedb.BPlusTree;
 
-import utils.Consts;
-import utils.NumberUtils;
-import utils.utilsException;
+import org.naivedb.utils.Consts;
+import org.naivedb.utils.NumberUtils;
+import org.naivedb.utils.NDException;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -22,7 +22,7 @@ public class BPlusTreeNode {
                          long parent,
                          BPlusTreeNodeType nodeType,
                          BPlusTreeConfiguration conf)
-            throws BPlusException {
+            throws NDException {
         this.pageIndex = pageIndex;
         this.parent = parent;
         this.nodeType = nodeType;
@@ -30,7 +30,7 @@ public class BPlusTreeNode {
         this.keyList = new ArrayList();
         this.ptrList = new ArrayList<Long>();
         if (this.isLeaf()) {
-            throw new BPlusException("Leaf should have nextPage or prevPage!");
+            throw new NDException("Leaf should have nextPage or prevPage!");
         }
     }
 
@@ -40,7 +40,7 @@ public class BPlusTreeNode {
                          BPlusTreeConfiguration conf,
                          long nextPage,
                          long prevPage)
-            throws BPlusException {
+            throws NDException {
         this.pageIndex = pageIndex;
         this.parent = parent;
         this.nodeType = nodeType;
@@ -48,7 +48,7 @@ public class BPlusTreeNode {
         this.keyList = new ArrayList();
         this.ptrList = new ArrayList<Long>();
         if (!this.isLeaf()) {
-            throw new BPlusException("Leaf shouldn't have nextPage or prevPage!");
+            throw new NDException("Leaf shouldn't have nextPage or prevPage!");
         }
         this.nextPage = nextPage;
         this.prevPage = prevPage;
@@ -63,7 +63,7 @@ public class BPlusTreeNode {
     public BPlusTreeNode(RandomAccessFile input,
                         long pageIndex,
                          BPlusTreeConfiguration conf)
-            throws IOException, BPlusException, utilsException {
+            throws IOException, NDException {
         this.pageIndex = pageIndex;
         this.conf = conf;
         long offset = pageIndex * conf.getPageSize();
@@ -71,7 +71,7 @@ public class BPlusTreeNode {
     }
 
     public void fromFile(RandomAccessFile input, long offset)
-        throws IOException, utilsException, BPlusException {
+        throws IOException, NDException {
         int pageSize = conf.getPageSize();
         byte[] pageB = new byte[pageSize];
         input.seek(offset);
@@ -103,12 +103,12 @@ public class BPlusTreeNode {
             pos += Consts.pointSize;
         }
         if (!pageS.substring(pos).trim().isEmpty()) {
-            throw new BPlusException("Node page is invalid!");
+            throw new NDException("Node page is invalid!");
         }
     }
 
     public void toFile(RandomAccessFile output, long offset)
-        throws IOException, utilsException {
+        throws IOException, NDException {
         int pageSize = conf.getPageSize();
         byte[] pageB = new byte[pageSize];
         byte[] tmp;
@@ -319,12 +319,12 @@ public class BPlusTreeNode {
     }
 
     public void setNodeType(BPlusTreeNodeType nodeType)
-    throws BPlusException{
+    throws NDException{
         if (isLeaf() && nodeType == BPlusTreeNodeType.INTERNAL_NODE) {
-            throw new BPlusException("Cannot convert Leaf to Internal Node");
+            throw new NDException("Cannot convert Leaf to Internal Node");
         }
         if (isInternal() && nodeType == BPlusTreeNodeType.LEAF_NODE) {
-            throw new BPlusException("Cannot convert Internal Node to Leaf");
+            throw new NDException("Cannot convert Internal Node to Leaf");
         }
         this.nodeType = nodeType;
         if (!this.isLeaf()) {
