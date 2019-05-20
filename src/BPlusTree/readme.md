@@ -33,10 +33,12 @@
 
 * 构造函数，提供两种构造方式：提供`config`或提供`filename`。用`config`构造适用于创建一个新的表格，而用`filename`是从文件中载入一个已有的表格
 * `close()`：**请在销毁BPlusTree实例前调用该函数**，它会将数据全部写回磁盘。
-* `insert(LinkedList values)`：向树中插入一条数据，请确保`values`中值的顺序和`config`里存储`columnType`的顺序相同。
-* `delete(Object key)`：从树中删除主键为`key`的数据。
-* `update(LinkedList values)`：主键`key=values[0]`，将主键为`key`的数据更新为`values`。
-* `search`：待定。。。
+* `insert(Object key, long rowNum)`：向树中插入一条索引，数据存在第`rowNum`行。
+* `delete(Object key)`：从树中删除主键为`key`的索引。
+* `update(Object oldKey, Object newKey, long rowNum)`：将主键为`oldkey`的索引改为`newkey`，新的数据在第`rowNum`行。
+* `search(Object key)`：查找主键为`key`的数据的行号
+* `search(Object key, String type)`：根据type的不同（`EQ,LT,GT,NLT,NGT`），分别查找主键等于/小于/大于/大于等于/小于等于`key`的数据的行号。
+* `search(Object low, boolean eql, Object up, boolean eqr)`，查找主键在`low~up`之间的数据的行号，`eql=True`表示包含`key=low`的数据，否则不包含。`eqr`类似。
 
 
 
