@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/NaiveDB.iml" filepath="$PROJECT_DIR$/NaiveDB.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/NaiveDB.iml" filepath="$PROJECT_DIR$/.idea/NaiveDB.iml" />
     </modules>
   </component>
 </project>
