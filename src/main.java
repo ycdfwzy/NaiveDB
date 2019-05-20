@@ -1,5 +1,6 @@
 import BPlusTree.*;
 
+import persistence.PersistenceData;
 import utils.NumberUtils;
 
 import java.io.*;
@@ -37,53 +38,52 @@ public class main {
             System.out.printf("%s\n", tree.getConfig().getColumnType(i));
         }
 
+        PersistenceData data = new PersistenceData("test", type);
+
         LinkedList values0 = new LinkedList();
         values0.add(0);
         values0.add("Mao");
-        tree.insert(values0);
+        tree.insert(values0.getFirst(), data.add(values0));
 
         LinkedList values1 = new LinkedList();
         values1.add(1);
         values1.add("Deng");
-        tree.insert(values1);
+        tree.insert(values1.getFirst(), data.add(values1));
 
         LinkedList values2 = new LinkedList();
         values2.add(2);
         values2.add("Jiang");
-        tree.insert(values2);
+        tree.insert(values2.getFirst(), data.add(values2));
 
         LinkedList values3 = new LinkedList();
         values3.add(3);
         values3.add("Hu");
-        tree.insert(values3);
+        tree.insert(values3.getFirst(), data.add(values3));
 
         LinkedList values4 = new LinkedList();
         values4.add(4);
         values4.add("Xi");
-        tree.insert(values4);
+        tree.insert(values4.getFirst(), data.add(values4));
 
         LinkedList values5 = new LinkedList();
         values5.add(-1);
         values5.add("Pu");
-        tree.insert(values5);
-
-        LinkedList modified = new LinkedList();
-        modified.add(2);
-        modified.add(null);
-        tree.update(modified);
+        tree.insert(values5.getFirst(), data.add(values5));
 
 //        tree.delete(-1);
-//        tree.delete(2);
+        data.remove(tree.search(2).getFirst());
+        tree.delete(2);
 //        tree.delete(1);
 //        tree.delete(0);
 //        tree.delete(3);
 //        tree.delete(4);
 
-        tree.printTree();
+//        tree.printTree();
 
-        LinkedList<LinkedList> res = tree.search(2, true, 4, false);
+        LinkedList<Long> res = tree.search(1, true, 4, false);
         System.out.println(res.size());
-        for (LinkedList list: res) {
+        for (Long k: res) {
+            LinkedList list = data.get(k);
             for (Object value: list) {
                 System.out.print(value);
                 System.out.print(" ");
@@ -92,5 +92,6 @@ public class main {
         }
 
         tree.close();
+        data.close();
     }
 }
