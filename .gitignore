@@ -24,19 +24,13 @@ hs_err_pid*
 
 # IntelliJ
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-.idea/caches
-.idea/*
+.idea/
 
 # files for test
 *.txt
 *.tree
 *.data
+*.header
 
 # output
 out/*

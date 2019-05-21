@@ -1,8 +1,6 @@
 package BPlusTree;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
 import java.util.*;
 
 import utils.Consts;
@@ -11,176 +9,116 @@ import utils.utilsException;
 
 public class BPlusTree {
 
+    private File headerFile;
     private RandomAccessFile treeFile;
-    private RandomAccessFile dataFile;
+//    private RandomAccessFile dataFile;
     private BPlusTreeNode root;
     private BPlusTreeConfiguration config;
     private HashMap<Long, BPlusTreeNode> cachedNodes;
-    private HashMap<Long, LinkedList> cachedData;
+//    private HashMap<Long, LinkedList> cachedData;
     private long maxPageIndex;
     private ArrayList<Long> pageIndexPool;
-    private long maxRowIndex;
-    private ArrayList<Long> rowIndexPool;
+//    private long maxRowIndex;
+//    private ArrayList<Long> rowIndexPool;
     private long firstLeaf, lastLeaf;
 
     public void close()
         throws Exception {
         this.toFile();
         this.treeFile.close();
-        this.dataFile.close();
+//        this.dataFile.close();
     }
 
     public BPlusTree(BPlusTreeConfiguration config)
             throws IOException, BPlusException, utilsException {
         this.config = config;
-        this.root = new BPlusTreeNode(1, -1,
+        this.root = new BPlusTreeNode(0, -1,
                 BPlusTreeNodeType.ROOT_LEAF_NODE, config, -1, -1);
         this.cachedNodes = new HashMap<Long, BPlusTreeNode>();
         this.cachedNodes.put(this.root.getPageIndex(), this.root);
-        this.cachedData = new HashMap<Long, LinkedList>();
+//        this.cachedData = new HashMap<Long, LinkedList>();
 
-        this.lastLeaf = 1;
-        this.firstLeaf = 1;
+        this.lastLeaf = 0;
+        this.firstLeaf = 0;
         this.maxPageIndex = 0;
         this.pageIndexPool = new ArrayList<Long>();
-        this.maxRowIndex = -1;
-        this.rowIndexPool = new ArrayList<Long>();
+//        this.maxRowIndex = -1;
+//        this.rowIndexPool = new ArrayList<Long>();
+        this.headerFile = new File(config.getFilename()+".header");
         this.treeFile = new RandomAccessFile(config.getFilename()+".tree", "rw");
-        this.dataFile = new RandomAccessFile(config.getFilename()+".data", "rw");
+//        this.dataFile = new RandomAccessFile(config.getFilename()+".data", "rw");
         this.toFile();
     }
 
     public BPlusTree(String filename)
             throws IOException, utilsException, BPlusException {
-        if (new File(filename+".tree").exists() &&
-            new File(filename+".data").exists()) {
+        if (new File(filename+".header").exists() &&
+            new File(filename+".tree").exists()) {
             fromFile(filename);
         } else
         {
-            throw new BPlusException(filename + ".tree or " + filename + ".data does not exist!");
+            throw new BPlusException(filename + ".header or " + filename + ".tree does not exist!");
         }
     }
 
     /*
-        page#0 format:
-            pageSize|columnCnt|[columnNames]|[columnTypes]
+        header format:
+            pageSize|columnCnt|[columnTypes]
             |rootPageIndex|first_leaf|last_leaf
+            |blankPageCnt|[blankPageIndex]
 
      */
-    public void fromFile(String filename)
+    private void fromFile(String filename)
         throws IOException, utilsException, BPlusException {
 
+        this.headerFile = new File(filename+".header");
         this.treeFile = new RandomAccessFile(filename+".tree", "rw");
-        this.dataFile = new RandomAccessFile(filename+".data", "rw");
+//        this.dataFile = new RandomAccessFile(filename+".data", "rw");
 
-        this.pageIndexPool = new ArrayList<Long>();
-        this.rowIndexPool = new ArrayList<Long>();
+        this.fromHeaderFile(filename);
 
-        // pageSize
-        byte[] tmp = new byte[16];
-        treeFile.seek(0);
-        treeFile.read(tmp, 0, 16);
-        int pageSize = NumberUtils.parseInt(new String(tmp), 0, Consts.intSize);
-
-        String s;
-        byte[] block = new byte[pageSize];
-        treeFile.seek(0);
-        treeFile.read(block, 0, pageSize);
-        s = new String(block);
-
-        // columnCnt
-        int columnCnt = NumberUtils.parseInt(s, Consts.intSize, Consts.intSize);
-        if (columnCnt < 1) {
-            throw new BPlusException("Too few columns!");
-        }
-
-        int pos = Consts.intSize * 2;
-        LinkedList<String> columnNames = new LinkedList<String>();
-        LinkedList<String> columnTypes = new LinkedList<String>();
-        // [columnNames]
-        for (int i = 0; i < columnCnt; ++i) {
-            columnNames.add(s.substring(pos, pos+Consts.columnNameSize).trim());
-            pos += Consts.columnNameSize;
-        }
-
-        // [columnTypes]
-        for (int i = 0; i < columnCnt; ++i) {
-            columnTypes.add(s.substring(pos, pos+Consts.columnTypeSize).trim());
-            pos += Consts.columnTypeSize;
-        }
-        this.config = new BPlusTreeConfiguration(pageSize, filename,
-                                                columnTypes.get(0),
-                                                columnNames, columnTypes);
-
-        this.maxRowIndex = dataFile.length()/this.config.getRowSize() - 1;
-        this.maxPageIndex = treeFile.length()/this.config.getPageSize() - 1;
-
-        // rootPageIndex
-        long rootPageIndex = NumberUtils.parseLong(s, pos, Consts.longSize);
-        this.root = new BPlusTreeNode(treeFile, rootPageIndex, this.config);
         this.cachedNodes = new HashMap<Long, BPlusTreeNode>();
-        this.cachedNodes.put(rootPageIndex, this.root);
-        pos += Consts.longSize;
-
-        // firstLeaf
-        this.firstLeaf = NumberUtils.parseLong(s, pos, Consts.longSize);
-        pos += Consts.longSize;
-        // lastLeaf
-        this.lastLeaf = NumberUtils.parseLong(s, pos, Consts.longSize);
-
-        this.cachedData = new HashMap<Long, LinkedList>();
+        this.cachedNodes.put(this.root.getPageIndex(), this.root);
+//        this.cachedData = new HashMap<Long, LinkedList>();
     }
 
-    public void toFile()
+    private void toFile()
             throws IOException, utilsException, BPlusException{
         byte[] block = new byte[this.config.getPageSize()];
-        byte[] tmp;
         Arrays.fill(block, (byte)0);
+        BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(this.headerFile));
 
         int pos = 0;
         int n = this.config.getColumnSize();
         // pageSize
-        tmp = Integer.toString(this.config.getPageSize()).getBytes();
-        System.arraycopy(tmp, 0, block, pos, tmp.length);
-        pos += Consts.intSize;
+        NumberUtils.writeInt(output, this.config.getPageSize());
+
         // columnCnt
-        tmp = Integer.toString(n).getBytes();
-        System.arraycopy(tmp, 0, block, pos, tmp.length);
-        pos += Consts.intSize;
+        NumberUtils.writeInt(output, n);
 
-        String[] columnNames = this.config.getColumnName();
-        // [columnNames]
-        for (int i = 0; i < n; ++i) {
-            tmp = columnNames[i].getBytes();
-            System.arraycopy(tmp, 0, block, pos, tmp.length);
-            pos += Consts.columnNameSize;
-        }
-
-        String[] columTypes = this.config.getColumnType();
         // [columnTypes]
         for (int i = 0; i < n; ++i) {
-            tmp = columTypes[i].getBytes();
-            System.arraycopy(tmp, 0, block, pos, tmp.length);
-            pos += Consts.columnTypeSize;
+            NumberUtils.writeString(output, this.config.getColumnType(i), Consts.columnTypeSize);
         }
 
         // rootPageIndex
-        tmp = Long.toString(this.root.getPageIndex()).getBytes();
-        System.arraycopy(tmp, 0, block, pos, tmp.length);
-        pos += Consts.longSize;
+        NumberUtils.writeLong(output, this.root.getPageIndex());
 
         // fistLeaf
-        tmp = Long.toString(this.firstLeaf).getBytes();
-        System.arraycopy(tmp, 0, block, pos, tmp.length);
-        pos += Consts.longSize;
+        NumberUtils.writeLong(output, this.firstLeaf);
 
         // lastLeaf
-        tmp = Long.toString(this.lastLeaf).getBytes();
-        System.arraycopy(tmp, 0, block, pos, tmp.length);
+        NumberUtils.writeLong(output, this.lastLeaf);
+
+        // blankPageCnt
+        NumberUtils.writeInt(output, this.pageIndexPool.size());
+        for (long pageIndex: this.pageIndexPool) {
+            NumberUtils.writeLong(output, pageIndex);
+        }
+        output.close();
 
         treeFile.seek(0);
-        treeFile.write(block, 0, this.config.getPageSize());
-
+//        treeFile.write(block, 0, this.config.getPageSize());
         // node write back
         this.root.toFile(treeFile, this.root.getPageIndex() * config.getPageSize());
         for (Map.Entry<Long, BPlusTreeNode> entry: this.cachedNodes.entrySet())
@@ -188,53 +126,93 @@ public class BPlusTree {
             entry.getValue().toFile(treeFile, entry.getKey() * config.getPageSize());
         }
         // data write back
-        for (Map.Entry<Long, LinkedList> entry: this.cachedData.entrySet()) {
-            write2Datafile(entry.getValue(), entry.getKey());
+//        for (Map.Entry<Long, LinkedList> entry: this.cachedData.entrySet()) {
+//            write2Datafile(entry.getValue(), entry.getKey());
+//        }
+    }
+
+    private void fromHeaderFile(String filename)
+            throws IOException, BPlusException, utilsException {
+
+        BufferedInputStream input = new BufferedInputStream(new FileInputStream(this.headerFile));
+
+        // pageSize
+        int pageSize = NumberUtils.readInt(input);
+
+        // columnCnt
+        int columnCnt = NumberUtils.readInt(input);
+        if (columnCnt < 1) {
+            throw new BPlusException("Too few columns!");
         }
+
+        LinkedList<String> columnTypes = new LinkedList<String>();
+
+        // [columnTypes]
+        for (int i = 0; i < columnCnt; ++i) {
+            String type = NumberUtils.readString(input, Consts.columnTypeSize);
+            columnTypes.add(type);
+        }
+        this.config = new BPlusTreeConfiguration(pageSize, filename,
+                                                columnTypes.get(0),
+                                                columnTypes);
+
+//        this.maxRowIndex = dataFile.length()/this.config.getRowSize() - 1;
+        this.maxPageIndex = treeFile.length()/this.config.getPageSize() - 1;
+
+        // rootPageIndex
+        long rootPageIndex = NumberUtils.readLong(input);
+        this.root = new BPlusTreeNode(treeFile, rootPageIndex, this.config);
+
+        // firstLeaf
+        this.firstLeaf = NumberUtils.readLong(input);
+        // lastLeaf
+        this.lastLeaf = NumberUtils.readLong(input);
+
+        // blankPageCnt
+        int blankPageCnt = NumberUtils.readInt(input);
+        this.pageIndexPool = new ArrayList<Long>();
+        // [blankPage]
+        for (int i = 0; i < blankPageCnt; ++i) {
+            long pageIndex = NumberUtils.readLong(input);
+            this.pageIndexPool.add(pageIndex);
+        }
+        input.close();
+
+//        this.rowIndexPool = new ArrayList<Long>();
     }
 
     public int getTreeDegree() {return config.getTreeDegree();}
 
     public String getKeyType() {return config.getKeyType();}
 
-    public void update(LinkedList values)
+    public void update(Object oldKey, Object newKey, long rowNum)
             throws BPlusException, IOException, utilsException {
-        if (values.size() != config.getColumnSize()) {
-            throw new BPlusException("Too many/few values");
-        }
-
-        Object key = values.getFirst();
-        this.update(this.root, key, values);
+        this.delete(oldKey);
+        this.insert(newKey, rowNum);
     }
 
-    private void update(BPlusTreeNode p, Object key, LinkedList values)
-            throws BPlusException, IOException, utilsException{
-        if (p.isLeaf()) {
-            long rowNum = p.getPtrByExactKey(key);
-            if (rowNum != -1) {
-                getData(rowNum);
-                cachedData.put(rowNum, values);
-            }
-        } else
-        {
-            long to = p.getPtrByKey(key);
-            BPlusTreeNode q = getNode(to);
-            update(q, key, values);
-        }
-    }
+//    private void update(BPlusTreeNode p, Object key, LinkedList values)
+//            throws BPlusException, IOException, utilsException{
+//        if (p.isLeaf()) {
+//            long rowNum = p.getPtrByExactKey(key);
+//            if (rowNum != -1) {
+//                getData(rowNum);
+//                cachedData.put(rowNum, values);
+//            } else
+//                throw new BPlusException("Can't find primary key '" + key.toString() + "'!");
+//        } else
+//        {
+//            long to = p.getPtrByKey(key);
+//            BPlusTreeNode q = getNode(to);
+//            update(q, key, values);
+//        }
+//    }
 
-    public void insert(LinkedList values)
+    public void insert(Object key, long rowNum)
             throws BPlusException, IOException, utilsException {
-//        System.out.println(values.size());
-//        System.out.println(config.getColumnType().length);
-        if (values.size() != config.getColumnSize()) {
-            throw new BPlusException("Too many/few values");
-        }
+//        long rowNum = getNewRowIndex();
+//        updateCachedData(rowNum, values);
 
-        long rowNum = getNewRowIndex();
-        updateCachedData(rowNum, values);
-
-        Object key = values.getFirst();
         if (root.isEmpty()) {
             root.addKeyAndPtr(key, rowNum);
             root.toFile(treeFile, config.getPageSize() * root.getPageIndex());
@@ -253,7 +231,10 @@ public class BPlusTree {
     private void insert(BPlusTreeNode p, Object key, long rowNum)
             throws BPlusException, IOException, utilsException {
         if (p.isLeaf()) {
-            p.addKeyAndPtr(key, rowNum);
+            if (p.getPtrByExactKey(key) == -1) {
+                p.addKeyAndPtr(key, rowNum);
+            } else
+                throw new BPlusException("Duplicate primary key '" + key.toString() + "' found!");
         } else
         {
             long to = p.getPtrByKey(key);
@@ -269,23 +250,106 @@ public class BPlusTree {
         }
     }
 
-    public LinkedList<LinkedList> searchAll()
+    public LinkedList<Long> searchAll()
         throws Exception{
-        LinkedList<LinkedList> ret = new LinkedList<LinkedList>();
+        LinkedList<Long> ret = new LinkedList<Long>();
         long idx = this.firstLeaf;
-        while (idx > 0) {
+        while (idx >= 0) {
             BPlusTreeNode p = getNode(idx);
             int n = p.getCurrentSize();
             for (int i = 0; i < n; ++i)
-                ret.add(getData(p.getPtr(i)));
+                ret.add(p.getPtr(i));
             idx = p.getNextPage();
         }
 
         return ret;
     }
 
-    public void search() {
+    public LinkedList<Long> search(Object low, boolean eql, Object up, boolean eqr)
+            throws BPlusException, IOException, utilsException {
+        if (eql) {
+            if (eqr) {
+                return searchRange(this.root, low, 0, up, 0);
+            } else
+            {
+                return searchRange(this.root, low, 0, up, -1);
+            }
+        } else
+        {
+            if (eqr) {
+                return searchRange(this.root, low, 1, up, 0);
+            } else
+            {
+                return searchRange(this.root, low, 1, up, -1);
+            }
+        }
+    }
 
+    public LinkedList<Long> search(Object key, String type)
+            throws BPlusException, IOException, utilsException {
+        switch (type) {
+            case "EQ":  // key ==
+                return search(this.root, key);
+            case "LT": // < key
+                return searchRange(this.root, null, 0, key, -1);
+            case "GT": // > key
+                return searchRange(this.root, key, 1, null, 0);
+            case "NLT": // >= key
+                return searchRange(this.root, key, 0, null, 0);
+            case "NGT": // <= key
+                return searchRange(this.root, null, 0, key, 0);
+        }
+        throw new BPlusException("Unknown search type '" + type + "'");
+    }
+
+    public LinkedList<Long> search(Object key)
+            throws BPlusException, IOException, utilsException {
+        return search(key, "EQ");
+    }
+
+    private LinkedList<Long> search(BPlusTreeNode p, Object key)
+            throws BPlusException, IOException, utilsException {
+        if (p.isLeaf()) {
+            LinkedList<Long> ret = new LinkedList<Long>();
+            long rowNum = p.getPtrByExactKey(key);
+            if (rowNum != -1) {
+                ret.add(rowNum);
+            }
+            return ret;
+        } else
+        {
+            long to = p.getPtrByKey(key);
+            BPlusTreeNode q = getNode(to);
+            return search(q, key);
+        }
+    }
+
+    private LinkedList<Long> searchRange(BPlusTreeNode p, Object low, int k1, Object up, int k2)
+            throws BPlusException, IOException, utilsException {
+        LinkedList<Long> ret = new LinkedList<Long>();
+        int n = p.getCurrentSize();
+        if (p.isLeaf()) {
+            for (int i = 0; i < n; ++i)
+                if (this.inRange(p.getKey(i), low, k1, up, k2)) {
+                    ret.add(p.getPtr(i));
+                }
+            return ret;
+        } else
+        {
+            for (int i = 0; i < n; ++i) {
+                // key(i) > up
+                if (BPlusTreeNode.compareKey(p.getKey(i), up, this.config.getKeyType()) > k2) {
+                    continue;
+                }
+                // key(i+1) < low
+                if (i < n-1 && BPlusTreeNode.compareKey(p.getKey(i+1), low, this.config.getKeyType()) < k1) {
+                    continue;
+                }
+                BPlusTreeNode q = getNode(p.getPtr(i));
+                ret.addAll(searchRange(q, low, k1, up, k2));
+            }
+            return ret;
+        }
     }
 
     public void delete(Object key)
@@ -298,7 +362,7 @@ public class BPlusTree {
         if (p.isLeaf()) {
             long rowNum = p.getPtrByExactKey(key);
             if (rowNum != -1) {
-                removeData(rowNum);
+//                removeData(rowNum);
                 p.removeKeyAndPtr(key);
             }
         } else
@@ -316,30 +380,26 @@ public class BPlusTree {
 
     public void printTree()
         throws Exception {
-        LinkedList<LinkedList> res = this.searchAll();
-        for (LinkedList row: res) {
-            for (Object value: row) {
-                System.out.print(value);
-                System.out.printf(" ");
-            }
-            System.out.println();
+        LinkedList<Long> res = this.searchAll();
+        for (Long row: res) {
+            System.out.println(row);
         }
     }
 
-    public void write2Datafile(LinkedList values, long rowNum)
-        throws IOException, BPlusException {
-
-        byte[] rowData = new byte[config.getRowSize()];
-        String[] types = config.getColumnType();
-        Arrays.fill(rowData, (byte)0);
-        int pos = 0;
-        for (int i = 0; i < types.length; ++i) {
-            pos += NumberUtils.toBytes(rowData, pos, values.get(i), types[i]);
-        }
-
-        dataFile.seek(rowNum*config.getRowSize());
-        dataFile.write(rowData, 0, config.getRowSize());
-    }
+//    public void write2Datafile(LinkedList values, long rowNum)
+//        throws IOException, utilsException {
+//
+//        byte[] rowData = new byte[config.getRowSize()];
+//        Arrays.fill(rowData, (byte)0);
+//        int pos = 0;
+//        int n = this.config.getColumnSize();
+//        for (int i = 0; i < n; ++i) {
+//            pos += NumberUtils.toBytes(rowData, pos, values.get(i), this.config.getColumnType(i));
+//        }
+//
+//        dataFile.seek(rowNum*config.getRowSize());
+//        dataFile.write(rowData, 0, config.getRowSize());
+//    }
 
     private void updateNodes(BPlusTreeNode p, long pageIndex) {
         this.cachedNodes.put(pageIndex, p);
@@ -489,16 +549,16 @@ public class BPlusTree {
         this.cachedNodes.remove(pageIndex);
     }
 
-    private void removeData(long rowNum)
-        throws IOException {
-        int rowSize = config.getRowSize();
-        byte[] bytes = new byte[rowSize];
-        Arrays.fill(bytes, (byte)0);
-        this.dataFile.seek(rowNum * rowSize);
-        this.dataFile.write(bytes, 0, rowSize);
-
-        this.cachedData.remove(rowNum);
-    }
+//    private void removeData(long rowNum)
+//        throws IOException {
+//        int rowSize = config.getRowSize();
+//        byte[] bytes = new byte[rowSize];
+//        Arrays.fill(bytes, (byte)0);
+//        this.dataFile.seek(rowNum * rowSize);
+//        this.dataFile.write(bytes, 0, rowSize);
+//
+//        this.cachedData.remove(rowNum);
+//    }
 
     private long getNewPageIndex() {
         if (pageIndexPool.isEmpty()) {
@@ -510,15 +570,15 @@ public class BPlusTree {
         }
     }
 
-    private long getNewRowIndex() {
-        if (rowIndexPool.isEmpty()) {
-            maxRowIndex += 1;
-            return maxRowIndex;
-        } else
-        {
-            return rowIndexPool.remove(0);
-        }
-    }
+//    private long getNewRowIndex() {
+//        if (rowIndexPool.isEmpty()) {
+//            maxRowIndex += 1;
+//            return maxRowIndex;
+//        } else
+//        {
+//            return rowIndexPool.remove(0);
+//        }
+//    }
 
     public BPlusTreeConfiguration getConfig() {
         return config;
@@ -526,7 +586,7 @@ public class BPlusTree {
 
     private BPlusTreeNode getNode(long pageIndex)
             throws BPlusException, IOException, utilsException{
-        if (pageIndex <= 0) {
+        if (pageIndex < 0) {
             throw new BPlusException("Underflow pageIndex!");
         } else
         {
@@ -545,47 +605,51 @@ public class BPlusTree {
         }
     }
 
-    private LinkedList getData(long rowNum)
-        throws BPlusException, IOException, utilsException{
-        if (rowNum < 0) {
-            throw new BPlusException("Underflow row number!");
-        }
-        if (cachedData.containsKey(rowNum)) {
-            return cachedData.get(rowNum);
-        }
-        LinkedList ret = new LinkedList();
-        int rowSize = config.getRowSize();
-        long offset = rowSize * rowNum;
-        byte[] row = new byte[rowSize];
+//    private LinkedList getData(long rowNum)
+//        throws BPlusException, IOException, utilsException{
+//        if (rowNum < 0) {
+//            throw new BPlusException("Underflow row number!");
+//        }
+//        if (cachedData.containsKey(rowNum)) {
+//            return cachedData.get(rowNum);
+//        }
+//        LinkedList ret = new LinkedList();
+//        int rowSize = config.getRowSize();
+//        long offset = rowSize * rowNum;
+//        byte[] row = new byte[rowSize];
+//
+//        dataFile.seek(offset);
+//        dataFile.read(row, 0, rowSize);
+//
+//        String s = new String(row);
+//
+//        int n = config.getColumnSize();
+//        int pos = 0;
+//        for (int i = 0; i < n; ++i) {
+//            pos += NumberUtils.fromBytes(ret, s, pos, this.config.getColumnType(i), true);
+//        }
+//        updateCachedData(rowNum, ret);
+//
+//        return ret;
+//    }
 
-        dataFile.seek(offset);
-        dataFile.read(row, 0, rowSize);
+//    private void updateCachedData(long rowNum, LinkedList value)
+//        throws IOException, utilsException {
+//        if (!this.cachedData.containsKey(rowNum)) {
+//            // remove some data cache
+//            while (config.getRowSize() * this.cachedData.size() > Consts.memoryDataLimitation) {
+//                for (Map.Entry<Long, LinkedList> entry : this.cachedData.entrySet()) {
+//                    write2Datafile(entry.getValue(), entry.getKey());
+//                    this.cachedData.remove(entry.getKey());
+//                    break;
+//                }
+//            }
+//        }
+//        this.cachedData.put(rowNum, value);
+//    }
 
-        String s = new String(row);
-
-        int n = config.getColumnSize();
-        String[] types = config.getColumnType();
-        int pos = 0;
-        for (int i = 0; i < n; ++i) {
-            pos += NumberUtils.fromBytes(ret, s, pos, types[i], true);
-        }
-        updateCachedData(rowNum, ret);
-
-        return ret;
-    }
-
-    private void updateCachedData(long rowNum, LinkedList value)
-        throws IOException, BPlusException{
-        if (!this.cachedData.containsKey(rowNum)) {
-            // remove some data cache
-            while (config.getRowSize() * this.cachedData.size() > Consts.memoryDataLimitation) {
-                for (Map.Entry<Long, LinkedList> entry : this.cachedData.entrySet()) {
-                    write2Datafile(entry.getValue(), entry.getKey());
-                    this.cachedNodes.remove(entry.getKey());
-                    break;
-                }
-            }
-        }
-        this.cachedData.put(rowNum, value);
+    private boolean inRange(Object value, Object low, int k1, Object up, int k2) {
+        return (BPlusTreeNode.compareKey(value, low, config.getKeyType()) >= k1 &&
+            BPlusTreeNode.compareKey(value, up, config.getKeyType()) <= k2);
     }
 }

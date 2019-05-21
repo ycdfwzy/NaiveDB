@@ -108,7 +108,7 @@ public class BPlusTreeNode {
     }
 
     public void toFile(RandomAccessFile output, long offset)
-        throws IOException, BPlusException {
+        throws IOException, utilsException {
         int pageSize = conf.getPageSize();
         byte[] pageB = new byte[pageSize];
         byte[] tmp;
@@ -327,10 +327,15 @@ public class BPlusTreeNode {
             throw new BPlusException("Cannot convert Internal Node to Leaf");
         }
         this.nodeType = nodeType;
+        if (!this.isLeaf()) {
+            this.nextPage = this.prevPage = -1;
+        }
     }
 
     public static int compareKey(Object a, Object b, String keyType) {
         int compare = 0;
+        if (a == null || b == null)
+            return 0;
         if (a == b)
             return 0;
         switch (keyType) {
@@ -346,10 +351,8 @@ public class BPlusTreeNode {
             case "Double":
                 compare = (double) a > (double) b ? 1 : -1;
                 break;
-            case "String":
+            default:    // String***
                 compare = a.toString().compareTo(b.toString());
-                break;
-            default:
                 break;
         }
         return compare;
