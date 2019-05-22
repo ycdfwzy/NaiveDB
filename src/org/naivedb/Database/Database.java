@@ -34,6 +34,14 @@ public class Database {
         return new Table(table_name, this.dbPath);
     }
 
+    public ArrayList<String> getTables() throws IOException, NDException {
+        ArrayList<String> res = new ArrayList<String>();
+        File database = new File(this.dbPath);
+        if (!database.exists() || !database.isDirectory()) throw new NDException("internal error: database not exists yet.");
+        // database.list()
+        return res;
+    }
+
     public Table createTable(String table_name, ArrayList<Pair<String, Type>> cols) 
         throws IOException, NDException{
         return new Table(table_name, this.dbPath, cols);

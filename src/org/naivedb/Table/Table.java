@@ -63,7 +63,8 @@ public class Table {
             this.colNames.add(pair.getKey());
             names.add(pair.getKey());
             this.colTypes.add(pair.getValue());
-            this.colNotNull.add(false);
+            // default: every col is not null
+            this.colNotNull.add(true);
         }
         if (cols.size() != names.size()) throw new NDException("input names have duplicate.");
 
@@ -145,6 +146,10 @@ public class Table {
      */
     public void setNotNull(ArrayList<Boolean> not_null) throws NDException{
         // interface not decided
+        if (not_null.size() != this.colNotNull.size())
+            throw new NDException("not null list size not right");
+        for (int i = 0; i < this.colNotNull.size(); i++)
+            this.colNotNull.set(i, not_null.get(i));
     }
 
     public ArrayList<String> getColNames() { return this.colNames; }
@@ -155,8 +160,9 @@ public class Table {
 
     /**
      * meta info format
-     *     columnCnt|[columnTypes]|[columnNames]
+     *     columnCnt|[columnTypes]|[columnNames]|[columnNotNull]
      * currently no way to alter table meta, so only write once
+     * columnNotNull use 1 as true and 0 as false
      */
     private void loadMeta(File meta) throws IOException, NDException{
         BufferedInputStream input = new BufferedInputStream(new FileInputStream(meta));
@@ -172,6 +178,10 @@ public class Table {
         // col names
         for (int i = 0; i < col_cnt; i++)
             this.colNames.add(StreamUtils.readString(input, Consts.columnNameSize));
+
+        // col not null
+        for (int i = 0; i < col_cnt; i++)
+            this.colNotNull.add(StreamUtils.readInt(input) == 1);
         
         input.close();
         logger.info("table " + this.tableName + " meta info load successful.");
@@ -190,6 +200,12 @@ public class Table {
         // col names
         for (String name: this.colNames)
             StreamUtils.writeString(output, name, Consts.columnNameSize);
+
+        // col not null
+        for (Boolean not_null: this.colNotNull) {
+            StreamUtils.writeInt(output, not_null ? 1 : 0);
+        }
+
         output.close();
         logger.info("table " + this.tableName + " meta info write successful.");
     }
