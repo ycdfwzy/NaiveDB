@@ -147,6 +147,10 @@ public class Table {
         // interface not decided
     }
 
+    public ArrayList<String> getColNames() { return this.colNames; }
+    public ArrayList<Type> getColTypes() { return this.colTypes; }
+    public String getFileName() { return this.fileName; }
+
 // ----------------------------- Private methods ---------------------------------------
 
     /**
@@ -163,6 +167,7 @@ public class Table {
         // col types
         for (int i = 0; i < col_cnt; i++)
             this.colTypes.add(new Type(StreamUtils.readString(input, Consts.columnTypeSize)));
+            
 
         // col names
         for (int i = 0; i < col_cnt; i++)

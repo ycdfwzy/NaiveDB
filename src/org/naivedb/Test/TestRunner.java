@@ -36,6 +36,7 @@ public class TestRunner {
 
     public static void main(String[] args) {
         addResult(JUnitCore.runClasses(DatabaseTest.class));
+        addResult(JUnitCore.runClasses(TableTest.class));
 
         showResult();
     }

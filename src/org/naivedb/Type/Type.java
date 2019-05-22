@@ -30,12 +30,16 @@ public class Type {
         switch (type_name) {
             case "Int":
                 this.type = SQL_INT;
+                break;
             case "Long":
                 this.type = SQL_LONG;
+                break;
             case "Float":
                 this.type = SQL_FLOAT;
+                break;
             case "Double":
                 this.type = SQL_DOUBLE;
+                break;
             default:
                 if (type_name.startsWith("String") && 
                     NumberUtils.isPureInteger(type_name.substring(6))){
@@ -43,6 +47,7 @@ public class Type {
                     this.strLen = NumberUtils.parseInt(type_name.substring(6), 0, type_name.substring(6).length());
                 }
                 else throw new NDException("input type name error");
+                break;
         }
     }
 

@@ -30,6 +30,7 @@ public class MyLogger {
         CustomFormatter formatter = new CustomFormatter();
         ConsoleHandler handler = new ConsoleHandler();
         handler.setFormatter(formatter);
+        handler.setLevel(Level.WARNING);
 
         logger.addHandler(handler);
         return logger;

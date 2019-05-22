@@ -128,4 +128,12 @@ public class DatabaseManager {
         return baseDir + "/" + db_name;
     }
 
+    public static String getBasePath() {
+        return baseDir;
+    }
+
+    public static String getMetaPath() {
+        return metaPath;
+    }
+
 }
