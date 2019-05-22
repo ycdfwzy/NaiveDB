@@ -14,11 +14,19 @@ import org.naivedb.utils.MyLogger;
 import org.naivedb.utils.NDException;
 
 public class DatabaseManager {
+    /*
+     * this class provides a manager for all databases
+     * usage: initial() at first
+     *        close() at end
+     *        create, drop and get is easy to understand
+     */
 
     private static String baseDir = "data";
     private static String metaPath = "data/db.meta";
     private static HashSet<String> databases = null;
     private static Logger logger = MyLogger.getLogger("database");
+
+
 
     /*
         initiate database system, must call once on session begin, read or create database metainfo

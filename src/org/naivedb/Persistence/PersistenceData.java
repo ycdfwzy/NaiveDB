@@ -18,7 +18,7 @@ public class PersistenceData {
     private ArrayList<Long> rowIndexPool;
     private RandomAccessFile dataFile;
     private int rowSize;
-    private LinkedList<Type> types;
+    private ArrayList<Type> types;
 
     private static Logger logger = MyLogger.getLogger("database");
 
@@ -26,12 +26,12 @@ public class PersistenceData {
         create a new persistence data:
             requires upper layer to handle the file existence
     */
-    public PersistenceData(String filename, LinkedList<Type> types)
-            throws IOException, Exception {
+    public PersistenceData(String filename, ArrayList<Type> types)
+            throws IOException, NDException {
         if (types.size() == 0) throw new NDException("input type length is zero");
         this.dataFile = new RandomAccessFile(filename+".data", "rw");
         this.cachedData = new HashMap<Long, LinkedList>();
-        this.types = new LinkedList<>(types);
+        this.types = new ArrayList<>(types);
         this.rowSize = 0;
 
         for (Type type: types)

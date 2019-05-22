@@ -2,6 +2,7 @@ package org.naivedb.Type;
 
 import org.naivedb.utils.Consts;
 import org.naivedb.utils.NDException;
+import org.naivedb.utils.NumberUtils;
 
 public class Type {
     public static final int SQL_INT = 1;
@@ -20,22 +21,42 @@ public class Type {
     }
 
     public Type(int t, int len) throws NDException {
-        if (t != 5 || len < 0 || len >= 256) throw new NDException("wrong input type");
+        if (t != 5 || len < 0 || len >= Consts.stringSize) throw new NDException("wrong input type");
         this.type = t;
         this.strLen = len;
     }
 
+    public Type(String type_name) throws NDException {
+        switch (type_name) {
+            case "Int":
+                this.type = SQL_INT;
+            case "Long":
+                this.type = SQL_LONG;
+            case "Float":
+                this.type = SQL_FLOAT;
+            case "Double":
+                this.type = SQL_DOUBLE;
+            default:
+                if (type_name.startsWith("String") && 
+                    NumberUtils.isPureInteger(type_name.substring(6))){
+                    this.type = SQL_STRING;
+                    this.strLen = NumberUtils.parseInt(type_name.substring(6), 0, type_name.substring(6).length());
+                }
+                else throw new NDException("input type name error");
+        }
+    }
+
     public String typeName() throws NDException {
         switch (this.type) {
-            case 1:
+            case SQL_INT:
                 return "Int";
-            case 2:
+            case SQL_LONG:
                 return "Long";
-            case 3:
+            case SQL_FLOAT:
                 return "Float";
-            case 4:
+            case SQL_DOUBLE:
                 return "Double";
-            case 5:
+            case SQL_STRING:
                 return "String" + Integer.toString(this.strLen);
             default:
                 throw new NDException("Wrong type met");
