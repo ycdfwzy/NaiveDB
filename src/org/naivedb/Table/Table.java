@@ -136,6 +136,28 @@ public class Table {
             this.colNotNull.set(i, not_null.get(i));
     }
 
+    /**
+     * insert a row
+     * param: a linked list of given values
+     * return: the new row index
+     */
+    public long insert(LinkedList values) throws IOException, NDException {
+        if (values.size() != this.colTypes.size()) throw new NDException("row value number wrong");
+        
+        // not null and type check
+        int i = 0;
+        for (Object val: values) {
+            // val is null and col can be null
+            if (val == null && !this.colNotNull.get(i)) i++;
+            // otherwise check
+            else if (this.colTypes.get(i).check(val)) i++;
+            else throw new NDException("row values type check error!");
+        }
+
+        // type check pass
+        return this.persistence.add(values);
+    }
+
     public ArrayList<String> getColNames() { return this.colNames; }
     public ArrayList<Type> getColTypes() { return this.colTypes; }
     public String getFileName() { return this.fileName; }

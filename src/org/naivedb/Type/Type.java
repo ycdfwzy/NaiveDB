@@ -70,16 +70,37 @@ public class Type {
 
     public int typeSize() throws NDException {
         switch (this.type) {
-            case 1:
+            case SQL_INT:
                 return Consts.intSize;
-            case 2:
+            case SQL_LONG:
                 return Consts.longSize;
-            case 3:
+            case SQL_FLOAT:
                 return Consts.floatSize;
-            case 4:
+            case SQL_DOUBLE:
                 return Consts.doubleSize;
-            case 5:
+            case SQL_STRING:
                 return this.strLen + 1;
+            default:
+                throw new NDException("Wrong type met");
+        }
+    }
+
+    public boolean check(Object v) throws NDException{
+        switch (this.type) {
+            case SQL_INT:
+                return v instanceof Integer;
+            case SQL_LONG:
+                return v instanceof Long;
+            case SQL_FLOAT:
+                return v instanceof Float;
+            case SQL_DOUBLE:
+                return v instanceof Double;
+            case SQL_STRING:
+                if (v instanceof String){
+                    String s = (String)v;
+                    return s.length() <= this.strLen;
+                }
+                else return false;
             default:
                 throw new NDException("Wrong type met");
         }
