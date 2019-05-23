@@ -35,6 +35,8 @@ public class TableTest {
 
     @After
     public void after() throws IOException, NDException {
+        Database db = DatabaseManager.get("new_db");
+        db.close();
         DatabaseManager.close();
     }
 

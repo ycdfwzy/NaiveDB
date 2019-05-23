@@ -22,10 +22,9 @@ public class DatabaseManager {
      */
 
     private static String baseDir = "data";
-    private static String metaPath = "data/db.meta";
+    private static String metaName = "db.meta";
     private static HashSet<String> databases = null;
     private static Logger logger = MyLogger.getLogger("database");
-
 
 
     /*
@@ -33,69 +32,48 @@ public class DatabaseManager {
         database meta format: dbCnt|[dbNames]
      */
     public static void initial() throws IOException, NDException {
+        databases = new HashSet<String>();
 
         // check base Dir
         File dbDir = new File(baseDir);
-        if (dbDir.exists() && dbDir.isFile()) throw new NDException("please remove file: \'data\'.");
-        if (!dbDir.exists()) {
+        File meta = new File(baseDir + "/" + metaName);
+        if (dbDir.exists() && dbDir.isDirectory() && meta.exists() && meta.isFile()) {
+            // load dbs
+            loadMeta(meta);
+        }
+        else if (!dbDir.exists() && !meta.exists()) {
+            // frist time: create
             dbDir.mkdir();
             logger.info("data directory created");
-        }
-        
-        // check meta file
-        File metaFile = new File(metaPath);
-        if (!metaFile.exists()) {
-            metaFile.createNewFile();
-            databases = new HashSet<String>();
+            meta.createNewFile();
             logger.info("meta info file created");
         }
-        else {
-            // read info
-            BufferedInputStream input = new BufferedInputStream(new FileInputStream(metaFile));
-
-            // cnt
-            int db_cnt = StreamUtils.readInt(input);
-            databases = new HashSet<String>();
-            for (int i = 0; i < db_cnt; i++) {
-                String name = StreamUtils.readString(input, Consts.databaseNameSize);
-                databases.add(name);
-            }
-            input.close();
-            logger.info("meta info loaded");
-        }
+        else throw new NDException("database base dir or meta already exists");
     }
 
     /*
      *  close database manager. write metainfo back.
      */
     public static void close() throws IOException, NDException {
-        // write meta info to file
-        File metaFile = new File(metaPath);
-        BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(metaFile));
-
-        // db cnt
-        StreamUtils.writeInt(output, databases.size());
-
-        // [db names]
-        for (String name: databases) {
-            StreamUtils.writeString(output, name, Consts.databaseNameSize);
-        }
-        output.close();
-        logger.info("database metainfo write successful.");
+        File meta = new File(baseDir + "/" + metaName);
+        writeMeta(meta);
     }
 
     // create a database
-    public static Database create(String db_name) throws NDException {
+    public static Database create(String db_name) throws IOException, NDException {
+        // check name and duplicate
         if (db_name.length() >= Consts.databaseNameSize)
             throw new NDException("database name too long.");
         if (databases.contains(db_name)) throw new NDException("database already exists!");
         
-        // create dir for this db
-        File db = new File(getDatabasePath(db_name));
-        if (db.exists()) throw new NDException("database dir exists!");
-        db.mkdir();
-
+        Database db = new Database(db_name);
         databases.add(db_name);
+        return db;
+    }
+
+    // get a database
+    public static Database get(String db_name) throws IOException, NDException {
+        if (!databases.contains(db_name)) throw new NDException("database not exist.");
         return new Database(db_name);
     }
 
@@ -108,12 +86,6 @@ public class DatabaseManager {
         FileUtils.deleteAll(db);
 
         databases.remove(db_name);
-    }
-
-    // get a database
-    public static Database get(String db_name) throws NDException {
-        if (!databases.contains(db_name)) throw new NDException("database not exist.");
-        return new Database(db_name);
     }
 
     public static ArrayList<String> getDatabases() {
@@ -133,7 +105,37 @@ public class DatabaseManager {
     }
 
     public static String getMetaPath() {
-        return metaPath;
+        return baseDir + "/" + metaName;
+    }
+
+// --------------------------------- private method -----------------------------------
+    private static void loadMeta(File meta) throws IOException, NDException{
+        // read info
+        BufferedInputStream input = new BufferedInputStream(new FileInputStream(meta));
+
+        // cnt
+        int db_cnt = StreamUtils.readInt(input);
+        for (int i = 0; i < db_cnt; i++) {
+            String name = StreamUtils.readString(input, Consts.databaseNameSize);
+            databases.add(name);
+        }
+        input.close();
+        logger.info("meta info loaded");
+    }
+
+    private static void writeMeta(File meta) throws IOException, NDException{
+        // write meta info to file
+        BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(meta));
+
+        // db cnt
+        StreamUtils.writeInt(output, databases.size());
+
+        // [db names]
+        for (String name: databases) {
+            StreamUtils.writeString(output, name, Consts.databaseNameSize);
+        }
+        output.close();
+        logger.info("database metainfo write successful.");
     }
 
 }

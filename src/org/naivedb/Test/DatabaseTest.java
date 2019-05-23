@@ -107,15 +107,15 @@ public class DatabaseTest {
 
     @Test
     public void test_get_db_succ() throws IOException, NDException {
-        DatabaseManager.create("new_db");
-        Database db = DatabaseManager.get("new_db");
+        Database db = DatabaseManager.create("new_db");
         Assert.assertEquals("new_db", db.getName());
+        db.close();
         DatabaseManager.close();
         
         DatabaseManager.initial();
-        DatabaseManager.get("new_db");
         Database db2 = DatabaseManager.get("new_db");
         Assert.assertEquals("new_db", db2.getName());
+        db2.close();
         DatabaseManager.close();
     }
 

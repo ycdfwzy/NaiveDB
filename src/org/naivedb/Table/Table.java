@@ -104,26 +104,10 @@ public class Table {
     }
 
     /**
-     * close a table, write data back to storage (not meta info)
+     * close a table, write data back to storage (not meta info currently)
      */
     public void close() {
         this.persistence.close();
-    }
-
-    /*
-     * drop a table (a static method)
-     * para: 1. table name
-     *       2. database dir
-     */
-    public static void drop(String table_name, String db_dir) 
-        throws IOException, NDException{
-        String file_name = db_dir + "/" + table_name;
-        File meta = new File(file_name + ".meta");
-        File data = new File(file_name + ".data");
-        if (!meta.exists() || !data.exists())
-            throw new NDException("database meta or data file not exist.");
-        if (meta.delete() && data.delete()) return;
-        else throw new NDException("delete meta or data file failed");
     }
 
     /**
