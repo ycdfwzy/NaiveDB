@@ -1,15 +1,15 @@
-package persistence;
+package org.naivedb.Persistence;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
-import sun.awt.image.ImageWatched;
-import utils.Consts;
-import utils.utilsException;
-import utils.NumberUtils;
+import org.naivedb.utils.Consts;
+import org.naivedb.utils.NDException;
+import org.naivedb.utils.NumberUtils;
+import org.naivedb.Type.Type;
+import org.naivedb.utils.MyLogger;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
-
+import java.util.logging.*;
 
 public class PersistenceData {
 
@@ -18,48 +18,55 @@ public class PersistenceData {
     private ArrayList<Long> rowIndexPool;
     private RandomAccessFile dataFile;
     private int rowSize;
-    private LinkedList<String> types;
+    private ArrayList<Type> types;
 
-    public PersistenceData(String filename, LinkedList<String> types)
-            throws IOException, utilsException {
+    private static Logger logger = MyLogger.getLogger("database");
+
+    /*
+        create a new persistence data:
+            requires upper layer to handle the file existence
+    */
+    public PersistenceData(String filename, ArrayList<Type> types)
+            throws IOException, NDException {
+        if (types.size() == 0) throw new NDException("input type length is zero");
         this.dataFile = new RandomAccessFile(filename+".data", "rw");
         this.cachedData = new HashMap<Long, LinkedList>();
-
-        this.types = new LinkedList<>(types);
+        this.types = new ArrayList<>(types);
         this.rowSize = 0;
-        for (String type: types)
-            this.rowSize += utils.Consts.Type2Size(type);
+
+        for (Type type: types)
+            this.rowSize += type.typeSize();
         this.rowIndexPool = new ArrayList<Long>();
-        this.maxRowIndex = this.dataFile.length()/this.rowSize;
+        this.maxRowIndex = this.dataFile.length() / this.rowSize;
     }
 
     public void close() {
         try {
             write();
-            dataFile.close();
+            this.dataFile.close();
         } catch (Exception e) {
-            System.err.println("Error happened while trying to write back to data file!");
+            logger.warning("Error happened while trying to write back to data file!");
         }
     }
 
     public long add(LinkedList value)
-            throws IOException, utilsException {
+            throws IOException, NDException {
         long newRowIndex = getNewRowIndex();
         updateCachedData(newRowIndex, value);
         return newRowIndex;
     }
 
     public void update(long rowNum, LinkedList value)
-            throws IOException, utilsException, PersistenceException {
+            throws IOException, NDException {
         LinkedList oldValue = get(rowNum);
         if (oldValue.getFirst() != value.getFirst()) {
-            throw new PersistenceException("The values in " + rowNum + " must have the same key with new values!");
+            throw new NDException("The values in " + rowNum + " must have the same key with new values!");
         }
         updateCachedData(rowNum, value);
     }
 
     public LinkedList get(long rowNum)
-            throws IOException, utilsException, PersistenceException {
+            throws IOException, NDException {
         if (cachedData.containsKey(rowNum)) {
             return cachedData.get(rowNum);
         }
@@ -67,9 +74,9 @@ public class PersistenceData {
     }
 
     private LinkedList getFromFile(long rowNum)
-            throws IOException, utilsException, PersistenceException {
+            throws IOException, NDException {
         if (rowNum < 0 || rowNum > this.maxRowIndex) {
-            throw new PersistenceException("Invalid row number!");
+            throw new NDException("Invalid row number!");
         }
 
         if (this.cachedData.containsKey(rowNum)) {
@@ -87,7 +94,7 @@ public class PersistenceData {
         int n = this.types.size();
         int pos = 0;
         for (int i = 0; i < n; ++i) {
-            pos += NumberUtils.fromBytes(ret, s, pos, types.get(i), true);
+            pos += NumberUtils.fromBytes(ret, s, pos, this.types.get(i).typeName(), true);
         }
         updateCachedData(rowNum, ret);
 
@@ -107,20 +114,20 @@ public class PersistenceData {
     }
 
     public void write()
-            throws IOException, utilsException {
+            throws IOException, NDException {
         for (Map.Entry<Long, LinkedList> entry: this.cachedData.entrySet()) {
             this.write(entry.getValue(), entry.getKey());
         }
     }
 
     private void write(LinkedList values, long rowNum)
-            throws IOException, utilsException {
+            throws IOException, NDException {
         byte[] rowData = new byte[this.rowSize];
         Arrays.fill(rowData, (byte)0);
         int pos = 0;
         int n = this.types.size();
         for (int i = 0; i < n; ++i) {
-            pos += NumberUtils.toBytes(rowData, pos, values.get(i), types.get(i));
+            pos += NumberUtils.toBytes(rowData, pos, values.get(i), this.types.get(i).typeName());
         }
 
         this.dataFile.seek(rowNum*this.rowSize);
@@ -128,7 +135,7 @@ public class PersistenceData {
     }
 
     private void updateCachedData(long rowNum, LinkedList value)
-            throws IOException, utilsException {
+            throws IOException, NDException {
         if (!this.cachedData.containsKey(rowNum)) {
             // remove some data cache
             while (this.rowSize * this.cachedData.size() > Consts.memoryDataLimitation) {

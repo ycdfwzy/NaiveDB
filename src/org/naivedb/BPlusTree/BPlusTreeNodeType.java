@@ -1,4 +1,4 @@
-package BPlusTree;
+package org.naivedb.BPlusTree;
 
 public enum BPlusTreeNodeType {
     ROOT_NODE,

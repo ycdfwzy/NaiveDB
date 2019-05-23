@@ -32,5 +32,14 @@ hs_err_pid*
 *.data
 *.header
 
+# data
+data/
+
 # output
-out/*
+out/
+
+# macOS
+**/.DS_Store
+
+# vscode
+.vscode/
