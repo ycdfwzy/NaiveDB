@@ -1,8 +1,8 @@
-package BPlusTree;
+package org.naivedb.BPlusTree;
 
 import java.util.LinkedList;
-import utils.Consts;
-import utils.utilsException;
+import org.naivedb.utils.Consts;
+import org.naivedb.utils.NDException;
 
 public class BPlusTreeConfiguration {
 
@@ -19,7 +19,7 @@ public class BPlusTreeConfiguration {
     public BPlusTreeConfiguration(String filename,
                                   String keyType,
                                   LinkedList<String> columnType)
-            throws BPlusException, utilsException {
+            throws NDException {
         this(Consts.defaultBlockSize, filename, keyType, columnType);
     }
 
@@ -27,7 +27,7 @@ public class BPlusTreeConfiguration {
                                   String filename,
                                   String keyType,
                                   LinkedList<String> columnType)
-            throws BPlusException, utilsException {
+            throws NDException {
         this.pageSize = pageSize;
         this.filename = filename;
         this.keyType = keyType;
@@ -35,11 +35,11 @@ public class BPlusTreeConfiguration {
         // header = nodeType|parent_ptr|next_page|prev_page
         this.treeDegree = (pageSize - Consts.nodeTypeSize - Consts.parentSize*3) / (keySize + Consts.pointSize);
         if (this.treeDegree < 3) {
-            throw new BPlusException("Too small page size: " + this.pageSize + "bytes");
+            throw new NDException("Too small page size: " + this.pageSize + "bytes");
         }
 
         if (columnType.isEmpty() || !keyType.equals(columnType.get(0))) {
-            throw new BPlusException("key-type is not equal to first column-type!");
+            throw new NDException("key-type is not equal to first column-type!");
         }
 
         this.columnType = columnType;

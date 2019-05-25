@@ -32,7 +32,13 @@ hs_err_pid*
 *.data
 *.header
 
-# output
-out/*
-src/.vscode/settings.json
-.DS_Store
+# data
+data/
+
+out/
+
+# macOS
+**/.DS_Store
+
+# vscode
+.vscode/
