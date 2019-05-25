@@ -6,6 +6,8 @@ import org.naivedb.utils.StreamUtils;
 import org.naivedb.utils.MyLogger;
 import org.naivedb.Type.Type;
 import org.naivedb.Persistence.PersistenceData;
+import org.naivedb.BPlusTree.BPlusTree;
+import org.naivedb.BPlusTree.BPlusTreeConfiguration;
 import java.io.*;
 import java.util.*;
 import javafx.util.Pair;
@@ -28,7 +30,7 @@ public class Table {
     private int primaryKey;
 
     private PersistenceData persistence;
-    // private BPlusTree index;
+    private BPlusTree index;
     private static Logger logger = MyLogger.getLogger("table");
 
 
