@@ -65,8 +65,8 @@ public class Table {
             this.colNames.add(pair.getKey());
             names.add(pair.getKey());
             this.colTypes.add(pair.getValue());
-            // default: every col is not null
-            this.colNotNull.add(true);
+            // default: every col can be null
+            this.colNotNull.add(false);
         }
         if (cols.size() != names.size()) throw new NDException("input names have duplicate.");
 
@@ -168,7 +168,7 @@ public class Table {
 
     /**
      * meta info format
-     *     columnCnt|[columnTypes]|[columnNames]|[columnNotNull]
+     *     columnCnt|[columnTypes]|[columnNames]|[columnNotNull]|primaryKey
      * currently no way to alter table meta, so only write once
      * columnNotNull use 1 as true and 0 as false
      */
@@ -190,6 +190,9 @@ public class Table {
         // col not null
         for (int i = 0; i < col_cnt; i++)
             this.colNotNull.add(StreamUtils.readInt(input) == 1);
+
+        // primary key
+        this.primaryKey = StreamUtils.readInt(input);
         
         input.close();
         logger.info("table " + this.tableName + " meta info load successful.");
@@ -213,6 +216,9 @@ public class Table {
         for (Boolean not_null: this.colNotNull) {
             StreamUtils.writeInt(output, not_null ? 1 : 0);
         }
+
+        // primary key
+        StreamUtils.writeInt(output, this.primaryKey);
 
         output.close();
         logger.info("table " + this.tableName + " meta info write successful.");
