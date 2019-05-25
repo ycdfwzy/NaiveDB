@@ -34,3 +34,5 @@ hs_err_pid*
 
 # output
 out/*
+src/.vscode/settings.json
+.DS_Store
