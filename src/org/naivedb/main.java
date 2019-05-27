@@ -30,11 +30,14 @@ public class main {
         Expression expr8 = new Expression(3, "+", expr7, expr6);
         Expression expr9 = new Expression(4, "123");
         Expression expr10 = new Expression(1, "d");
-//        Conditions cond1 = new Conditions(3, "a", "3", "NGT");
-//        Conditions cond2 = new Conditions(2, "b", "a", "LT");
-//        Conditions cond3 = new Conditions(2, "c", "d", "EQ");
-//        Conditions cond4 = new Conditions(1, cond2, cond3);
-//        Conditions cond5 = new Conditions(0, cond1, cond4);
+        Expression expr11 = new Expression(3, "+", expr3, expr4);
+        Expression expr12 = new Expression(1, "c");
+        // a > b + 3 && (c == d || c <> "123")
+        Conditions cond1 = new Conditions(2, "GT", expr1, expr11);
+        Conditions cond2 = new Conditions(2, "EQ", expr12, expr10);
+        Conditions cond3 = new Conditions(2, "NEQ", expr12, expr9);
+        Conditions cond4 = new Conditions(1, cond2, cond3);
+        Conditions cond5 = new Conditions(0, cond1, cond4);
         LinkedList<String> nameList = new LinkedList<String>();
         nameList.add("a");
         nameList.add("b");
@@ -47,11 +50,11 @@ public class main {
         typeList.add(new Type(Type.SQL_STRING,6));
         LinkedList valueList = new LinkedList();
         valueList.add(3);
-        valueList.add(4);
+        valueList.add(-1);
+        valueList.add("123");
         valueList.add("abc");
-        valueList.add("abc");
-//        System.out.println(cond2.satisfied(nameList, typeList, valueList));
-//        System.out.println(cond5.satisfied(nameList, typeList, valueList));
+        System.out.println(cond2.satisfied(nameList, typeList, valueList));
+        System.out.println(cond5.satisfied(nameList, typeList, valueList));
         System.out.println(expr8.calcValue(nameList, typeList, valueList).getKey());
         System.out.println(expr8.calcValue(nameList, typeList, valueList).getValue().typeName());
         System.out.println(expr9.calcValue(nameList, typeList, valueList).getKey());

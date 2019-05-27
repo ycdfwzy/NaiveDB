@@ -4,21 +4,19 @@ import org.naivedb.Type.Type;
 import org.naivedb.utils.NDException;
 import org.naivedb.utils.NumberUtils;
 
-import java.util.ArrayList;
+import javafx.util.Pair;
 import java.util.LinkedList;
 
 public class Conditions {
     private int type;
-    private String leftSymbol;
-    private String rightSymbol;
     private String op;
-    private Object value;
     private Conditions leftCond;
     private Conditions rightCond;
+    private Expression expr1, expr2;
 
     /*
-        type |         0         |         1       |         2            |        3
-             |  cond1 and cond2  | cond1 or cond2  |  symbol1 op symbol2  | symbol op value
+        type |         0         |         1       |         2
+             |  cond1 and cond2  | cond1 or cond2  |  expr1 op expr2
      */
     public Conditions(int type, Conditions leftCond, Conditions rightCond)
             throws NDException {
@@ -30,26 +28,15 @@ public class Conditions {
         this.rightCond = rightCond;
     }
 
-    public Conditions(int type, String leftSymbol, String symbolORvalue, String op)
+    public Conditions(int type, String op, Expression expr1, Expression expr2)
             throws NDException {
-        if (type != 2 && type != 3) {
+        if (type != 2) {
             throw new NDException("Unexpected Conditions type");
         }
         this.type = type;
-        this.leftSymbol = leftSymbol;
+        this.expr1 = expr1;
+        this.expr2 = expr2;
         this.op = op;
-        if (type == 2) {
-            if (isValue(symbolORvalue)) {
-                throw new NDException("Unexpected Conditions type");
-            }
-            this.rightSymbol = symbolORvalue;
-        } else
-        {
-            if (!isValue(symbolORvalue)) {
-                throw new NDException("Unexpected Conditions type");
-            }
-            this.value = symbolORvalue;
-        }
     }
 
     public boolean satisfied(LinkedList<String> nameList, LinkedList<Type> typeList, LinkedList valueList)
@@ -60,25 +47,16 @@ public class Conditions {
             case 1:
                 return leftCond.satisfied(nameList, typeList, valueList) || rightCond.satisfied(nameList, typeList, valueList);
             case 2:
-                int idx1 = nameList.indexOf(leftSymbol);
-                int idx2 = nameList.indexOf(rightSymbol);
-                Type finalType = Type.lift(typeList.get(idx1), typeList.get(idx2));
+                Pair<Object, Type> tmp1 = expr1.calcValue(nameList, typeList, valueList);
+                Pair<Object, Type> tmp2 = expr2.calcValue(nameList, typeList, valueList);
+                Type finalType = Type.lift(tmp1.getValue(), tmp2.getValue());
                 try {
                     if (finalType.getType() == 5) {
-                        return check(valueList.get(idx1), valueList.get(idx2), this.op, finalType);
+                        return check(tmp1.getKey(), tmp2.getKey(), this.op, finalType);
                     }
-                    Object obj1 = Type.convert(valueList.get(idx1).toString(), finalType);
-                    Object obj2 = Type.convert(valueList.get(idx2).toString(), finalType);
+                    Object obj1 = Type.convert(tmp1.getKey().toString(), finalType);
+                    Object obj2 = Type.convert(tmp2.getKey().toString(), finalType);
                     return check(obj1, obj2, this.op, finalType);
-                } catch (ClassCastException e)
-                {
-                    throw new NDException(e.getMessage());
-                }
-            case 3:
-                int idx = nameList.indexOf(leftSymbol);
-                Object convertValue = Type.convert(this.value.toString(), typeList.get(idx));
-                try {
-                    return check(valueList.get(idx), convertValue, this.op, typeList.get(idx));
                 } catch (ClassCastException e)
                 {
                     throw new NDException(e.getMessage());
@@ -98,6 +76,8 @@ public class Conditions {
         switch (expectedRelation) {
             case "EQ":
                 return comp == 0;
+            case "NEQ":
+                return comp != 0;
             case "LT":
                 return comp <= -1;
             case "GT":
