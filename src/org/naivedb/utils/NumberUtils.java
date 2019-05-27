@@ -38,6 +38,10 @@ public class NumberUtils {
         return (isInteger(s.substring(0, idx)) && isPureInteger(s.substring(idx+1)));
     }
 
+    public static boolean isNumber(String s) {
+        return isFloat(s);
+    }
+
     public static Integer parseInt(String s, int startIndex, int len, boolean isData)
         throws NDException {
         String t = s.substring(startIndex, startIndex+len).trim();
