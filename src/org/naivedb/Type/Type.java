@@ -70,19 +70,56 @@ public class Type {
 
     public int typeSize() throws NDException {
         switch (this.type) {
-            case 1:
+            case SQL_INT:
                 return Consts.intSize;
-            case 2:
+            case SQL_LONG:
                 return Consts.longSize;
-            case 3:
+            case SQL_FLOAT:
                 return Consts.floatSize;
-            case 4:
+            case SQL_DOUBLE:
                 return Consts.doubleSize;
-            case 5:
+            case SQL_STRING:
                 return this.strLen + 1;
             default:
                 throw new NDException("Wrong type met");
         }
+    }
+
+    public boolean isNumber() {
+        return type != SQL_STRING;
+    }
+
+    public static int compare(Object obj1, Object obj2, Type type) {
+        // null value
+        if (obj1.equals(obj2))
+            return 0;
+        switch (type.getType()) {
+            case SQL_INT:
+                return (int) obj1 < (int) obj2 ? -1 : 1;
+            case SQL_LONG:
+                return (long) obj1 < (long) obj2 ? -1 : 1;
+            case SQL_FLOAT:
+                return (float) obj1 < (float) obj2 ? -1 : 1;
+            case SQL_DOUBLE:
+                return (double) obj1 < (double) obj2 ? -1 : 1;
+            default:
+                return obj1.toString().compareTo(obj2.toString());
+        }
+    }
+
+    public static Type lift(Type t1, Type t2)
+            throws NDException {
+        if ((t1.isNumber() && !t2.isNumber()) || (!t1.isNumber() && t2.isNumber()))
+            throw new NDException("Can't lift!");
+        if (!t1.isNumber() && !t2.isNumber())
+            return t1.strLen > t2.strLen ? t1 : t2;
+        if (t1.getType() == SQL_DOUBLE || t2.getType() == SQL_DOUBLE)
+            return new Type(SQL_DOUBLE);
+        if (t1.getType() == SQL_FLOAT || t2.getType() == SQL_FLOAT)
+            return new Type(SQL_FLOAT);
+        if (t1.getType() == SQL_LONG || t2.getType() == SQL_LONG)
+            return new Type(SQL_LONG);
+        return new Type(SQL_INT);
     }
 
     public int getType() {
