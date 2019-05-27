@@ -67,8 +67,8 @@ public class Conditions {
                     if (finalType.getType() == 5) {
                         return check(valueList.get(idx1), valueList.get(idx2), this.op, finalType);
                     }
-                    Object obj1 = convert(valueList.get(idx1).toString(), finalType);
-                    Object obj2 = convert(valueList.get(idx2).toString(), finalType);
+                    Object obj1 = Type.convert(valueList.get(idx1).toString(), finalType);
+                    Object obj2 = Type.convert(valueList.get(idx2).toString(), finalType);
                     return check(obj1, obj2, this.op, finalType);
                 } catch (ClassCastException e)
                 {
@@ -76,7 +76,7 @@ public class Conditions {
                 }
             case 3:
                 int idx = nameList.indexOf(leftSymbol);
-                Object convertValue = convert(this.value.toString(), typeList.get(idx));
+                Object convertValue = Type.convert(this.value.toString(), typeList.get(idx));
                 try {
                     return check(valueList.get(idx), convertValue, this.op, typeList.get(idx));
                 } catch (ClassCastException e)
@@ -108,25 +108,6 @@ public class Conditions {
                 return comp <= 0;
             default:
                 throw new NDException("Unknown relation!");
-        }
-    }
-
-    private Object convert(String str, Type type)
-            throws NDException {
-        if (str.startsWith("\"") && str.endsWith("\"") && type.getType() == Type.SQL_STRING) {
-            return str.substring(1, str.length()-1);
-        }
-        switch (type.getType()) {
-            case Type.SQL_INT:
-                return NumberUtils.parseInt(str, 0, str.length());
-            case Type.SQL_LONG:
-                return NumberUtils.parseLong(str, 0, str.length());
-            case Type.SQL_FLOAT:
-                return NumberUtils.parseFloat(str, 0, str.length());
-            case Type.SQL_DOUBLE:
-                return NumberUtils.parseDouble(str, 0, str.length());
-            default:
-                throw new NDException("Can't convert " + str + " to " + type.typeName());
         }
     }
 

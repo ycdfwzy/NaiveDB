@@ -96,13 +96,17 @@ type_name
   ;
 
 expr
+  : numeric_expr
+  | '"' .+ '"'
+  ;
+
+numeric_expr
   : numeric_value
   | expr_column
-  | unary_operator expr
-  | expr ( '*' | '/' | '%' ) expr
-  | expr ( '+' | '-' ) expr
-  | '(' expr ')'
-  | '\'' .+ '\''
+  | unary_operator numeric_expr
+  | numeric_expr ( '*' | '/' | '%' ) numeric_expr
+  | numeric_expr ( '+' | '-' ) numeric_expr
+  | '(' numeric_expr ')'
   ;
 
 expr_column

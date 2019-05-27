@@ -21,7 +21,7 @@ public class Type {
     }
 
     public Type(int t, int len) throws NDException {
-        if (t != 5 || len < 0 || len >= Consts.stringSize) throw new NDException("wrong input type");
+        if (t != 5 || len < 0) throw new NDException("wrong input type");
         this.type = t;
         this.strLen = len;
     }
@@ -104,6 +104,25 @@ public class Type {
                 return (double) obj1 < (double) obj2 ? -1 : 1;
             default:
                 return obj1.toString().compareTo(obj2.toString());
+        }
+    }
+
+    public static Object convert(String str, Type type)
+            throws NDException {
+        if (str.startsWith("\"") && str.endsWith("\"") && type.getType() == Type.SQL_STRING) {
+            return str.substring(1, str.length()-1);
+        }
+        switch (type.getType()) {
+            case Type.SQL_INT:
+                return NumberUtils.parseInt(str, 0, str.length());
+            case Type.SQL_LONG:
+                return NumberUtils.parseLong(str, 0, str.length());
+            case Type.SQL_FLOAT:
+                return NumberUtils.parseFloat(str, 0, str.length());
+            case Type.SQL_DOUBLE:
+                return NumberUtils.parseDouble(str, 0, str.length());
+            default:
+                throw new NDException("Can't convert " + str + " to " + type.typeName());
         }
     }
 
