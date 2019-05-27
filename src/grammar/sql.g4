@@ -53,16 +53,11 @@ delete_stmt
   ;
 
 update_stmt
-  : K_UPDATE table_name K_SET ( table_name '.' )? attr_name '=' expr (',' attr_name '=' expr )* ( K_WHERE pred_expr )?
+  : K_UPDATE table_name K_SET asign_clause ( K_WHERE pred_expr )?
   ;
 
 select_stmt
-  : K_SELECT ( '*'
-               | (
-                 ( attr_name | table_name '.' attr_name ) (',' ( attr_name | table_name '.' attr_name ) )*
-                 )
-             )
-    K_FROM table_name ( K_JOIN table_name K_ON table_name '.' attr_name '=' table_name '.' attr_name )? ( K_WHERE pred_expr )?
+  : K_SELECT select_elements K_FROM table_name ( K_JOIN table_name K_ON pred_expr )? ( K_WHERE pred_expr )?
   ;
 
 use_stmt
@@ -71,6 +66,16 @@ use_stmt
 
 show_stmt
   : K_SHOW ( K_DATABASES | K_TABLES )
+  | K_SHOW K_TABLE table_name
+  ;
+
+select_elements
+  : '*'
+  | expr_column ( ',' expr_column )*
+  ;
+
+asign_clause
+  : expr_column '=' expr (',' expr_column '=' expr)*
   ;
 
 db_name
@@ -92,12 +97,16 @@ type_name
 
 expr
   : numeric_value
-  | ( table_name '.' )? attr_name
+  | expr_column
   | unary_operator expr
   | expr ( '*' | '/' | '%' ) expr
   | expr ( '+' | '-' ) expr
   | '(' expr ')'
   | '\'' .+ '\''
+  ;
+
+expr_column
+  :  ( table_name '.' )? attr_name
   ;
 
 unary_operator
