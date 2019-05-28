@@ -121,7 +121,7 @@ unary_operator
   ;
 
 pred_expr
-  : expr ( '<' | '<=' | '>' | '>=' | '=' | '<>' | '==' | '!=' ) expr
+  : expr ( '<' | '<=' | '>' | '>=' | '<>' | '==' | '!=' ) expr
   | pred_expr ( K_AND | K_OR ) pred_expr
   ;
 
