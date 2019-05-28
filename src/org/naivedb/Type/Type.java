@@ -144,4 +144,15 @@ public class Type {
     public int getType() {
         return this.type;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Type) {
+            Type t = (Type) obj;
+            if (this.type != t.getType())
+                return false;
+            return this.type != Type.SQL_STRING || this.strLen == t.strLen;
+        }
+        return false;
+    }
 }
