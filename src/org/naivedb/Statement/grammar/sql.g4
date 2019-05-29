@@ -57,7 +57,7 @@ update_stmt
   ;
 
 select_stmt
-  : K_SELECT select_elements K_FROM table_name ( K_JOIN table_name K_ON pred_expr )? ( K_WHERE pred_expr )?
+  : K_SELECT select_elements K_FROM join_range ( K_WHERE pred_expr )?
   ;
 
 use_stmt
@@ -76,6 +76,27 @@ select_elements
 
 asign_clause
   : expr_column '=' expr (',' expr_column '=' expr)*
+  ;
+
+join_range
+  : table_name
+  | ( table_name | '(' join_range ')' ) ( natural_join | join_on )*
+  ;
+
+natural_join
+  : K_NATURAL ( outer_join | inner_join )
+  ;
+
+join_on
+  : ( outer_join | inner_join ) K_ON pred_expr
+  ;
+
+outer_join
+  : ( K_LEFT | K_RIGHT | K_FULL ) K_OUTER K_JOIN ( table_name | '(' join_range ')')
+  ;
+
+inner_join
+  : ( K_INNER )? K_JOIN ( table_name | '(' join_range ')' )
   ;
 
 db_name
@@ -154,6 +175,12 @@ K_WHERE : W H E R E;
 K_UPDATE : U P D A T E;
 K_SET : S E T;
 K_SELECT : S E L E C T;
+K_NATURAL : N A T U R A L;
+K_LEFT : L E F T;
+K_RIGHT : R I G H T;
+K_FULL : F U L L;
+K_OUTER : O U T E R;
+K_INNER : I N N E R;
 K_JOIN : J O I N;
 K_ON : O N;
 K_USE : U S E;
