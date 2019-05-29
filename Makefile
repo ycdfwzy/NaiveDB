@@ -39,6 +39,7 @@ Default:
 	@echo "make jar: package project into a executable jar."
 
 build:
+	@if [ ! -d out ] ;then mkdir out; fi
 	@for name in $(PACKAGES); \
 	do \
 		echo "compiling $$name";\

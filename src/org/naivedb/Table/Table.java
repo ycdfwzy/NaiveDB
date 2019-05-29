@@ -1,11 +1,15 @@
 package org.naivedb.Table;
 
+import org.naivedb.Statement.Conditions;
+import org.naivedb.Statement.Expression;
 import org.naivedb.utils.Consts;
 import org.naivedb.utils.NDException;
 import org.naivedb.utils.StreamUtils;
 import org.naivedb.utils.MyLogger;
 import org.naivedb.Type.Type;
 import org.naivedb.Persistence.PersistenceData;
+import org.naivedb.BPlusTree.BPlusTree;
+import org.naivedb.BPlusTree.BPlusTreeConfiguration;
 import java.io.*;
 import java.util.*;
 import javafx.util.Pair;
@@ -28,7 +32,7 @@ public class Table {
     private int primaryKey;
 
     private PersistenceData persistence;
-    // private BPlusTree index;
+    private BPlusTree index;
     private static Logger logger = MyLogger.getLogger("table");
 
 
@@ -40,8 +44,8 @@ public class Table {
      *            2. database dir
      *            3. cols definition
      */
-    public Table(String table_name, String db_dir, 
-        ArrayList<Pair<String, Type>> cols) throws IOException, NDException {
+    public Table(String table_name, String db_dir,
+                 ArrayList<Pair<String, Type>> cols) throws IOException, NDException {
 
         // check table name correctness
         this.tableName = new String(table_name);
@@ -63,8 +67,8 @@ public class Table {
             this.colNames.add(pair.getKey());
             names.add(pair.getKey());
             this.colTypes.add(pair.getValue());
-            // default: every col is not null
-            this.colNotNull.add(true);
+            // default: every col can be null
+            this.colNotNull.add(false);
         }
         if (cols.size() != names.size()) throw new NDException("input names have duplicate.");
 
@@ -74,8 +78,8 @@ public class Table {
         metaFile.createNewFile();
         dataFile.createNewFile();
 
+        this.persistence = new PersistenceData(this.fileName + ".data", this.colTypes, null);
         this.writeMeta(metaFile);
-        this.persistence = new PersistenceData(this.fileName + ".data", this.colTypes);
     }
 
     /**
@@ -98,7 +102,9 @@ public class Table {
                 new File(this.fileName + ".data").exists()){
                 File metaFile = new File(this.fileName + ".meta");
                 this.loadMeta(metaFile);
-                this.persistence = new PersistenceData(this.fileName + ".data", this.colTypes);
+                if (this.primaryKey != -1) {
+                    this.index = new BPlusTree(this.fileName);
+                }
             }
             else throw new NDException("data base file not exist.");
     }
@@ -106,23 +112,32 @@ public class Table {
     /**
      * close a table, write data back to storage (not meta info currently)
      */
-    public void close() {
+    public void close() throws IOException, NDException {
+        this.writeMeta(new File(this.fileName + ".meta"));
         this.persistence.close();
+        if (this.index != null)
+            this.index.close();
     }
 
     /**
      * set a primary key
      * input: primary key col name
      */
-    public void setPrimary(String col_name) throws NDException{
+    public void setPrimary(String col_name) throws IOException, NDException {
         if (this.primaryKey != -1) throw new NDException("primary key already exists.");
-        for (int i = 0; i < this.colNames.size(); i++) {
-            if (col_name == this.colNames.get(i)) {
-                this.primaryKey = i;
-                break;
-            }
-        }
+        this.primaryKey = this.colNames.indexOf(col_name);
         if (this.primaryKey == -1) throw new NDException("no match col names.");
+
+        String keyType = this.colTypes.get(this.primaryKey).typeName();
+        int pageSize = 4096;
+        while (pageSize < (Consts.Type2Size(keyType) + Consts.pointSize)*3 + Consts.nodeTypeSize + Consts.parentSize*3) {
+            pageSize *= 2;
+        }
+        LinkedList<String> types = new LinkedList<>();
+        for (int i = 0; i < this.colTypes.size(); ++i)
+            types.add(this.colTypes.get(i).typeName());
+        BPlusTreeConfiguration config = new BPlusTreeConfiguration(pageSize, this.fileName, keyType, types);
+        this.index = new BPlusTree(config);
     }
     
     /**
@@ -136,6 +151,52 @@ public class Table {
             this.colNotNull.set(i, not_null.get(i));
     }
 
+    /**
+     * insert a row
+     * param: a linked list of given values
+     * return: the new row index
+     */
+    public long insert(LinkedList values) throws IOException, NDException {
+        if (values.size() != this.colTypes.size()) throw new NDException("row value number wrong");
+        
+        // not null and type check
+        int i = 0;
+        for (Object val: values) {
+            // val is null and col can be null
+            if (val == null && !this.colNotNull.get(i)) i++;
+            // otherwise check
+            else if (this.colTypes.get(i).check(val)) i++;
+            else throw new NDException("row values type check error!");
+        }
+
+        // type check pass
+        long rowNum = this.persistence.add(values);
+        this.index.insert(values.getFirst(), rowNum);
+        return rowNum;
+    }
+
+    /**
+     * search
+     * param: conditions
+     * return: result of rows
+     */
+    public LinkedList<Long> search(Conditions cond) throws IOException, NDException {
+        // bad implementation
+        LinkedList<Long> res = new LinkedList<>();
+        ArrayList<Long> allRow = this.persistence.getAllRowNum();
+        for (long row: allRow) {
+            if (cond.satisfied(new LinkedList<String>(this.colNames),
+                                new LinkedList<Type>(this.colTypes),
+                                this.persistence.get(row)))
+                res.add(row);
+        }
+        return res;
+    }
+
+    public void update(long row, LinkedList<String> colList, LinkedList<Expression> exprList) {
+
+    }
+
     public ArrayList<String> getColNames() { return this.colNames; }
     public ArrayList<Type> getColTypes() { return this.colTypes; }
     public String getFileName() { return this.fileName; }
@@ -145,7 +206,7 @@ public class Table {
 
     /**
      * meta info format
-     *     columnCnt|[columnTypes]|[columnNames]|[columnNotNull]
+     *     columnCnt|[columnTypes]|[columnNames]|[columnNotNull]|primaryKey
      * currently no way to alter table meta, so only write once
      * columnNotNull use 1 as true and 0 as false
      */
@@ -158,7 +219,6 @@ public class Table {
         // col types
         for (int i = 0; i < col_cnt; i++)
             this.colTypes.add(new Type(StreamUtils.readString(input, Consts.columnTypeSize)));
-            
 
         // col names
         for (int i = 0; i < col_cnt; i++)
@@ -167,8 +227,23 @@ public class Table {
         // col not null
         for (int i = 0; i < col_cnt; i++)
             this.colNotNull.add(StreamUtils.readInt(input) == 1);
-        
+
+        // primary key
+        this.primaryKey = StreamUtils.readInt(input);
+
+        // blankRowCnt
+        int blankRowCnt = StreamUtils.readInt(input);
+
+        ArrayList<Long> blankRow = new ArrayList<>();
+        blankRow.ensureCapacity(blankRowCnt);
+        // [blankRow]
+        for (int i = 0; i < blankRowCnt; ++i) {
+            blankRow.add(StreamUtils.readLong(input));
+        }
+
         input.close();
+
+        this.persistence = new PersistenceData(this.fileName + ".data", this.colTypes, blankRow);
         logger.info("table " + this.tableName + " meta info load successful.");
     }
     
@@ -190,6 +265,12 @@ public class Table {
         for (Boolean not_null: this.colNotNull) {
             StreamUtils.writeInt(output, not_null ? 1 : 0);
         }
+
+        // primary key
+        StreamUtils.writeInt(output, this.primaryKey);
+
+        // blankRowCnt|[blankRow]
+        this.persistence.output(output);
 
         output.close();
         logger.info("table " + this.tableName + " meta info write successful.");

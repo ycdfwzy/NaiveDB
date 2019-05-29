@@ -85,6 +85,26 @@ public class Type {
         }
     }
 
+    public boolean check(Object v) throws NDException {
+        switch (this.type) {
+            case SQL_INT:
+                return v instanceof Integer;
+            case SQL_LONG:
+                return v instanceof Long;
+            case SQL_FLOAT:
+                return v instanceof Float;
+            case SQL_DOUBLE:
+                return v instanceof Double;
+            case SQL_STRING:
+                if (v instanceof String) {
+                    String s = (String) v;
+                    return s.length() <= this.strLen;
+                } else return false;
+            default:
+                throw new NDException("Wrong type met");
+        }
+    }
+
     public boolean isNumber() {
         return type != SQL_STRING;
     }
@@ -143,5 +163,16 @@ public class Type {
 
     public int getType() {
         return this.type;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Type) {
+            Type t = (Type) obj;
+            if (this.type != t.getType())
+                return false;
+            return this.type != Type.SQL_STRING || this.strLen == t.strLen;
+        }
+        return false;
     }
 }

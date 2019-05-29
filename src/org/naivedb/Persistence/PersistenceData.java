@@ -1,11 +1,9 @@
 package org.naivedb.Persistence;
 
-import org.naivedb.utils.Consts;
-import org.naivedb.utils.NDException;
-import org.naivedb.utils.NumberUtils;
+import org.naivedb.utils.*;
 import org.naivedb.Type.Type;
-import org.naivedb.utils.MyLogger;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
@@ -26,7 +24,7 @@ public class PersistenceData {
         create a new persistence data:
             requires upper layer to handle the file existence
     */
-    public PersistenceData(String filename, ArrayList<Type> types)
+    public PersistenceData(String filename, ArrayList<Type> types, ArrayList<Long> rowIndexPool)
             throws IOException, NDException {
         if (types.size() == 0) throw new NDException("input type length is zero");
         this.dataFile = new RandomAccessFile(filename+".data", "rw");
@@ -36,8 +34,18 @@ public class PersistenceData {
 
         for (Type type: types)
             this.rowSize += type.typeSize();
-        this.rowIndexPool = new ArrayList<Long>();
-        this.maxRowIndex = this.dataFile.length() / this.rowSize;
+        if (rowIndexPool == null) {
+            this.rowIndexPool = new ArrayList<>();
+        } else {
+            this.rowIndexPool = rowIndexPool;
+        }
+        this.maxRowIndex = this.dataFile.length() / this.rowSize - 1;
+    }
+
+    public void output(BufferedOutputStream output) throws IOException {
+        StreamUtils.writeInt(output, this.rowIndexPool.size());
+        for (long row: this.rowIndexPool)
+            StreamUtils.writeLong(output, row);
     }
 
     public void close() {
@@ -47,6 +55,15 @@ public class PersistenceData {
         } catch (Exception e) {
             logger.warning("Error happened while trying to write back to data file!");
         }
+    }
+
+    public ArrayList<Long> getAllRowNum() {
+        ArrayList<Long> res = new ArrayList<>();
+        res.ensureCapacity((int)this.maxRowIndex+1-this.rowIndexPool.size()+1);
+        for (long i = 0; i <= this.maxRowIndex; ++i)
+            if (this.rowIndexPool.indexOf(i) < 0)
+                res.add(i);
+        return res;
     }
 
     public long add(LinkedList value)

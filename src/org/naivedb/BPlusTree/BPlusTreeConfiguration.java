@@ -14,7 +14,6 @@ public class BPlusTreeConfiguration {
     private int rowSize;
 
     private LinkedList<String> columnType;
-//    private LinkedList<String> columnName;
 
     public BPlusTreeConfiguration(String filename,
                                   String keyType,
