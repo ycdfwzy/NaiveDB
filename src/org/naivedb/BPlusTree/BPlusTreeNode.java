@@ -332,13 +332,13 @@ public class BPlusTreeNode {
         }
     }
 
-    public static int compareKey(Object a, Object b, String keyType) {
+    public static int compareKey(Object a, Object b, String type) {
         int compare = 0;
         if (a == null || b == null)
             return 0;
-        if (a == b)
+        if (a.equals(b))
             return 0;
-        switch (keyType) {
+        switch (type) {
             case "Int":
                 compare = (int) a > (int) b ? 1 : -1;
                 break;

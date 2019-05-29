@@ -3,6 +3,7 @@ package org.naivedb.Test;
 import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
+
 import java.util.LinkedList;
 
 public class TestRunner {
@@ -37,6 +38,8 @@ public class TestRunner {
     public static void main(String[] args) {
         addResult(JUnitCore.runClasses(DatabaseTest.class));
         addResult(JUnitCore.runClasses(TableTest.class));
+        addResult(JUnitCore.runClasses(ExpressionTest.class));
+        addResult(JUnitCore.runClasses(ConditionsTest.class));
 
         showResult();
     }
