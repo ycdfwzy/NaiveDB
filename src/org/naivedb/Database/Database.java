@@ -81,6 +81,7 @@ public class Database {
 
     // drop a table
     public void dropTable(String table_name) throws IOException, NDException {
+        if (!this.tables.contains(table_name)) throw new NDException("table not exists!");
         File root = new File(this.dbPath);
         File[] files = root.listFiles(new FilenameFilter(){
             @Override
@@ -92,6 +93,7 @@ public class Database {
         for (File file: files)
             succ &= file.delete();
         if (succ) throw new NDException("delete meta or data file failed");
+        this.tables.remove(table_name);
     }
 
     public ArrayList<String> getTables() throws IOException, NDException {
