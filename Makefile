@@ -3,6 +3,8 @@ JAR_PKG = naivedb.jar
 
 # entry
 ENTRY_POINT = org.naivedb.main
+SERVER_ENTRY_POINT = org.naivedb.Server
+CLIENT_ENTRY_POINT = org.naivedb.Client
 
 # test entry
 TEST_ENTRY = org.naivedb.Test.TestRunner
@@ -16,15 +18,18 @@ PACKAGES = \
 	Type \
 	Persistence \
 	BPlusTree \
+	Statement \
 	Table \
 	Database \
 	Test
 
-# entry function postfix
-mainFunc = main
+# build targets (entry function postfix)
+mainClass = main
+serverClass = Server
+clientClass = Client
 
 # needed jar packages
-JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar
+JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar:lib/commons-cli-1.4.jar:lib/jline-terminal-3.11.0.jar:lib/jline-terminal-jansi-3.11.0.jar:lib/jline-reader-3.11.0.jar
 
 # javac command
 JAVAC = javac
@@ -45,7 +50,13 @@ build:
 		echo "compiling $$name";\
 		javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$$name/*.java; \
 	done
-	@javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$(mainFunc).java;
+	@javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$(mainClass).java;
+
+server:
+	@javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$(serverClass).java;
+
+client:
+	@javac -cp out$(JARS) -d out $(JFLAGS) $(BASE_DIR)/$(clientClass).java;
 
 rebuild: clean build
 
@@ -54,6 +65,12 @@ clean:
 
 run:
 	@java -cp out$(JARS) $(ENTRY_POINT)
+
+run_server:
+	@java -cp out$(JARS) $(SERVER_ENTRY_POINT)
+
+run_client:
+	@java -cp out$(JARS) $(CLIENT_ENTRY_POINT)
 
 test:
 	@java -cp out$(JARS) $(TEST_ENTRY)
