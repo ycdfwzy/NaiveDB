@@ -3,6 +3,7 @@ package org.naivedb.BPlusTree;
 import java.io.*;
 import java.util.*;
 
+import com.sun.xml.internal.bind.v2.runtime.reflect.opt.Const;
 import org.naivedb.utils.Consts;
 import org.naivedb.utils.NumberUtils;
 import org.naivedb.utils.StreamUtils;
@@ -24,7 +25,7 @@ public class BPlusTree {
     private long firstLeaf, lastLeaf;
 
     public void close()
-        throws Exception {
+        throws IOException, NDException {
         this.toFile();
         this.treeFile.close();
 //        this.dataFile.close();
@@ -64,7 +65,7 @@ public class BPlusTree {
 
     /*
         header format:
-            pageSize|columnCnt|[columnTypes]
+            pageSize|keyType|columnCnt|[columnTypes]
             |rootPageIndex|first_leaf|last_leaf
             |blankPageCnt|[blankPageIndex]
 
@@ -93,6 +94,9 @@ public class BPlusTree {
         int n = this.config.getColumnSize();
         // pageSize
         StreamUtils.writeInt(output, this.config.getPageSize());
+
+        // keyType
+        StreamUtils.writeString(output, this.config.getKeyType(), Consts.columnTypeSize);
 
         // columnCnt
         StreamUtils.writeInt(output, n);
@@ -140,6 +144,9 @@ public class BPlusTree {
         // pageSize
         int pageSize = StreamUtils.readInt(input);
 
+        // keyType
+        String keyType = StreamUtils.readString(input, Consts.columnTypeSize);
+
         // columnCnt
         int columnCnt = StreamUtils.readInt(input);
         if (columnCnt < 1) {
@@ -154,10 +161,8 @@ public class BPlusTree {
             columnTypes.add(type);
         }
         this.config = new BPlusTreeConfiguration(pageSize, filename,
-                                                columnTypes.get(0),
-                                                columnTypes);
+                                                keyType, columnTypes);
 
-//        this.maxRowIndex = dataFile.length()/this.config.getRowSize() - 1;
         this.maxPageIndex = treeFile.length()/this.config.getPageSize() - 1;
 
         // rootPageIndex
