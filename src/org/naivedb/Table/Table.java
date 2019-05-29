@@ -193,8 +193,30 @@ public class Table {
         return res;
     }
 
-    public void update(long row, LinkedList<String> colList, LinkedList<Expression> exprList) {
-
+    public void update(long row, LinkedList<String> colList, LinkedList<Expression> exprList)
+            throws NDException, IOException {
+        boolean changePrimaryKey = false;
+        if (this.primaryKey != -1) {
+            for (String col : colList)
+                if (this.colNames.get(this.primaryKey).compareTo(col) == 0) {
+                    changePrimaryKey = true;
+                }
+        }
+        LinkedList oldData = this.persistence.get(row);
+        LinkedList newData = new LinkedList(oldData);
+        LinkedList<String> nameList = new LinkedList<String>(this.colNames);
+        LinkedList<Type> typeList = new LinkedList<Type>(this.colTypes);
+        int n = colList.size();
+        for (int i = 0; i < n; ++i) {
+            Pair<Object, Type> val = exprList.get(i).calcValue(nameList, typeList, oldData);
+            Object newVal = Type.convert(val.getKey().toString(), this.colTypes.get(i));
+            newData.set(i, newVal);
+        }
+        this.persistence.update(row, newData);
+        if (changePrimaryKey) {
+            Object oldKey = oldData.get(this.primaryKey);
+            this.index.update(oldKey, newData.get(this.primaryKey), row);
+        }
     }
 
     public ArrayList<String> getColNames() { return this.colNames; }

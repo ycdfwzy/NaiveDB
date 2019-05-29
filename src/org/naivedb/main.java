@@ -61,5 +61,17 @@ public class main {
         System.out.println(expr9.calcValue(nameList, typeList, valueList).getValue().typeName());
         System.out.println(expr10.calcValue(nameList, typeList, valueList).getKey());
         System.out.println(expr10.calcValue(nameList, typeList, valueList).getValue().typeName());
+
+//        LinkedList<String> list1 = new LinkedList<>(nameList);
+//        for (String str: list1) {
+//            System.out.println(str);
+//        }
+//        nameList.set(1, "abc");
+//        for (String str: list1) {
+//            System.out.println(str);
+//        }
+//        for (String str: nameList) {
+//            System.out.println(str);
+//        }
     }
 }
