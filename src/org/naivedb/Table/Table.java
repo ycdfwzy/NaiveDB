@@ -180,9 +180,9 @@ public class Table {
      * param: conditions
      * return: result of rows
      */
-    public LinkedList<Long> search(Conditions cond) throws IOException, NDException {
+    public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
         // bad implementation
-        LinkedList<Long> res = new LinkedList<>();
+        ArrayList<Long> res = new ArrayList<>();
         ArrayList<Long> allRow = this.persistence.getAllRowNum();
         for (long row: allRow) {
             if (cond.satisfied(new LinkedList<String>(this.colNames),
@@ -234,6 +234,24 @@ public class Table {
         if (this.primaryKey != -1) {
             this.index.delete(values.get(this.primaryKey));
         }
+    }
+
+    /**
+     * get all row numbers
+     * param: none
+     * return: an array list of row numbers
+     */
+    public ArrayList<Long> getAllRows() {
+        return this.persistence.getAllRowNum();
+    }
+
+    /**
+     * get single row number data
+     * param: row number
+     * return: an linked list of row data in line "row"
+     */
+    public LinkedList getSingleRowData(long row) throws NDException, IOException {
+        return this.persistence.get(row);
     }
 
     public ArrayList<String> getColNames() { return this.colNames; }

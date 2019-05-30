@@ -66,7 +66,7 @@ public class ExpressionTest {
 
         Assert.assertEquals(new Pair<>(3, new Type(Type.SQL_INT)), expr1.calcValue(nameList, typeList, valueList));
         Assert.assertEquals(new Pair<>((long)-5, new Type(Type.SQL_LONG)), expr8.calcValue(nameList, typeList, valueList));
-        Assert.assertEquals(new Pair<>("123", new Type(Type.SQL_STRING)), expr9.calcValue(nameList, typeList, valueList));
+        Assert.assertEquals(new Pair<>("123", new Type(Type.SQL_STRING, 3+1)), expr9.calcValue(nameList, typeList, valueList));
         Assert.assertEquals(new Pair<>("abc", new Type(Type.SQL_STRING, 6)), expr10.calcValue(nameList, typeList, valueList));
         Assert.assertThrows(NDException.class, () -> expr11.calcValue(nameList, typeList, valueList));
     }

@@ -4,7 +4,7 @@ import org.naivedb.Table.Table;
 import org.naivedb.utils.NDException;
 
 import java.io.IOException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 public class StatementDelete {
     private Table targetTable;
@@ -21,7 +21,7 @@ public class StatementDelete {
 
     public int exec() throws NDException, IOException {
         int succeed = 0;
-        LinkedList<Long> rowList = targetTable.search(cond);
+        ArrayList<Long> rowList = targetTable.search(cond);
         for (long row: rowList) {
             targetTable.delete(row);
             succeed += 1;

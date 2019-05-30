@@ -4,6 +4,7 @@ import org.naivedb.Table.Table;
 import org.naivedb.utils.NDException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class StatementUpdate {
@@ -30,7 +31,7 @@ public class StatementUpdate {
     }
 
     public int exec() throws IOException, NDException {
-        LinkedList<Long> toUpdate = targetTable.search(cond);
+        ArrayList<Long> toUpdate = targetTable.search(cond);
         int succeed = 0;
         for (long row: toUpdate) {
             targetTable.update(row, colList, exprList);
