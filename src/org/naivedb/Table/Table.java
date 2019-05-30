@@ -1,5 +1,6 @@
 package org.naivedb.Table;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.naivedb.Statement.Conditions;
 import org.naivedb.Statement.Expression;
 import org.naivedb.utils.Consts;
@@ -181,6 +182,38 @@ public class Table {
      * return: result of rows
      */
     public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        if (this.primaryKey != -1) {
+            String primary = this.colNames.get(this.primaryKey);
+            if (cond.isSymbolEqualSomething(primary)) {
+                Object obj = cond.getEqualValue().getKey();
+                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(key));
+            } else
+            if (cond.isLowerBounded(primary)) {
+                Pair<Pair<Object, Type>, Boolean> lower = cond.getBoundValue();
+                boolean isOpen = lower.getValue();
+                Object obj = lower.getKey().getKey();
+                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(key, isOpen ? "GT" : "NLT"));
+            } else
+            if (cond.isUpperBounded(primary)) {
+                Pair<Pair<Object, Type>, Boolean> upper = cond.getBoundValue();
+                boolean isOpen = upper.getValue();
+                Object obj = upper.getKey().getKey();
+                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(key, isOpen ? "LT" : "NGT"));
+            } else
+            if (cond.isRanged(primary)) {
+                Pair<Pair<Pair<Object, Type>, Boolean>, Pair<Pair<Object, Type>, Boolean>> range = cond.getRange();
+                Pair<Pair<Object, Type>, Boolean> lower = range.getKey();
+                Pair<Pair<Object, Type>, Boolean> upper = range.getValue();
+                boolean lowerOpen = lower.getValue();
+                boolean upperOpen = upper.getValue();
+                Object lowerKey = Type.convert(lower.getKey().getKey().toString(), this.colTypes.get(this.primaryKey));
+                Object upperKey = Type.convert(upper.getKey().getKey().toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(lowerKey, !lowerOpen, upperKey, !upperOpen));
+            }
+        }
         // bad implementation
         ArrayList<Long> res = new ArrayList<>();
         ArrayList<Long> allRow = this.persistence.getAllRowNum();
