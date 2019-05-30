@@ -193,6 +193,11 @@ public class Table {
         return res;
     }
 
+    /**
+     * update
+     * param: row number, columns list to be updated, expressions list to be assigned to columns
+     * return: no return value
+     */
     public void update(long row, LinkedList<String> colList, LinkedList<Expression> exprList)
             throws NDException, IOException {
         boolean changePrimaryKey = false;
@@ -216,6 +221,18 @@ public class Table {
         if (changePrimaryKey) {
             Object oldKey = oldData.get(this.primaryKey);
             this.index.update(oldKey, newData.get(this.primaryKey), row);
+        }
+    }
+
+    /**
+     * delete
+     * param: row number
+     * return: no return value
+     */
+    public void delete(long row) throws IOException, NDException {
+        LinkedList values = this.persistence.remove(row);
+        if (this.primaryKey != -1) {
+            this.index.delete(values.get(this.primaryKey));
         }
     }
 
