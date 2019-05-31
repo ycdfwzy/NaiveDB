@@ -30,6 +30,13 @@ public class StatementUpdate {
         this.cond = cond;
     }
 
+    /*
+        execute update operation
+        params:
+            none
+        return:
+            the number of updated rows
+    */
     public int exec() throws IOException, NDException {
         ArrayList<Long> toUpdate = targetTable.search(cond);
         int succeed = 0;

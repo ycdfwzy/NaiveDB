@@ -19,6 +19,13 @@ public class StatementDelete {
         this.cond = cond;
     }
 
+    /*
+        execute delete operation
+        params:
+            none
+        return:
+            the number of deleted rows
+    */
     public int exec() throws NDException, IOException {
         int succeed = 0;
         ArrayList<Long> rowList = targetTable.search(cond);

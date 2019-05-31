@@ -184,11 +184,13 @@ public class Table {
     public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
         if (this.primaryKey != -1) {
             String primary = this.colNames.get(this.primaryKey);
+            // index = x
             if (cond.isSymbolEqualSomething(primary)) {
                 Object obj = cond.getEqualValue().getKey();
                 Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(key));
             } else
+            // index ∈ (-∞, x) / (-∞, x]
             if (cond.isLowerBounded(primary)) {
                 Pair<Pair<Object, Type>, Boolean> lower = cond.getBoundValue();
                 boolean isOpen = lower.getValue();
@@ -196,6 +198,7 @@ public class Table {
                 Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(key, isOpen ? "GT" : "NLT"));
             } else
+            // index ∈ (x, +∞) / [x, +∞)
             if (cond.isUpperBounded(primary)) {
                 Pair<Pair<Object, Type>, Boolean> upper = cond.getBoundValue();
                 boolean isOpen = upper.getValue();
@@ -203,6 +206,7 @@ public class Table {
                 Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(key, isOpen ? "LT" : "NGT"));
             } else
+            // index ∈ (/[x, y)/]
             if (cond.isRanged(primary)) {
                 Pair<Pair<Pair<Object, Type>, Boolean>, Pair<Pair<Object, Type>, Boolean>> range = cond.getRange();
                 Pair<Pair<Object, Type>, Boolean> lower = range.getKey();

@@ -11,7 +11,7 @@
 * `filename`：数据表文件名，例如`filename="test"`，那么B+树结构存储在`test.tree`，叶子结点的数据存储在`test.data`
 * `pageSize`：每个树结点在磁盘上存储的大小，单位`byte`。默认值为`4096`（可能不够，请构造数据时自行设计好页面大小）。
 * `columnType`：LinkedList，表格中每个属性的类型
-* `keyType`：主键的类型，一定和`columnType`的第一个值一样
+* `keyType`：主键的类型
 * `keySize`：主键的大小（byte），由`keyType`算出
 * `treeDegree`：树的度数，根据`pageSize`等其他常量算出
 * `rowSize`：一行数据的大小（byte），由`columnType`算出

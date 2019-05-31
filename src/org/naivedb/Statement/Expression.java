@@ -204,6 +204,7 @@ public class Expression {
             none
         return:
             one Pair<> value p, p's first value is real numeric/string, p's second value is its type
+        * Note: make sure isValue() returns true before you call this function
      */
     public Pair<Object, Type> getDirectValue() throws NDException {
         if (type == 0) {
