@@ -139,6 +139,8 @@ public class Table {
             types.add(this.colTypes.get(i).typeName());
         BPlusTreeConfiguration config = new BPlusTreeConfiguration(pageSize, this.fileName, keyType, types);
         this.index = new BPlusTree(config);
+        // primary key should be not null!
+        this.colNotNull.set(this.primaryKey, true);
     }
     
     /**
