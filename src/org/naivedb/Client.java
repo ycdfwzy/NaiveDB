@@ -6,7 +6,12 @@ import org.apache.commons.cli.*;
 import org.naivedb.utils.*;
 import org.jline.terminal.*;
 import org.jline.reader.*;
+import org.jline.reader.impl.completer.*;
+import org.jline.builtins.Completers;
+import org.jline.builtins.Completers.RegexCompleter;
 import org.jline.utils.InfoCmp.Capability;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Client {
 
@@ -27,6 +32,98 @@ public class Client {
         } catch(Exception e) { return false; }
 
         return true;
+    }
+
+    private static AggregateCompleter getCompleter() {
+        Map<String, Completer> comp = new HashMap<>();
+        // comp.put("NE", new StringsCompleter())
+
+        Completer importCompleter = new ArgumentCompleter(
+                new StringsCompleter("import"),
+                new Completers.FileNameCompleter(),
+                NullCompleter.INSTANCE
+            );
+        Completer useCompleter = new ArgumentCompleter(
+                new StringsCompleter("use"),
+                NullCompleter.INSTANCE
+            );
+        Completer metaCompleter = new ArgumentCompleter(
+                new StringsCompleter("create", "drop"),
+                new StringsCompleter("database", "table"),
+                NullCompleter.INSTANCE
+            );
+        Completer showCompleter = new ArgumentCompleter(
+                new StringsCompleter("show"),
+                new StringsCompleter("databases;", "tables;", "table"),
+                NullCompleter.INSTANCE
+            );
+        Completer insertCompleter = new ArgumentCompleter(
+                new StringsCompleter("insert"),
+                new StringsCompleter("into"),
+                NullCompleter.INSTANCE,
+                new StringsCompleter("values"),
+                NullCompleter.INSTANCE
+            );
+        Completer delCompleter = new ArgumentCompleter(
+            new StringsCompleter("delete"),
+            NullCompleter.INSTANCE
+        );
+        Completer updCompleter = new ArgumentCompleter(
+            new StringsCompleter("update"),
+            NullCompleter.INSTANCE
+        );
+        Completer selCompleter = new ArgumentCompleter(
+            new StringsCompleter("select"),
+            new StringsCompleter("*"),
+            new StringsCompleter("from"),
+            new StringsCompleter("where"),
+            NullCompleter.INSTANCE
+        );
+        Completer exitCompleter = new ArgumentCompleter(
+            new StringsCompleter("exit", "shutdown"),
+            NullCompleter.INSTANCE
+        );
+        Completer clcCompleter = new ArgumentCompleter(
+            new StringsCompleter("clear"),
+            NullCompleter.INSTANCE
+        );
+        return new AggregateCompleter(
+            exitCompleter, clcCompleter, importCompleter, useCompleter,
+            metaCompleter, showCompleter, insertCompleter, delCompleter,
+            updCompleter, selCompleter
+            );
+    }
+
+    private static void execFile(String filename, DataInputStream in, DataOutputStream out) {
+        File sqls = new File(filename);
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(sqls));
+            String sql;
+            String response = "";
+            int line_num = 1;
+            while ((sql = reader.readLine()) != null){
+                out.writeUTF(sql);
+                response = in.readUTF();
+                // if (response.err == null) continue;
+                // else {
+                //     System.out.println("err meet when executing line " + line_num + ": ");
+                //     System.out.println(reponse.err_message);
+                // }
+            }
+            System.out.println("recived message: " + response);
+            reader.close();
+        } catch(IOException e){
+            System.out.print("err meet: ");
+            System.out.println(e);
+        } finally {
+            try {
+                if (reader != null) reader.close();
+            } catch (IOException e){
+                System.out.print("err meet: ");
+                System.out.println(e);
+            }
+        }
     }
 
     public static void showHelp() {
@@ -77,26 +174,34 @@ public class Client {
             // REPL
 
             Terminal terminal = TerminalBuilder.builder().system(true).build();
-            LineReader lineReader = LineReaderBuilder.builder().terminal(terminal).build();
+            LineReader lineReader = LineReaderBuilder.builder().terminal(terminal)
+                                                     .completer(getCompleter())
+                                                     .build();
             String prompt = "naivedb> ";
 
             while(true) {
                 String line;
+                String upper;
                 try {
-                    line = lineReader.readLine(prompt).toUpperCase();
+                    line = lineReader.readLine(prompt).trim();
+                    upper = line.toUpperCase();
 
-                    if (line.equals("CLEAR")) {
+                    if (upper.equals("CLEAR")) {
                         terminal.puts(Capability.clear_screen);
                         terminal.flush();
                     }
-                    else if (line.equals("EXIT") || 
-                        line.equals("SHUTDOWN") || line.equals("SHUTDOWN;")) {
-                        out.writeUTF(line);
+                    else if (upper.equals("EXIT") || 
+                        upper.equals("SHUTDOWN") || upper.equals("SHUTDOWN;")) {
+                        out.writeUTF(upper);
                         System.out.println("Bye.");
                         break;
                     }
+                    else if (upper.startsWith("IMPORT")){
+                        String file_name = line.substring(7).trim();
+                        execFile(file_name, in, out);
+                    }
                     else {
-                        out.writeUTF(line);
+                        out.writeUTF(upper);
                         String response = in.readUTF();
                         System.out.println("recived message: " + response);
                     }

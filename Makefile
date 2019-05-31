@@ -29,7 +29,7 @@ serverClass = Server
 clientClass = Client
 
 # needed jar packages
-JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar:lib/commons-cli-1.4.jar:lib/jline-terminal-3.11.0.jar:lib/jline-terminal-jansi-3.11.0.jar:lib/jline-reader-3.11.0.jar
+JARS = :lib/junit-4.13-beta-3.jar:lib/hamcrest-core-1.3.jar:lib/commons-cli-1.4.jar:lib/jline-terminal-3.11.0.jar:lib/jline-terminal-jansi-3.11.0.jar:lib/jline-reader-3.11.0.jar:lib/jline-builtins-3.11.0.jar
 
 # javac command
 JAVAC = javac
