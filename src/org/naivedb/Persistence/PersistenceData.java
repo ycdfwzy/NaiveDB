@@ -118,8 +118,10 @@ public class PersistenceData {
         return ret;
     }
 
-    public void remove(long rowNum)
-            throws IOException {
+    public LinkedList remove(long rowNum)
+            throws IOException, NDException {
+        LinkedList obj = this.get(rowNum);
+
         byte[] bytes = new byte[rowSize];
         Arrays.fill(bytes, (byte)0);
         this.dataFile.seek(rowNum * this.rowSize);
@@ -128,6 +130,8 @@ public class PersistenceData {
         this.rowIndexPool.add(rowNum);
         // remove from cachedData
         this.cachedData.remove(rowNum);
+
+        return obj;
     }
 
     public void write()

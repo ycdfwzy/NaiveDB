@@ -48,7 +48,7 @@ public class Expression {
         } else
         {
             this.symbolORValue = symbolORvalue;
-            this.valueType = new Type(Type.SQL_STRING);
+            this.valueType = new Type(Type.SQL_STRING, symbolORvalue.length()+1);
         }
     }
 
@@ -95,6 +95,15 @@ public class Expression {
         this.expr2 = expr2;
     }
 
+    /*
+        calculate this expression's value
+        params:
+            nameList:   symbols' name
+            typeList:   symbols' types
+            valueList:  symbols' values
+        return:
+            one Pair<> value p, p's first value is real numeric/string, p's second value is its type
+     */
     public Pair<Object, Type> calcValue(LinkedList<String> nameList, LinkedList<Type> typeList, LinkedList valueList)
             throws NDException {
         switch (type) {
@@ -139,10 +148,80 @@ public class Expression {
                         throw new NDException("Unexpected binary operation '" + this.op + "' !");
                 }
             case 4:
-                return new Pair<>(this.symbolORValue, new Type(Type.SQL_STRING));
+                return new Pair<>(this.symbolORValue, this.valueType);
             default:
                 throw new NDException("Unknown Type!");
         }
+    }
+
+    /*
+        test if it is a symbol that is equal to "symbol"
+        params:
+            nameList:   symbols' name
+        return:
+            true if satisfied, otherwise false
+     */
+    public boolean isSymbol(String symbol) {
+        return (type == 1 && symbolORValue.compareTo(symbol) == 0);
+    }
+
+    /*
+        test if it is a numeric value
+        params:
+            none
+        return:
+            true if satisfied, otherwise false
+     */
+    public boolean isNumericValue() {
+        return type == 0;
+    }
+
+    /*
+        test if it is a string value
+        params:
+            none
+        return:
+            true if satisfied, otherwise false
+     */
+    public boolean isStringValue() {
+        return type == 4;
+    }
+
+    /*
+        test if it is a string/numeric value
+        params:
+            none
+        return:
+            true if satisfied, otherwise false
+     */
+    public boolean isValue() {
+        return isNumericValue() || isStringValue();
+    }
+
+    /*
+        get string/numeric value directly
+        params:
+            none
+        return:
+            one Pair<> value p, p's first value is real numeric/string, p's second value is its type
+        * Note: make sure isValue() returns true before you call this function
+     */
+    public Pair<Object, Type> getDirectValue() throws NDException {
+        if (type == 0) {
+            Object obj = Type.convert(this.symbolORValue, this.valueType);
+            return new Pair<>(obj, this.valueType);
+        } else
+        if (type == 4) {
+            return new Pair<>(this.symbolORValue, this.valueType);
+        }
+        throw new NDException("Can't get value directly!");
+    }
+
+    public String getSymbol() throws NDException {
+        if (type != 1) {
+            throw new NDException("Not a symbol expression!");
+        }
+        return symbolORValue;
     }
 
     public int getType() {return this.type;}

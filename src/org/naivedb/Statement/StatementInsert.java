@@ -42,6 +42,13 @@ public class StatementInsert {
         }
     }
 
+    /*
+        execute insert operation
+        params:
+            none
+        return:
+            the number of inserted rows
+     */
     public int exec() throws IOException, NDException {
         int succeed = 0;
         for (LinkedList value: this.valueList) {

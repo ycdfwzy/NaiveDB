@@ -7,4 +7,10 @@
 * `ArrayList<String> getColNames()`，获取所有列名
 * `ArrayList<Type> getColTypes()`，获取所有列类型
 * `String getFileName()`，获取table的文件名前缀
-* 还有很多没有写。。。
+* `long insert(LinkedList values)`，将`values`查入表格
+* `ArrayList<Long> search(Conditions cond)`，按照`cond`搜索表数据，返回符合条件的行号列表。
+* `void update(long row, LinkedList<String> colList, LinkedList<Expression> exprList)`，修改第`row`行数据。
+* `void delete(long row)`，删除第`row`行数据
+* `ArrayList<Long> getAllRows()`，获得所有行的行号。
+* `LinkedList getSingleRowData(long row)`，获得第`row`行的数据。
+
