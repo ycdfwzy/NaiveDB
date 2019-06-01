@@ -1,6 +1,5 @@
 package org.naivedb.Table;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.naivedb.Statement.Conditions;
 import org.naivedb.Statement.Expression;
 import org.naivedb.utils.Consts;
