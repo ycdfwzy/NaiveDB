@@ -1,5 +1,6 @@
 package org.naivedb.Table;
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.naivedb.Statement.Conditions;
 import org.naivedb.Statement.Expression;
 import org.naivedb.utils.Consts;
@@ -138,6 +139,8 @@ public class Table {
             types.add(this.colTypes.get(i).typeName());
         BPlusTreeConfiguration config = new BPlusTreeConfiguration(pageSize, this.fileName, keyType, types);
         this.index = new BPlusTree(config);
+        // primary key should be not null!
+        this.colNotNull.set(this.primaryKey, true);
     }
     
     /**
@@ -180,9 +183,45 @@ public class Table {
      * param: conditions
      * return: result of rows
      */
-    public LinkedList<Long> search(Conditions cond) throws IOException, NDException {
+    public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        if (this.primaryKey != -1) {
+            String primary = this.colNames.get(this.primaryKey);
+            // index = x
+            if (cond.isSymbolEqualSomething(primary)) {
+                Object obj = cond.getEqualValue().getKey();
+                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(key));
+            } else
+            // index ∈ (-∞, x) / (-∞, x]
+            if (cond.isLowerBounded(primary)) {
+                Pair<Pair<Object, Type>, Boolean> lower = cond.getBoundValue();
+                boolean isOpen = lower.getValue();
+                Object obj = lower.getKey().getKey();
+                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(key, isOpen ? "GT" : "NLT"));
+            } else
+            // index ∈ (x, +∞) / [x, +∞)
+            if (cond.isUpperBounded(primary)) {
+                Pair<Pair<Object, Type>, Boolean> upper = cond.getBoundValue();
+                boolean isOpen = upper.getValue();
+                Object obj = upper.getKey().getKey();
+                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(key, isOpen ? "LT" : "NGT"));
+            } else
+            // index ∈ (/[x, y)/]
+            if (cond.isRanged(primary)) {
+                Pair<Pair<Pair<Object, Type>, Boolean>, Pair<Pair<Object, Type>, Boolean>> range = cond.getRange();
+                Pair<Pair<Object, Type>, Boolean> lower = range.getKey();
+                Pair<Pair<Object, Type>, Boolean> upper = range.getValue();
+                boolean lowerOpen = lower.getValue();
+                boolean upperOpen = upper.getValue();
+                Object lowerKey = Type.convert(lower.getKey().getKey().toString(), this.colTypes.get(this.primaryKey));
+                Object upperKey = Type.convert(upper.getKey().getKey().toString(), this.colTypes.get(this.primaryKey));
+                return new ArrayList<>(this.index.search(lowerKey, !lowerOpen, upperKey, !upperOpen));
+            }
+        }
         // bad implementation
-        LinkedList<Long> res = new LinkedList<>();
+        ArrayList<Long> res = new ArrayList<>();
         ArrayList<Long> allRow = this.persistence.getAllRowNum();
         for (long row: allRow) {
             if (cond.satisfied(new LinkedList<String>(this.colNames),
@@ -193,6 +232,11 @@ public class Table {
         return res;
     }
 
+    /**
+     * update
+     * param: row number, columns list to be updated, expressions list to be assigned to columns
+     * return: no return value
+     */
     public void update(long row, LinkedList<String> colList, LinkedList<Expression> exprList)
             throws NDException, IOException {
         boolean changePrimaryKey = false;
@@ -217,6 +261,36 @@ public class Table {
             Object oldKey = oldData.get(this.primaryKey);
             this.index.update(oldKey, newData.get(this.primaryKey), row);
         }
+    }
+
+    /**
+     * delete
+     * param: row number
+     * return: no return value
+     */
+    public void delete(long row) throws IOException, NDException {
+        LinkedList values = this.persistence.remove(row);
+        if (this.primaryKey != -1) {
+            this.index.delete(values.get(this.primaryKey));
+        }
+    }
+
+    /**
+     * get all row numbers
+     * param: none
+     * return: an array list of row numbers
+     */
+    public ArrayList<Long> getAllRows() {
+        return this.persistence.getAllRowNum();
+    }
+
+    /**
+     * get single row number data
+     * param: row number
+     * return: an linked list of row data in line "row"
+     */
+    public LinkedList getSingleRowData(long row) throws NDException, IOException {
+        return this.persistence.get(row);
     }
 
     public ArrayList<String> getColNames() { return this.colNames; }

@@ -109,8 +109,19 @@ public class Type {
         return type != SQL_STRING;
     }
 
+    /*
+        compare obj1 to obj2, on Type "type"
+        params:
+            obj1: first value
+            obj2: second value
+            type: Type
+        return:
+            0: equal
+            1: obj1 < obj2
+            2: obj1 > obj2
+     */
     public static int compare(Object obj1, Object obj2, Type type) {
-        // null value
+        // todo: null value
         if (obj1.equals(obj2))
             return 0;
         switch (type.getType()) {
@@ -127,6 +138,14 @@ public class Type {
         }
     }
 
+    /*
+        convert convert str's Type to “type”
+        params:
+            str: origin string
+            type: target type
+        return:
+            an object, its Type is "type"
+     */
     public static Object convert(String str, Type type)
             throws NDException {
         if (str.startsWith("\"") && str.endsWith("\"") && type.getType() == Type.SQL_STRING) {
@@ -146,6 +165,17 @@ public class Type {
         }
     }
 
+    /*
+        get higher type in t1, t2
+            double > float > long > int
+            StringX > StringY when X>Y
+        params:
+            t1: first type
+            t2: second type
+        return:
+            the higher type between t1, t2
+        * Note: numeric and string can't be lifted
+     */
     public static Type lift(Type t1, Type t2)
             throws NDException {
         if ((t1.isNumber() && !t2.isNumber()) || (!t1.isNumber() && t2.isNumber()))

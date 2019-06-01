@@ -65,8 +65,8 @@ use_stmt
   ;
 
 show_stmt
-  : K_SHOW ( K_DATABASES | K_TABLES )
-  | K_SHOW K_TABLE table_name
+  : K_SHOW K_DATABASES
+  | K_SHOW K_DATABASE db_name
   ;
 
 select_elements
@@ -97,7 +97,7 @@ type_name
 
 expr
   : numeric_expr
-  | '"' .+ '"'
+  | TEXT_STRING
   ;
 
 numeric_expr
@@ -134,6 +134,7 @@ SPACES
   : [ \u000B\t\r\n] -> channel(HIDDEN)
   ;
 
+TEXT_STRING :    '"' ( ~'"' | '\\"' )* '"';
 
 K_CREATE : C R E A T E;
 K_DATABASE : D A T A B A S E;

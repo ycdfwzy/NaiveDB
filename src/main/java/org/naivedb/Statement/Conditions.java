@@ -39,6 +39,15 @@ public class Conditions {
         this.op = op;
     }
 
+    /*
+        test if this condition is satisfied
+        params:
+            nameList:   symbols' name
+            typeList:   symbols' types
+            valueList:  symbols' values
+        return:
+            true if satisfied, otherwise false
+     */
     public boolean satisfied(LinkedList<String> nameList, LinkedList<Type> typeList, LinkedList valueList)
             throws NDException {
         switch (this.type) {
@@ -64,6 +73,129 @@ public class Conditions {
             default:
                 throw new NDException("Unexpected Conditions type");
         }
+    }
+
+    /*
+         get the value in "symbol = value"
+         params:
+            none
+        return:
+            one Pair<> value p, p's first value is real numeric/string, p's second value is its type
+         * Note: You must call isSymbolEqualSomething(symbol) to check the form
+     */
+    public Pair<Object, Type> getEqualValue() throws NDException {
+        if (expr1.isValue())
+            return expr1.getDirectValue();
+        return expr2.getDirectValue();
+    }
+
+    /*
+         get the x in "(-∞, x)" or "(-∞, x]" or "(x, +∞)" or "[x, +∞)"
+         params:
+            none
+        return:
+            one Pair<> value p, p's first value is real numeric and its type, p's second value is True if open, else closed
+         * Note: You must call isUpperBounded(symbol) or isLowerBound(symbol) to check the form
+     */
+    public Pair<Pair<Object, Type>, Boolean> getBoundValue() throws NDException {
+        Pair<Object, Type> obj;
+        if (expr1.isValue()) {
+            obj = expr1.getDirectValue();
+        } else
+        {
+            obj = expr2.getDirectValue();
+        }
+        if (op.compareTo("LT") == 0 || op.compareTo("GT") == 0)
+            return new Pair<>(obj, true);
+        return new Pair<>(obj, false);
+    }
+
+    /*
+         get the x, y in "(/[x, y)/]"
+         params:
+            none
+        return:
+            one Pair<> value p, p's first value is left real numeric and its type and openness,
+                                p's second value is right real numeric and its type and openness
+         * Note: You must call isRanged(symbol) to check the form
+     */
+    public Pair<Pair<Pair<Object, Type>, Boolean>, Pair<Pair<Object, Type>, Boolean>> getRange() throws NDException {
+        Pair<Pair<Object, Type>, Boolean> bound1 = leftCond.getBoundValue();
+        Pair<Pair<Object, Type>, Boolean> bound2 = rightCond.getBoundValue();
+        String symbol;
+        if (leftCond.expr1.getType() == 1) {
+            symbol = leftCond.expr1.getSymbol();
+        } else
+        {
+            symbol = leftCond.expr2.getSymbol();
+        }
+        if (leftCond.isLowerBounded(symbol)) {
+            return new Pair<>(bound1, bound2);
+        }
+        return new Pair<>(bound2, bound1);
+    }
+
+    /*
+        if this condition is in the form "symbol = value"
+        params:
+            symbol:   symbol's name
+        return:
+            true if is "symbol = value", otherwise false
+     */
+    public boolean isSymbolEqualSomething(String symbol) {
+        if (type != 2) return false;
+        if (op.compareTo("EQ") != 0) return false;
+        return ((expr1.isSymbol(symbol) && expr2.isValue()) ||
+                (expr2.isSymbol(symbol) && expr1.isValue()));
+    }
+
+    /*
+        if this condition is in the form "symbol ∈ (-∞, x)” or "symbol ∈ (-∞, x]"
+        params:
+            symbol:   symbol's name
+        return:
+            true if is "symbol ∈ (-∞, x)” or "symbol ∈ (-∞, x]", otherwise false
+     */
+    public boolean isUpperBounded(String symbol) {
+        if (type != 2) return false;
+        if (op.compareTo("LT") == 0 || op.compareTo("NGT") == 0) {
+            return expr1.isSymbol(symbol) && expr2.isNumericValue();
+        }
+        if (op.compareTo("GT") == 0 || op.compareTo("NLT") == 0) {
+            return expr2.isSymbol(symbol) && expr1.isNumericValue();
+        }
+        return false;
+    }
+
+    /*
+        if this condition is in the form "symbol ∈ (x, +∞)” or "symbol ∈ [x, +∞)"
+        params:
+            symbol:   symbol's name
+        return:
+            true if is "symbol ∈ (x, +∞)” or "symbol ∈ [x, +∞)", otherwise false
+     */
+    public boolean isLowerBounded(String symbol) {
+        if (type != 2) return false;
+        if (op.compareTo("GT") == 0 || op.compareTo("NLT") == 0) {
+            return expr1.isSymbol(symbol) && expr2.isNumericValue();
+        }
+        if (op.compareTo("LT") == 0 || op.compareTo("NGT") == 0) {
+            return expr2.isSymbol(symbol) && expr1.isNumericValue();
+        }
+        return false;
+    }
+
+    /*
+        if this condition is in the form "symbol ∈ (/[x, y)/]"
+        params:
+            symbol:   symbol's name
+        return:
+            true if is "symbol ∈ (/[x, y)/]", otherwise false
+     */
+    public boolean isRanged(String symbol) {
+        if (type != 0) return false;
+        return (leftCond.isLowerBounded(symbol) && rightCond.isUpperBounded(symbol)) ||
+                (rightCond.isLowerBounded(symbol) && leftCond.isUpperBounded(symbol));
     }
 
     private boolean isValue(String s) {
