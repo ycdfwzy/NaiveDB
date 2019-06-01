@@ -122,7 +122,7 @@ public class Expression {
                         return neg(tmp);
                     case "~":
                         return non(tmp);
-                    case "not":
+                    case "NOT":
                         return not(tmp);
                     default:
                         throw new NDException("Unexpected unary operation '" + this.op + "' !");
@@ -217,6 +217,63 @@ public class Expression {
         throw new NDException("Can't get value directly!");
     }
 
+    /*
+        simplify this Expression
+        params: none
+        return: a simplified expression
+     */
+    public Expression simplify() throws NDException {
+        if (type == 0 || type == 1 || type == 4)
+            return this;
+        if (type == 2) {
+            Expression expr = expr1.simplify();
+            if (expr.isNumericValue()) {
+                switch (this.op) {
+                    case "+":
+                        return expr;
+                    case "-":
+                        return new Expression(0, neg(expr.getDirectValue()).getKey().toString());
+                    case "~":
+                        return new Expression(0, non(expr.getDirectValue()).getKey().toString());
+                    case "NOT":
+                        return new Expression(0, not(expr.getDirectValue()).getKey().toString());
+                    default:
+                        throw new NDException("Unexpected unary operation '" + this.op + "' !");
+                }
+            }
+            return new Expression(2, this.op, expr);
+        }
+        Expression expr1 = this.expr1.simplify();
+        Expression expr2 = this.expr2.simplify();
+        if (expr1.isNumericValue() && expr2.isNumericValue()) {
+            Pair<Object, Type> x = expr1.getDirectValue();
+            Pair<Object, Type> y = expr1.getDirectValue();
+            Type finalType = Type.lift(x.getValue(), y.getValue());
+            Object o1 = Type.convert(x.getKey().toString(), finalType);
+            Object o2 = Type.convert(y.getKey().toString(), finalType);
+            switch (this.op) {
+                case "+":
+                    return new Expression(0, plus(o1, o2, finalType).getKey().toString());
+                case "-":
+                    return new Expression(0, minus(o1, o2, finalType).getKey().toString());
+                case "*":
+                    return new Expression(0, multiply(o1, o2, finalType).getKey().toString());
+                case "/":
+                    return new Expression(0, divide(o1, o2, finalType).getKey().toString());
+                case "%":
+                    return new Expression(0, mod(o1, o2, finalType).getKey().toString());
+                default:
+                    throw new NDException("Unexpected binary operation '" + this.op + "' !");
+            }
+        }
+        if (this.op.compareTo("+") == 0 && expr1.isStringValue() && expr2.isStringValue()) {
+            Pair<Object, Type> x = expr1.getDirectValue();
+            Pair<Object, Type> y = expr1.getDirectValue();
+            return new Expression(4, x.getKey().toString()+y.getKey().toString());
+        }
+        return new Expression(3, this.op, expr1, expr2);
+    }
+
     public String getSymbol() throws NDException {
         if (type != 1) {
             throw new NDException("Not a symbol expression!");
@@ -227,7 +284,7 @@ public class Expression {
     public int getType() {return this.type;}
     public Type getValueType() {return this.valueType;}
 
-    private Pair<Object, Type> neg(Pair<Object, Type> p)
+    public static Pair<Object, Type> neg(Pair<Object, Type> p)
             throws NDException {
         switch (p.getValue().getType()) {
             case Type.SQL_INT:
@@ -243,7 +300,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> non(Pair<Object, Type> p)
+    public static Pair<Object, Type> non(Pair<Object, Type> p)
             throws NDException {
         switch (p.getValue().getType()) {
             case Type.SQL_INT:
@@ -255,7 +312,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> not(Pair<Object, Type> p)
+    public static Pair<Object, Type> not(Pair<Object, Type> p)
             throws NDException {
         switch (p.getValue().getType()) {
             case Type.SQL_INT:
@@ -271,7 +328,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> plus(Object o1, Object o2, Type finalType)
+    public static Pair<Object, Type> plus(Object o1, Object o2, Type finalType)
             throws NDException {
         switch (finalType.getType()) {
             case Type.SQL_INT:
@@ -287,7 +344,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> minus(Object o1, Object o2, Type finalType)
+    public static Pair<Object, Type> minus(Object o1, Object o2, Type finalType)
             throws NDException {
         switch (finalType.getType()) {
             case Type.SQL_INT:
@@ -303,7 +360,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> multiply(Object o1, Object o2, Type finalType)
+    public static Pair<Object, Type> multiply(Object o1, Object o2, Type finalType)
             throws NDException {
         switch (finalType.getType()) {
             case Type.SQL_INT:
@@ -319,7 +376,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> divide(Object o1, Object o2, Type finalType)
+    public static Pair<Object, Type> divide(Object o1, Object o2, Type finalType)
             throws NDException {
         switch (finalType.getType()) {
             case Type.SQL_INT:
@@ -335,7 +392,7 @@ public class Expression {
         }
     }
 
-    private Pair<Object, Type> mod(Object o1, Object o2, Type finalType)
+    public static Pair<Object, Type> mod(Object o1, Object o2, Type finalType)
             throws NDException {
         switch (finalType.getType()) {
             case Type.SQL_INT:
