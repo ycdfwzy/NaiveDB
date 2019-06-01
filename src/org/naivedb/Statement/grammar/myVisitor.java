@@ -60,12 +60,13 @@ public class myVisitor extends sqlBaseVisitor {
         ArrayList<Pair<String, Type>> cols = new ArrayList<>();
         ArrayList<Boolean> notNull = new ArrayList<>();
         for (int i = 4; i < n; i += 1) {
-            String colName = (String) visit(ctx.getChild(i));
-            i += 1;
-            if (colName.compareTo("PRIMARY") == 0) {
-                primaryKey = ctx.getChild(i+2).getText();
+            if (ctx.getChild(i).getText().toUpperCase().compareTo("PRIMARY") == 0) {
+                primaryKey = (String) visit(ctx.getChild(i+3));
                 break;
             }
+
+            String colName = (String) visit(ctx.getChild(i));
+            i += 1;
 
             Type colType = (Type) visit(ctx.getChild(i));
             i += 1;
@@ -92,66 +93,143 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitInsert_stmt(sqlParser.Insert_stmtContext ctx) {
-        return null;
+        String tbName = (String) visit(ctx.getChild(2));
+        int n = ctx.getChildCount();
+        LinkedList<String> attrList = null;
+        LinkedList<LinkedList> valueList;
+        int i = 3;
+        if (ctx.getChild(i).getText().toUpperCase().compareTo("VALUES") != 0) {
+            attrList = new LinkedList<>();
+            i += 1;
+            while (true) {
+                String attrName = (String) visit(ctx.getChild(i));
+                attrList.add(attrName);
+                if (ctx.getChild(i+1).getText().compareTo(")") == 0)
+                    break;
+                i += 2;
+            }
+            i += 2;
+        }
+
+        i += 1;
+        valueList = new LinkedList<>();
+        while (i < n) {
+            LinkedList values = new LinkedList();
+            i += 1;
+            while (true) {
+                Expression expr = (Expression) visit(ctx.getChild(i));
+                if (!expr.isValue())
+                    throw new ParseCancellationException("Unknown '" + ctx.getChild(i) + "'!");
+
+                Pair<Object, Type> v;
+                try {
+                    v = expr.getDirectValue();
+                } catch (NDException e) {
+                    throw new ParseCancellationException(e);
+                }
+
+                values.add(v.getKey());
+
+                i += 2;
+                if (i >= n || ctx.getChild(i).getText().compareTo(",") == 0)
+                    break;
+            }
+
+            valueList.add(values);
+            i += 1;
+        }
+        if (attrList != null)
+            return new StatementInsert(tbName, attrList, valueList);
+        else
+            return new StatementInsert(tbName, valueList);
     }
 
     @Override
     public Object visitDelete_stmt(sqlParser.Delete_stmtContext ctx) {
-        return null;
+        String tbName = (String) visit(ctx.getChild(2));
+        if (ctx.getChildCount() >= 5) {
+            Conditions cond = (Conditions) visit(ctx.getChild(4));
+            return new StatementDelete(tbName, cond);
+        }
+        return new StatementDelete(tbName);
     }
 
     @Override
     public Object visitUpdate_stmt(sqlParser.Update_stmtContext ctx) {
-        return null;
+        String tbName = (String) visit(ctx.getChild(1));
+        Pair<LinkedList<String>, LinkedList<Expression>> res = (Pair<LinkedList<String>, LinkedList<Expression>>) visit(ctx.getChild(3));
+        LinkedList<String> colList = res.getKey();
+        LinkedList<Expression> exprList = res.getValue();
+        if (ctx.getChildCount() >= 6) {
+            Conditions cond = (Conditions) visit(ctx.getChild(5));
+            return new StatementUpdate(tbName, colList, exprList, cond);
+        }
+        return new StatementUpdate(tbName, colList, exprList);
     }
 
     @Override
     public Object visitSelect_stmt(sqlParser.Select_stmtContext ctx) {
+
         return null;
     }
 
     @Override
     public Object visitUse_stmt(sqlParser.Use_stmtContext ctx) {
-        return null;
+        String dbName = (String) visit(ctx.getChild(1));
+        return new StatementUse(dbName);
     }
 
     @Override
     public Object visitShow_stmt(sqlParser.Show_stmtContext ctx) {
-        return null;
+        if (ctx.getChildCount() == 2) {
+            return new StatementShow();
+        }
+        String dbName = (String) visit(ctx.getChild(2));
+        return new StatementShow(dbName);
     }
 
     @Override
     public Object visitSelect_elements(sqlParser.Select_elementsContext ctx) {
-        return null;
+        int n = ctx.getChildCount();
+        ArrayList<String> colList = new ArrayList<>();
+        colList.ensureCapacity(n);
+        for (int i = 0 ; i < n; i += 2) {
+            colList.add((String) visit(ctx.getChild(i)));
+        }
+        return colList;
     }
 
     @Override
     public Object visitAsign_clause(sqlParser.Asign_clauseContext ctx) {
-        int n = ctx.getChildCount();
-        LinkedList<String> colList = new LinkedList<>();
-        LinkedList<Expression> exprList = new LinkedList<>();
-        for (int i = 0; i < n; i += 4) {
-            String colName = (String) visit(ctx.getChild(i));
-            Expression expr = (Expression) visit(ctx.getChild(i+2));
-            colList.add(colName);
-            exprList.add(expr);
+        try {
+            int n = ctx.getChildCount();
+            LinkedList<String> colList = new LinkedList<>();
+            LinkedList<Expression> exprList = new LinkedList<>();
+            for (int i = 0; i < n; i += 4) {
+                String colName = ((Expression) visit(ctx.getChild(i))).getSymbol();
+                Expression expr = (Expression) visit(ctx.getChild(i + 2));
+                colList.add(colName);
+                exprList.add(expr);
+            }
+            return new Pair<>(colList, exprList);
+        } catch (NDException e) {
+            throw new ParseCancellationException(e);
         }
-        return new Pair<>(colList, exprList);
     }
 
     @Override
     public Object visitDb_name(sqlParser.Db_nameContext ctx) {
-        return ctx.getText();
+        return ctx.getText().toUpperCase();
     }
 
     @Override
     public Object visitTable_name(sqlParser.Table_nameContext ctx) {
-        return ctx.getText();
+        return ctx.getText().toUpperCase();
     }
 
     @Override
     public Object visitAttr_name(sqlParser.Attr_nameContext ctx) {
-        return ctx.getText();
+        return ctx.getText().toUpperCase();
     }
 
     @Override
@@ -178,8 +256,8 @@ public class myVisitor extends sqlBaseVisitor {
     public Object visitExpr(sqlParser.ExprContext ctx) {
         try {
             Expression expr;
-            if (ctx.getChild(0).getText().compareTo("\"") == 0) {
-                expr = new Expression(4, ctx.getChild(1).getText());
+            if (ctx.getChild(0).getText().startsWith("\"")) {
+                expr = new Expression(4, ctx.getText().substring(1, ctx.getText().length()-1));
             } else
             {
                 expr = (Expression) visit(ctx.getChild(0));
