@@ -78,7 +78,7 @@ public class Table {
         metaFile.createNewFile();
         dataFile.createNewFile();
 
-        this.persistence = new PersistenceData(this.fileName + ".data", this.colTypes, null);
+        this.persistence = new PersistenceData(this.fileName, this.colTypes, null);
         this.writeMeta(metaFile);
     }
 
@@ -264,7 +264,7 @@ public class Table {
 
         input.close();
 
-        this.persistence = new PersistenceData(this.fileName + ".data", this.colTypes, blankRow);
+        this.persistence = new PersistenceData(this.fileName, this.colTypes, blankRow);
         logger.info("table " + this.tableName + " meta info load successful.");
     }
     
