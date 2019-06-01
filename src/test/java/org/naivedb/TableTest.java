@@ -1,4 +1,4 @@
-package org.naivedb.Test;
+package org.naivedb;
 
 import static org.junit.Assert.assertEquals;
 

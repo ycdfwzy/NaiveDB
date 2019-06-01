@@ -8,12 +8,14 @@ import org.naivedb.utils.NumberUtils;
 import org.naivedb.utils.MyLogger;
 import org.naivedb.Type.Type;
 import java.util.logging.*;
+import org.naivedb.Table.TempTable;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Arrays;
 import org.naivedb.Database.DatabaseManager;
+import javafx.util.Pair;
 
 public class main {
 
@@ -61,6 +63,25 @@ public class main {
         System.out.println(expr9.calcValue(nameList, typeList, valueList).getValue().typeName());
         System.out.println(expr10.calcValue(nameList, typeList, valueList).getKey());
         System.out.println(expr10.calcValue(nameList, typeList, valueList).getValue().typeName());
+        
+        // ArrayList<Pair<String, Type>> types = new ArrayList<Pair<String, Type>>();
+        // types.add(new Pair<String,Type>("name", new Type(Type.SQL_STRING, 10)));
+        // types.add(new Pair<String,Type>("age", new Type(Type.SQL_INT)));
+        // types.add(new Pair<String,Type>("money", new Type(Type.SQL_DOUBLE)));
+        // TempTable tb = new TempTable(types);
+        // LinkedList ls1 = new LinkedList<>();
+        // ls1.add("naxin");ls1.add(21);ls1.add(200d);
+        // LinkedList ls2 = new LinkedList<>();
+        // ls2.add("lishuai");ls2.add(21);ls2.add(200d);
+        // LinkedList ls3 = new LinkedList<>();
+        // ls3.add("zeshen");ls3.add(21);ls3.add(200d);
+        // tb.insert(ls1);tb.insert(ls2);tb.insert(ls3);
+        // ArrayList<Long> s = tb.getAllRows();
+        // System.out.println(s);
+        // for (long i: s){
+        //     System.out.println(tb.getSingleRowData(i));
+        // }
+        // tb.close();
 
 //        LinkedList<String> list1 = new LinkedList<>(nameList);
 //        for (String str: list1) {

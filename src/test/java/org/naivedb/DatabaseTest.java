@@ -1,4 +1,4 @@
-package org.naivedb.Test;
+package org.naivedb;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package org.naivedb.Test;
+package org.naivedb;
 
 import javafx.util.Pair;
 import org.junit.*;

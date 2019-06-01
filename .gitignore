@@ -42,3 +42,10 @@ out/
 
 # vscode
 **/.vscode/
+
+# maven
+target
+.classpath
+.project
+.settings/
+build.rc
