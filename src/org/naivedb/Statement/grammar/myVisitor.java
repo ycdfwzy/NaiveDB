@@ -169,7 +169,9 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitSelect_stmt(sqlParser.Select_stmtContext ctx) {
-
+        ArrayList<String> selectElements = (ArrayList<String>) visit(ctx.getChild(1));
+        String tbName = (String) visit(ctx.getChild(3));
+        // todo: complete this function
         return null;
     }
 
@@ -250,6 +252,31 @@ public class myVisitor extends sqlBaseVisitor {
             throw new ParseCancellationException(e);
         }
         return type;
+    }
+
+    @Override
+    public Object visitJoin_range(sqlParser.Join_rangeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public Object visitNatural_join(sqlParser.Natural_joinContext ctx) {
+        return null;
+    }
+
+    @Override
+    public Object visitJoin_on(sqlParser.Join_onContext ctx) {
+        return null;
+    }
+
+    @Override
+    public Object visitOuter_join(sqlParser.Outer_joinContext ctx) {
+        return null;
+    }
+
+    @Override
+    public Object visitInner_join(sqlParser.Inner_joinContext ctx) {
+        return null;
     }
 
     @Override

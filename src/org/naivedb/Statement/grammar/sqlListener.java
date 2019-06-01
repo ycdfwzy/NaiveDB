@@ -198,6 +198,56 @@ public interface sqlListener extends ParseTreeListener {
 	 */
 	void exitType_name(sqlParser.Type_nameContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link sqlParser#join_range}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoin_range(sqlParser.Join_rangeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#join_range}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoin_range(sqlParser.Join_rangeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link sqlParser#natural_join}.
+	 * @param ctx the parse tree
+	 */
+	void enterNatural_join(sqlParser.Natural_joinContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#natural_join}.
+	 * @param ctx the parse tree
+	 */
+	void exitNatural_join(sqlParser.Natural_joinContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link sqlParser#join_on}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoin_on(sqlParser.Join_onContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#join_on}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoin_on(sqlParser.Join_onContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link sqlParser#outer_join}.
+	 * @param ctx the parse tree
+	 */
+	void enterOuter_join(sqlParser.Outer_joinContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#outer_join}.
+	 * @param ctx the parse tree
+	 */
+	void exitOuter_join(sqlParser.Outer_joinContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link sqlParser#inner_join}.
+	 * @param ctx the parse tree
+	 */
+	void enterInner_join(sqlParser.Inner_joinContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#inner_join}.
+	 * @param ctx the parse tree
+	 */
+	void exitInner_join(sqlParser.Inner_joinContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link sqlParser#expr}.
 	 * @param ctx the parse tree
 	 */

@@ -125,6 +125,36 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitType_name(sqlParser.Type_nameContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link sqlParser#join_range}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoin_range(sqlParser.Join_rangeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#natural_join}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitNatural_join(sqlParser.Natural_joinContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#join_on}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoin_on(sqlParser.Join_onContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#outer_join}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitOuter_join(sqlParser.Outer_joinContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#inner_join}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInner_join(sqlParser.Inner_joinContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link sqlParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
