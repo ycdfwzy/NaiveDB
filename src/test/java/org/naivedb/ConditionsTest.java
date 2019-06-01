@@ -1,4 +1,4 @@
-package org.naivedb.Test;
+package org.naivedb;
 
 import org.junit.After;
 import org.junit.Assert;
