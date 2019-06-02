@@ -94,44 +94,21 @@ public class Client {
             );
     }
 
-    private static void execFile(String filename, DataInputStream in, DataOutputStream out) {
-        File sqls = new File(filename);
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(sqls));
-            String sql;
-            String response = "";
-            int line_num = 1;
-            while ((sql = reader.readLine()) != null){
-                out.writeUTF(sql);
-                response = in.readUTF();
-                // if (response.err == null) continue;
-                // else {
-                //     System.out.println("err meet when executing line " + line_num + ": ");
-                //     System.out.println(reponse.err_message);
-                // }
-            }
-            System.out.println("recived message: " + response);
-            reader.close();
-        } catch(IOException e){
-            System.out.print("err meet: ");
-            System.out.println(e);
-        } finally {
-            try {
-                if (reader != null) reader.close();
-            } catch (IOException e){
-                System.out.print("err meet: ");
-                System.out.println(e);
-            }
-        }
-    }
-
     public static void showHelp() {
         System.out.println("Usage: `run class` [options]");
         System.out.println("Options:");
         System.out.println("  -h                            Show this help.");
         System.out.println("  -a IP_ADDRESS                 Specify IP address of host.");
         System.out.println("  -p PORT_NUMBER                Specify port number.");
+    }
+
+    public static void showResult(ServerResult res) {
+        if (res.succ) {
+            System.out.println(res.data);
+        }
+        else {
+            System.out.println(res.err_msg);
+        }
     }
     
     public static void main(String[] args) {
@@ -168,7 +145,7 @@ public class Client {
             client = new Socket(ip, port_num);
 
             System.out.println("Connect succeed, host address: " + client.getRemoteSocketAddress());
-            DataInputStream in = new DataInputStream(client.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
             DataOutputStream out = new DataOutputStream(client.getOutputStream());
 
             // REPL
@@ -198,18 +175,23 @@ public class Client {
                     }
                     else if (upper.startsWith("IMPORT")){
                         String file_name = line.substring(7).trim();
-                        execFile(file_name, in, out);
+                        out.writeUTF(FileUtils.readFile(new File(file_name)).toUpperCase());
+                        ServerResult response = (ServerResult)in.readObject();
+                        showResult(response);
                     }
                     else {
                         out.writeUTF(upper);
-                        String response = in.readUTF();
-                        System.out.println("recived message: " + response);
+                        ServerResult response = (ServerResult)in.readObject();
+                        showResult(response);
                     }
                 } catch (UserInterruptException e) {
                     // Do nothing
                 } catch (EndOfFileException e) {
                     System.out.println("\nBye.");
                     break;
+                } catch (Exception e) {
+                    System.out.print("Meet error: ");
+                    System.out.println(e);
                 }
                 
             }
