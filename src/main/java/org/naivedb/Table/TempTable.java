@@ -3,6 +3,8 @@ package org.naivedb.Table;
 import java.util.*;
 import java.util.logging.*;
 import java.io.*;
+
+import org.naivedb.Statement.Conditions;
 import org.naivedb.Type.Type;
 import org.naivedb.Persistence.PersistenceData;
 import org.naivedb.utils.NDException;
@@ -84,6 +86,23 @@ public class TempTable{
     }
 
     /**
+     * search
+     * param: conditions
+     * return: result of rows
+     */
+    public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        ArrayList<Long> res = new ArrayList<>();
+        ArrayList<Long> allRow = this.persistence.getAllRowNum();
+        for (long row: allRow) {
+            if (cond.satisfied(new LinkedList<String>(this.colNames),
+                                new LinkedList<Type>(this.colTypes),
+                                this.persistence.get(row)))
+                res.add(row);
+        }
+        return res;
+    }
+
+    /**
      * delete
      * param: row number
      * return: no return value
@@ -110,7 +129,15 @@ public class TempTable{
         return this.persistence.get(row);
     }
 
-// ----------------------------- Private methods ---------------------------------------
+    public ArrayList<String> getColNames() {
+        return colNames;
+    }
+
+    public ArrayList<Type> getColTypes() {
+        return colTypes;
+    }
+
+    // ----------------------------- Private methods ---------------------------------------
     private static String generateFileName() {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         Date now = new Date();

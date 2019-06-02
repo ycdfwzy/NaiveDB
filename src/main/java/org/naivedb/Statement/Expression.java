@@ -165,6 +165,10 @@ public class Expression {
         return (type == 1 && symbolORValue.compareTo(symbol) == 0);
     }
 
+    public boolean isSymbol() {
+        return type == 1;
+    }
+
     /*
         test if it is a numeric value
         params:

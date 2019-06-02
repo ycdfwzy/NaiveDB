@@ -26,7 +26,6 @@ public class RangeVariable {
     private ArrayList<ArrayList<Long>> rowNumLists;
     private ArrayList<String> ignoredColumns;
 
-    // todo: table -> tableName
     public RangeVariable(String tableName, Conditions conditions) {
         isProduct = false;
         isOuterJoined = false;
@@ -85,17 +84,12 @@ public class RangeVariable {
         return tableList;
     }
 
-    // todo: exec(Database db)
     // db.getTable(tableName)
-    public TempTable exec(Database db) throws NDException, IOException {
-        //todo: 交给泽神判断是否是join
-//        if (rangeVariables == null) {
-////            return table;
-//
-//        }
+    public Object exec(Database db) throws NDException, IOException {
         if (rangeVariables == null) {
-            throw new NDException("range variable is null");
+            return db.getTable(this.tableName);
         }
+
 
         combineRows(db);
 
@@ -122,7 +116,6 @@ public class RangeVariable {
         return tempTable;
     }
 
-    //todo:ignoredColumns
     private void combineRows(Database db) throws NDException, IOException {
 
         if (rangeVariables == null) {

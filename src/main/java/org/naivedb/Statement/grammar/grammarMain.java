@@ -13,7 +13,8 @@ public class grammarMain {
                             "delete from mydb where a <> 1;" +
                             "show databases;" +
                             "show database db;" +
-                            "drop database mydb;");
+                            "drop database mydb;" +
+                            "select a from t1;");
         sqlLexer lexer = new sqlLexer(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(ThrowingErrorListener.INSTANCE);

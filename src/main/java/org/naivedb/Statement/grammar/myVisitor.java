@@ -171,7 +171,8 @@ public class myVisitor extends sqlBaseVisitor {
     @Override
     public Object visitSelect_stmt(sqlParser.Select_stmtContext ctx) {
         ArrayList<String> selectElements = (ArrayList<String>) visit(ctx.getChild(1));
-        String tbName = (String) visit(ctx.getChild(3));
+//        RangeVariable rv = (RangeVariable) visit(ctx.getChild(3));
+        visit(ctx.getChild(3));
         // todo: complete this function
         return null;
     }
@@ -193,13 +194,20 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitSelect_elements(sqlParser.Select_elementsContext ctx) {
-        int n = ctx.getChildCount();
-        ArrayList<String> colList = new ArrayList<>();
-        colList.ensureCapacity(n);
-        for (int i = 0 ; i < n; i += 2) {
-            colList.add((String) visit(ctx.getChild(i)));
+        try {
+            int n = ctx.getChildCount();
+            ArrayList<String> colList = new ArrayList<>();
+            colList.ensureCapacity((n + 1) / 2);
+            for (int i = 0; i < n; i += 2) {
+                Expression expr = (Expression) visit(ctx.getChild(i));
+                if (expr.isSymbol()) {
+                    colList.add(expr.getSymbol());
+                }
+            }
+            return colList;
+        } catch (NDException e) {
+            throw new ParseCancellationException(e);
         }
-        return colList;
     }
 
     @Override
@@ -257,6 +265,10 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitJoin_range(sqlParser.Join_rangeContext ctx) {
+        Object o = visit(ctx.getChild(0));
+        if (o instanceof String) {
+
+        }
         return null;
     }
 
