@@ -218,6 +218,16 @@ public interface sqlListener extends ParseTreeListener {
 	 */
 	void exitInner_join(sqlParser.Inner_joinContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link sqlParser#single_range}.
+	 * @param ctx the parse tree
+	 */
+	void enterSingle_range(sqlParser.Single_rangeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#single_range}.
+	 * @param ctx the parse tree
+	 */
+	void exitSingle_range(sqlParser.Single_rangeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link sqlParser#db_name}.
 	 * @param ctx the parse tree
 	 */

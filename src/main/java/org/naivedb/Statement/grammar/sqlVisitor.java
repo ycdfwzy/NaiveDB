@@ -137,6 +137,12 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitInner_join(sqlParser.Inner_joinContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link sqlParser#single_range}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSingle_range(sqlParser.Single_rangeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link sqlParser#db_name}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

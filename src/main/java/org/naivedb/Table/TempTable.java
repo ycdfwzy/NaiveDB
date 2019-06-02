@@ -91,6 +91,7 @@ public class TempTable{
      * return: result of rows
      */
     public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        if (cond == null) return getAllRows();
         ArrayList<Long> res = new ArrayList<>();
         ArrayList<Long> allRow = this.persistence.getAllRowNum();
         for (long row: allRow) {

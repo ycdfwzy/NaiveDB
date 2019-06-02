@@ -183,6 +183,7 @@ public class Table {
      * return: result of rows
      */
     public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        if (cond == null) return getAllRows();
         if (this.primaryKey != -1) {
             String primary = this.colNames.get(this.primaryKey);
             // index = x

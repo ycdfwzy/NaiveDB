@@ -19,7 +19,7 @@ public class RangeVariable {
     private boolean isRight;
     private boolean isFull;
     private Conditions conditions;
-    private RangeVariable[] rangeVariables;
+    private ArrayList<RangeVariable> rangeVariables;
     private Table table;
     private String tableName;
     private ArrayList<Table> tableList;
@@ -75,6 +75,10 @@ public class RangeVariable {
     public Conditions getConditions() { return conditions; }
 
     public void setRowNumLists(ArrayList<ArrayList<Long>> rowNumLists) { this.rowNumLists = rowNumLists; }
+
+    public void setRangeVariables(ArrayList<RangeVariable> rangeVariables) {
+        this.rangeVariables = rangeVariables;
+    }
 
     public ArrayList<ArrayList<Long>> getRowNumLists() { return rowNumLists; }
 
@@ -133,7 +137,7 @@ public class RangeVariable {
             return;
         }
 
-        RangeVariable leftRange = rangeVariables[0];
+        RangeVariable leftRange = rangeVariables.get(0);
         leftRange.combineRows(db);
         ArrayList<Table> leftTableList = leftRange.getTableList();
         ArrayList<ArrayList<Long>> leftRowNumLists = leftRange.getRowNumLists();
@@ -143,8 +147,8 @@ public class RangeVariable {
 
         getTotalColNamesAndTypes(totalColNames, totalColTypes, leftTableList);
 
-        for (int i = 1; i < rangeVariables.length; ++i) {
-            RangeVariable rightRange = rangeVariables[i];
+        for (int i = 1; i < rangeVariables.size(); ++i) {
+            RangeVariable rightRange = rangeVariables.get(i);
             rightRange.combineRows(db);
 
             ArrayList<Table> rightTableList = rightRange.getTableList();

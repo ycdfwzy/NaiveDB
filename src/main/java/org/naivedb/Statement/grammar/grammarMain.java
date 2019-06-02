@@ -14,7 +14,7 @@ public class grammarMain {
                             "show databases;" +
                             "show database db;" +
                             "drop database mydb;" +
-                            "select a from t1;");
+                            "select a from t1 join t2 on t1.a==t2.b natural join t3 where t3.x>0;");
         sqlLexer lexer = new sqlLexer(input);
         lexer.removeErrorListeners();
         lexer.addErrorListener(ThrowingErrorListener.INSTANCE);

@@ -170,11 +170,14 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitSelect_stmt(sqlParser.Select_stmtContext ctx) {
-        ArrayList<String> selectElements = (ArrayList<String>) visit(ctx.getChild(1));
-//        RangeVariable rv = (RangeVariable) visit(ctx.getChild(3));
-        visit(ctx.getChild(3));
-        // todo: complete this function
-        return null;
+        LinkedList<String> selectElements = (LinkedList<String>) visit(ctx.getChild(1));
+        RangeVariable rv = (RangeVariable) visit(ctx.getChild(3));
+
+        if (ctx.getChildCount() > 4) {
+            Conditions cond = (Conditions) visit(ctx.getChild(5));
+            return new StatementSelect(selectElements, rv, cond);
+        }
+        return new StatementSelect(selectElements, rv, null);
     }
 
     @Override
@@ -204,7 +207,7 @@ public class myVisitor extends sqlBaseVisitor {
                     colList.add(expr.getSymbol());
                 }
             }
-            return colList;
+            return new LinkedList<>(colList);
         } catch (NDException e) {
             throw new ParseCancellationException(e);
         }
@@ -267,34 +270,85 @@ public class myVisitor extends sqlBaseVisitor {
     public Object visitJoin_range(sqlParser.Join_rangeContext ctx) {
         Object o = visit(ctx.getChild(0));
         if (o instanceof String) {
-
+            return new RangeVariable( (String) o, null);
+        } else
+        {   // join_ranges
+            ArrayList<RangeVariable> rvs = (ArrayList<RangeVariable>) o;
+            RangeVariable rv = new RangeVariable(null, null);
+            rv.setRangeVariables(rvs);
+            return rv;
         }
-        return null;
     }
 
     @Override
     public Object visitJoin_ranges(sqlParser.Join_rangesContext ctx) {
-        return null;
+        ArrayList<RangeVariable> rvs = new ArrayList<>();
+        rvs.add((RangeVariable) visit(ctx.getChild(0)));
+        int n = ctx.getChildCount();
+        for (int i = 1; i < n; ++i) {
+            rvs.add((RangeVariable) visit(ctx.getChild(i)));
+        }
+        return rvs;
     }
 
     @Override
     public Object visitNatural_join(sqlParser.Natural_joinContext ctx) {
-        return null;
+        RangeVariable rv = (RangeVariable) visit(ctx.getChild(1));
+        rv.setNatural(true);
+        return rv;
     }
 
     @Override
     public Object visitJoin_on(sqlParser.Join_onContext ctx) {
-        return null;
+        RangeVariable rv = (RangeVariable) visit(ctx.getChild(0));
+        Conditions cond = (Conditions) visit(ctx.getChild(2));
+        rv.setConditions(cond);
+        return rv;
     }
 
     @Override
     public Object visitOuter_join(sqlParser.Outer_joinContext ctx) {
-        return null;
+        RangeVariable rv = (RangeVariable) visit(ctx.getChild(3));
+        rv.setOuterJoined(true);
+        switch (ctx.getChild(0).getText().toUpperCase()) {
+            case "LEFT":
+                rv.setLeft(true);
+                break;
+            case "RIGHT":
+                rv.setRight(true);
+                break;
+            case "FULL":
+                rv.setFull(true);
+            default:
+                throw new ParseCancellationException("Unsupported token '" + ctx.getChild(0).getText().toUpperCase() + "'");
+        }
+        return rv;
     }
 
     @Override
     public Object visitInner_join(sqlParser.Inner_joinContext ctx) {
-        return null;
+        RangeVariable rv;
+        // join single_range
+        if (ctx.getChildCount() == 2) {
+            rv = (RangeVariable) visit(ctx.getChild(1));
+        } else
+        {   // inner join single_range
+            rv = (RangeVariable) visit(ctx.getChild(2));
+        }
+        rv.setInnerJoined(true);
+        return rv;
+    }
+
+    @Override
+    public Object visitSingle_range(sqlParser.Single_rangeContext ctx) {
+        // (join_range)
+        if (ctx.getChildCount() > 1) {
+            return visit(ctx.getChild(1));
+        } else
+        { // table_name
+            String tbName = (String) visit(ctx.getChild(0));
+            return new RangeVariable(tbName, null);
+        }
     }
 
     @Override
