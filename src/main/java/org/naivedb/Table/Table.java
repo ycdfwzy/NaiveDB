@@ -164,6 +164,7 @@ public class Table {
         // not null and type check
         int i = 0;
         for (Object val: values) {
+            System.out.println(val.getClass());
             // val is null and col can be null
             if (val == null && !this.colNotNull.get(i)) i++;
             // otherwise check

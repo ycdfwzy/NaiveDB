@@ -33,7 +33,7 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitSql_stmt_list(sqlParser.Sql_stmt_listContext ctx) {
-        System.out.println(ctx.getText());
+//        System.out.println(ctx.getText());
         int n = ctx.getChildCount();
         ArrayList res = new ArrayList();
         for (int i = 0; i < n; i += 2)
@@ -43,7 +43,7 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitSql_stmt(sqlParser.Sql_stmtContext ctx) {
-        System.out.println(ctx.getText());
+//        System.out.println(ctx.getText());
         return visit(ctx.getChild(0));
     }
 
