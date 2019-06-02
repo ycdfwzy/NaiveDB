@@ -1,7 +1,7 @@
 package org.naivedb.Statement;
 
 import javafx.util.Pair;
-import org.naivedb.Table.Table;
+import org.naivedb.Table.*;
 import org.naivedb.utils.NDException;
 import org.naivedb.Type.*;
 
@@ -84,9 +84,14 @@ public class RangeVariable {
 
     // todo: exec(Database db)
     // db.getTable(tableName)
-    public Table exec() throws NDException, IOException {
+    public TempTable exec() throws NDException, IOException {
+        //todo: 交给泽神判断是否是join
+//        if (rangeVariables == null) {
+////            return table;
+//
+//        }
         if (rangeVariables == null) {
-            return table;
+            throw new NDException("range variable is null");
         }
 
         combineRows();
@@ -103,20 +108,18 @@ public class RangeVariable {
             cols.add(new Pair<>(colName, colType));
         }
 
-
-
-        /*
         TempTable tempTable = new TempTable(cols);
-         */
 
         for (ArrayList<Long> rowNumList : rowNumLists) {
-            ArrayList value = getRowValue(tableList, rowNumList);
-            /*
-            tempTable.insert(
-             */
+//            ArrayList value = getRowValue(tableList, rowNumList);
+//            /*
+//            tempTable.insert(
+//             */
+            LinkedList value = new LinkedList(getRowValue(tableList, rowNumList));
+            tempTable.insert(value);
         }
 
-        return null;
+        return tempTable;
     }
 
     private void combineRows() throws NDException, IOException {

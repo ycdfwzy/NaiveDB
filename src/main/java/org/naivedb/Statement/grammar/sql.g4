@@ -80,7 +80,11 @@ asign_clause
 
 join_range
   : table_name
-  | ( table_name | '(' join_range ')' ) ( natural_join | join_on )*
+  | join_ranges
+  ;
+
+join_ranges
+  : ( table_name | '(' join_range ')' ) ( natural_join | join_on )+
   ;
 
 natural_join
