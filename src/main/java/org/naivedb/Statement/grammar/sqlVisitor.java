@@ -1,4 +1,4 @@
-// Generated from D:/gitRepo/NaiveDB/src/org/naivedb/Statement/grammar\sql.g4 by ANTLR 4.7.2
+// Generated from D:/gitRepo/NaiveDB/src/main/java/org/naivedb/Statement/grammar\sql.g4 by ANTLR 4.7.2
 package org.naivedb.Statement.grammar;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -101,35 +101,17 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAsign_clause(sqlParser.Asign_clauseContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link sqlParser#db_name}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitDb_name(sqlParser.Db_nameContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link sqlParser#table_name}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitTable_name(sqlParser.Table_nameContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link sqlParser#attr_name}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAttr_name(sqlParser.Attr_nameContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link sqlParser#type_name}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitType_name(sqlParser.Type_nameContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link sqlParser#join_range}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitJoin_range(sqlParser.Join_rangeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#join_ranges}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoin_ranges(sqlParser.Join_rangesContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link sqlParser#natural_join}.
 	 * @param ctx the parse tree
@@ -154,6 +136,30 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitInner_join(sqlParser.Inner_joinContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#db_name}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDb_name(sqlParser.Db_nameContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#table_name}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitTable_name(sqlParser.Table_nameContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#attr_name}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAttr_name(sqlParser.Attr_nameContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#type_name}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitType_name(sqlParser.Type_nameContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link sqlParser#expr}.
 	 * @param ctx the parse tree

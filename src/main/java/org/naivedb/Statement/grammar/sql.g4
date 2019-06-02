@@ -78,26 +78,13 @@ asign_clause
   : expr_column '=' expr (',' expr_column '=' expr)*
   ;
 
-db_name
-  : IDENTIFIER;
-
-table_name
-  : IDENTIFIER;
-
-attr_name
-  : IDENTIFIER;
-
-type_name
-  : K_INT
-  | K_LONG
-  | K_FLOAT
-  | K_DOUBLE
-  | K_STRING '(' INTEGER_LITERAL ')'
+join_range
+  : table_name
+  | join_ranges
   ;
 
-join_range
-  : ( table_name | '(' join_range ')' ) ( natural_join | join_on )*
-  | join_range ',' join_range
+join_ranges
+  : ( table_name | '(' join_range ')' ) ( natural_join | join_on )+
   ;
 
 natural_join
@@ -114,6 +101,23 @@ outer_join
 
 inner_join
   : ( K_INNER )? K_JOIN ( table_name | '(' join_range ')' )
+  ;
+
+db_name
+  : IDENTIFIER;
+
+table_name
+  : IDENTIFIER;
+
+attr_name
+  : IDENTIFIER;
+
+type_name
+  : K_INT
+  | K_LONG
+  | K_FLOAT
+  | K_DOUBLE
+  | K_STRING '(' INTEGER_LITERAL ')'
   ;
 
 expr
@@ -176,6 +180,12 @@ K_WHERE : W H E R E;
 K_UPDATE : U P D A T E;
 K_SET : S E T;
 K_SELECT : S E L E C T;
+K_NATURAL : N A T U R A L;
+K_LEFT : L E F T;
+K_RIGHT : R I G H T;
+K_FULL : F U L L;
+K_OUTER : O U T E R;
+K_INNER : I N N E R;
 K_JOIN : J O I N;
 K_ON : O N;
 K_USE : U S E;
@@ -187,12 +197,6 @@ K_LONG : L O N G;
 K_FLOAT : F L O A T;
 K_DOUBLE : D O U B L E;
 K_STRING : S T R I N G;
-K_NATURAL : N A T U R A L;
-K_LEFT : L E F T;
-K_RIGHT : R I G H T;
-K_FULL : F U L L;
-K_OUTER : O U T E R;
-K_INNER : I N N E R;
 
 IDENTIFIER
   : [a-zA-Z_] ([a-zA-Z_0-9])*

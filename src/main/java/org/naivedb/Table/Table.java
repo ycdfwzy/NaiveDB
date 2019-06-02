@@ -295,6 +295,7 @@ public class Table {
     public ArrayList<String> getColNames() { return this.colNames; }
     public ArrayList<Type> getColTypes() { return this.colTypes; }
     public String getFileName() { return this.fileName; }
+    public String getTableName() { return this.tableName; }
 
 // ----------------------------- Private methods ---------------------------------------
 

@@ -16,6 +16,7 @@ public class myVisitor extends sqlBaseVisitor {
         super();
     }
 
+
     @Override
     public Object visitParse(sqlParser.ParseContext ctx) {
         int n = ctx.getChildCount();
@@ -256,6 +257,11 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitJoin_range(sqlParser.Join_rangeContext ctx) {
+        return null;
+    }
+
+    @Override
+    public Object visitJoin_ranges(sqlParser.Join_rangesContext ctx) {
         return null;
     }
 
