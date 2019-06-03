@@ -1,10 +1,13 @@
 package org.naivedb.Statement;
 
+import org.naivedb.Table.Table;
 import org.naivedb.Type.Type;
 import org.naivedb.utils.NDException;
 import org.naivedb.utils.NumberUtils;
 
 import javafx.util.Pair;
+
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Conditions {
@@ -72,6 +75,25 @@ public class Conditions {
                 }
             default:
                 throw new NDException("Unexpected Conditions type");
+        }
+    }
+
+    /*
+        convert column name to table_name.column_name
+        params: table list
+        return: none
+     */
+    public void normalize(ArrayList<Table> tables) throws NDException {
+        switch (this.type) {
+            case 0:
+            case 1:
+                leftCond.normalize(tables);
+                rightCond.normalize(tables);
+                break;
+            case 2:
+                expr1.normalize(tables);
+                expr2.normalize(tables);
+                break;
         }
     }
 

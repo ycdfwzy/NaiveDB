@@ -29,6 +29,10 @@ public class StatementDelete {
     */
     public int exec(Database db) throws NDException, IOException {
         Table targetTable = db.getTable(this.targetTableName);
+        ArrayList<Table> param = new ArrayList<>();
+        param.add(targetTable);
+        if (cond != null)
+            cond.normalize(param);
 
         int succeed = 0;
         ArrayList<Long> rowList = targetTable.search(cond);
