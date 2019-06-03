@@ -37,6 +37,7 @@ public class StatementCreateTable {
         table.setNotNull(notNull);
         if (primaryKey != null)
             table.setPrimary(primaryKey);
+        table.close();
         return 1;
     }
 }

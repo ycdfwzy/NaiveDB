@@ -36,6 +36,7 @@ public class StatementDelete {
             targetTable.delete(row);
             succeed += 1;
         }
+        targetTable.close();
         return succeed;
     }
 }

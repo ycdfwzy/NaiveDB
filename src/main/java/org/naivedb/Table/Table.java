@@ -162,14 +162,23 @@ public class Table {
         if (values.size() != this.colTypes.size()) throw new NDException("row value number wrong");
         
         // not null and type check
-        int i = 0;
-        for (Object val: values) {
-            System.out.println(val.getClass());
-            // val is null and col can be null
-            if (val == null && !this.colNotNull.get(i)) i++;
-            // otherwise check
-            else if (this.colTypes.get(i).check(val)) i++;
-            else throw new NDException("row values type check error!");
+        int n = values.size();
+        for (int i = 0; i < n; ++ i) {
+            Object val = values.get(i);
+            // val is null
+            if (val == null) {
+                // col can't be null
+                if (this.colNotNull.get(i))
+                    throw new NDException(this.colNames.get(i) + " can't be null");
+                i++;
+            } else
+            {
+                try {
+                    values.set(i, Type.convert(val.toString(), this.colTypes.get(i)));
+                } catch (NDException e) {
+                    throw new NDException("row values type check error!");
+                }
+            }
         }
 
         // type check pass

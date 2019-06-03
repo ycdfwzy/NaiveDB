@@ -92,7 +92,7 @@ public class Database {
         boolean succ = true;
         for (File file: files)
             succ &= file.delete();
-        if (succ) throw new NDException("delete meta or data file failed");
+        if (!succ) throw new NDException("delete meta or data file failed");
         this.tables.remove(table_name);
     }
 

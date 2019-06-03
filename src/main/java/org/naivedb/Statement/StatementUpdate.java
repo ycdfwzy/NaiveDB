@@ -46,6 +46,7 @@ public class StatementUpdate {
             targetTable.update(row, colList, exprList);
             succeed += 1;
         }
+        targetTable.close();
         return succeed;
     }
 }

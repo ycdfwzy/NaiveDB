@@ -49,6 +49,8 @@ public class main {
                         System.out.println(stm.exec());
                     }
                     if (o instanceof StatementUse) {
+                        if (curDatabase != null)
+                            curDatabase.close();
                         StatementUse stm = (StatementUse) o;
                         curDatabase = DatabaseManager.get(stm.getDBName());
                     }
@@ -56,8 +58,16 @@ public class main {
                         StatementCreateTable stm = (StatementCreateTable) o;
                         System.out.println(stm.exec(curDatabase));
                     }
+                    if (o instanceof StatementDropTable) {
+                        StatementDropTable stm = (StatementDropTable) o;
+                        System.out.println(stm.exec(curDatabase));
+                    }
                     if (o instanceof StatementInsert) {
                         StatementInsert stm = (StatementInsert) o;
+                        System.out.println(stm.exec(curDatabase));
+                    }
+                    if (o instanceof StatementDelete) {
+                        StatementDelete stm = (StatementDelete) o;
                         System.out.println(stm.exec(curDatabase));
                     }
                 }
@@ -65,6 +75,8 @@ public class main {
             {
                 System.out.println(e.getMessage());
                 e.printStackTrace();
+                if (curDatabase != null)
+                    curDatabase.close();
                 DatabaseManager.close();
                 break;
             }
