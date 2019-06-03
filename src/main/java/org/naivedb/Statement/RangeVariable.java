@@ -5,7 +5,10 @@ import org.naivedb.Database.Database;
 import org.naivedb.Table.*;
 import org.naivedb.utils.NDException;
 import org.naivedb.Type.*;
+import org.w3c.dom.ranges.Range;
+import sun.awt.image.ImageWatched;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.util.*;
 
@@ -195,10 +198,10 @@ public class RangeVariable {
         }
     }
 
-    private ArrayList getRowValue(ArrayList<Table> tableList,
+    private LinkedList getRowValue(ArrayList<Table> tableList,
                                   ArrayList<Long> rowNumList)
             throws NDException, IOException {
-        ArrayList rowValue = new ArrayList();
+        LinkedList rowValue = new LinkedList();
         for (int i = 0; i < tableList.size(); ++i) {
             long rowNum = rowNumList.get(i);
             Table table = tableList.get(i);
@@ -261,17 +264,19 @@ public class RangeVariable {
         LinkedList<String> linkedTotalColNames = new LinkedList<>(totalColNames);
         LinkedList<Type> linkedTotalColTypes = new LinkedList<>(totalColTypes);
 
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
+        //rightRange.getConditions().normalize();
+
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
-            ArrayList leftRowValue = getRowValue(leftTableList, leftRowNumList);
             boolean inserted = false;
 
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
-                ArrayList rightRowValue = getRowValue(rightTableList, rightRowNumList);
-                LinkedList totalValues = new LinkedList(leftRowValue);
-                totalValues.addAll(rightRowValue);
+                ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
+                tempRowNumList.addAll(rightRowNumList);
+                LinkedList totalValues = getRowValue(totalTableList, tempRowNumList);
                 if (rightRange.getConditions().satisfied(linkedTotalColNames, linkedTotalColTypes, totalValues)) {
-                    ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
-                    tempRowNumList.addAll(rightRowNumList);
                     tempRowNumLists.add(tempRowNumList);
                     inserted = true;
                 }
@@ -285,8 +290,6 @@ public class RangeVariable {
                 tempRowNumLists.add(tempRowNumList);
             }
         }
-
-        leftTableList.addAll(rightTableList);
 
         leftRowNumLists.clear();
         leftRowNumLists.addAll(tempRowNumLists);
@@ -312,17 +315,19 @@ public class RangeVariable {
         LinkedList<String> linkedTotalColNames = new LinkedList<>(totalColNames);
         LinkedList<Type> linkedTotalColTypes = new LinkedList<>(totalColTypes);
 
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
+        //rightRange.getConditions().normalize();
+
         for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
-            ArrayList rightRowValue = getRowValue(rightTableList, rightRowNumList);
             boolean inserted = false;
 
             for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
-                ArrayList leftRowValue = getRowValue(leftTableList, leftRowNumList);
-                LinkedList totalValues = new LinkedList(leftRowValue);
-                totalValues.addAll(rightRowValue);
+                ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
+                tempRowNumList.addAll(rightRowNumList);
+                LinkedList totalValues = getRowValue(totalTableList, tempRowNumList);
                 if (rightRange.getConditions().satisfied(linkedTotalColNames, linkedTotalColTypes, totalValues)) {
-                    ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
-                    tempRowNumList.addAll(rightRowNumList);
                     tempRowNumLists.add(tempRowNumList);
                     inserted = true;
                 }
@@ -337,8 +342,6 @@ public class RangeVariable {
                 tempRowNumLists.add(tempRowNumList);
             }
         }
-
-        leftTableList.addAll(rightTableList);
 
         leftRowNumLists.clear();
         leftRowNumLists.addAll(tempRowNumLists);
@@ -366,17 +369,19 @@ public class RangeVariable {
 
         HashSet<ArrayList<Long>> rightRowNumSet = new HashSet<>();
 
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
+        //rightRange.getConditions().normalize();
+
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
-            ArrayList leftRowValue = getRowValue(leftTableList, leftRowNumList);
             boolean inserted = false;
 
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
-                ArrayList rightRowValue = getRowValue(rightTableList, rightRowNumList);
-                LinkedList totalValues = new LinkedList(leftRowValue);
-                totalValues.addAll(rightRowValue);
+                ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
+                tempRowNumList.addAll(rightRowNumList);
+                LinkedList totalValues = getRowValue(totalTableList, tempRowNumList);
                 if (rightRange.getConditions().satisfied(linkedTotalColNames, linkedTotalColTypes, totalValues)) {
-                    ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
-                    tempRowNumList.addAll(rightRowNumList);
                     tempRowNumLists.add(tempRowNumList);
                     inserted = true;
                     rightRowNumSet.add(rightRowNumList);
@@ -403,8 +408,6 @@ public class RangeVariable {
             }
         }
 
-        leftTableList.addAll(rightTableList);
-
         leftRowNumLists.clear();
         leftRowNumLists.addAll(tempRowNumLists);
     }
@@ -428,22 +431,21 @@ public class RangeVariable {
         LinkedList<String> newTotalColNames = new LinkedList<>(totalColNames);
         LinkedList<Type> newTotalColTypes = new LinkedList<>(totalColTypes);
 
-        for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
-            ArrayList leftRowValue = getRowValue(leftTableList, leftRowNumList);
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
 
+        //rightRange.getConditions().normalize();
+
+        for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
-                ArrayList rightRowValue = getRowValue(rightTableList, rightRowNumList);
-                LinkedList totalValues = new LinkedList(leftRowValue);
-                totalValues.addAll(rightRowValue);
+                ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
+                tempRowNumList.addAll(rightRowNumList);
+                LinkedList totalValues = getRowValue(totalTableList, tempRowNumList);
                 if (rightRange.getConditions().satisfied(newTotalColNames, newTotalColTypes, totalValues)) {
-                    ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
-                    tempRowNumList.addAll(rightRowNumList);
                     tempRowNumLists.add(tempRowNumList);
                 }
             }
         }
-
-        leftTableList.addAll(rightTableList);
 
         leftRowNumLists.clear();
         leftRowNumLists.addAll(tempRowNumLists);
