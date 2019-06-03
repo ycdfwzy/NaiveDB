@@ -31,6 +31,12 @@ public class main {
         while (true) {
             byte[] bytes = new byte[1024];
             System.in.read(bytes, 0, 1024);
+            if (new String(bytes).trim().toUpperCase().compareTo("EXIT") == 0) {
+                if (curDatabase != null)
+                    curDatabase.close();
+                DatabaseManager.close();
+                break;
+            }
             CharStream input = CharStreams.fromString(new String(bytes).trim());
             sqlLexer lexer = new sqlLexer(input);
             lexer.removeErrorListeners();
@@ -47,6 +53,11 @@ public class main {
                     if (o instanceof StatementCreateDatabase) {
                         StatementCreateDatabase stm = (StatementCreateDatabase) o;
                         System.out.println(stm.exec());
+                    }
+                    // 可以drop当前db吗？
+                    if (o instanceof StatementDropDatabase) {
+                        StatementDropDatabase stm = (StatementDropDatabase) o;
+                        stm.exec();
                     }
                     if (o instanceof StatementUse) {
                         if (curDatabase != null)
@@ -69,6 +80,15 @@ public class main {
                     if (o instanceof StatementDelete) {
                         StatementDelete stm = (StatementDelete) o;
                         System.out.println(stm.exec(curDatabase));
+                    }
+                    if (o instanceof StatementUpdate) {
+                        StatementUpdate stm = (StatementUpdate) o;
+                        System.out.println(stm.exec(curDatabase));
+                    }
+                    if (o instanceof StatementSelect) {
+                        StatementSelect stm = (StatementSelect) o;
+                        SelectResult selectResult = stm.exec(curDatabase);
+                        selectResult.show();
                     }
                 }
             } catch (Exception e)

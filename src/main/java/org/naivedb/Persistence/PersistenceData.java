@@ -77,7 +77,7 @@ public class PersistenceData {
             throws IOException, NDException {
         LinkedList oldValue = get(rowNum);
         if (oldValue.getFirst() != value.getFirst()) {
-            throw new NDException("The values in " + rowNum + " must have the same key with new values!");
+            throw new NDException("The values in Line " + rowNum + " must have the same key with new values!");
         }
         updateCachedData(rowNum, value);
     }

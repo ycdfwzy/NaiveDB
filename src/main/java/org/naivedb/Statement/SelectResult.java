@@ -50,4 +50,17 @@ public class SelectResult {
     public void insert(LinkedList data) {
         dataList.add(data);
     }
+
+    public void show() {
+        for (String colName: colNames) {
+            System.out.printf("%10s ", colName);
+        }
+        System.out.println();
+        for (LinkedList line: dataList) {
+            for (Object o: line) {
+                System.out.printf("%10s ", o.toString());
+            }
+            System.out.println();
+        }
+    }
 }

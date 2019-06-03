@@ -263,8 +263,9 @@ public class Table {
         int n = colList.size();
         for (int i = 0; i < n; ++i) {
             Pair<Object, Type> val = exprList.get(i).calcValue(nameList, typeList, oldData);
-            Object newVal = Type.convert(val.getKey().toString(), this.colTypes.get(i));
-            newData.set(i, newVal);
+            int idx = this.colNames.indexOf(colList.get(i));
+            Object newVal = Type.convert(val.getKey().toString(), this.colTypes.get(idx));
+            newData.set(idx, newVal);
         }
         this.persistence.update(row, newData);
         if (changePrimaryKey) {

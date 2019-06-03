@@ -198,6 +198,11 @@ public class myVisitor extends sqlBaseVisitor {
     @Override
     public Object visitSelect_elements(sqlParser.Select_elementsContext ctx) {
         try {
+            if (ctx.getText().compareTo("*") == 0) {
+                LinkedList<String> ret = new LinkedList<>();
+                ret.add("*");
+                return ret;
+            }
             int n = ctx.getChildCount();
             ArrayList<String> colList = new ArrayList<>();
             colList.ensureCapacity((n + 1) / 2);

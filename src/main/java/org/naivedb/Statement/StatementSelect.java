@@ -63,7 +63,12 @@ public class StatementSelect {
             TempTable tempTable = (TempTable) t;
             LinkedList<String> colNames = new LinkedList<>(tempTable.getColNames());
 //            LinkedList<Type> colTypes = new LinkedList<>(tempTable.getColTypes());
-            LinkedList<String> ignoreColumns = new LinkedList<>(rv.getIgnoredColumns());
+            LinkedList<String> ignoreColumns;
+            if (rv.getIgnoredColumns() == null) {
+                ignoreColumns = new LinkedList<>();
+            } else {
+                ignoreColumns =new LinkedList<>(rv.getIgnoredColumns());
+            }
             if (!targetList.isEmpty()) {
                 if (targetList.getFirst().compareTo("*") == 0)
                     res = new SelectResult(colNames, ignoreColumns);
