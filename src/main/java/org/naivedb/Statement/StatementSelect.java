@@ -28,6 +28,7 @@ public class StatementSelect {
     public SelectResult exec(Database db) throws IOException, NDException {
         SelectResult res;
         Object t = rv.exec(db);
+        ArrayList<Table> tableList = rv.getTableList();
         if (t instanceof Table) {
             Table table = (Table) t;
             LinkedList<String> colNames = new LinkedList<>(table.getColNames());
@@ -41,6 +42,7 @@ public class StatementSelect {
             {
                 res = new SelectResult();
             }
+            // need normalize?
             ArrayList<Long> rowList = table.search(cond);
             for (long row: rowList) {
                 LinkedList data = table.getSingleRowData(row);
@@ -79,6 +81,9 @@ public class StatementSelect {
                 res = new SelectResult();
             }
 
+            if (cond != null) {
+                cond.normalize(tableList);
+            }
             ArrayList<Long> rowList = tempTable.search(cond);
             for (long row: rowList) {
                 LinkedList data = tempTable.getSingleRowData(row);

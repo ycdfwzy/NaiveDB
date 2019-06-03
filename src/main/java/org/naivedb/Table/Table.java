@@ -195,7 +195,7 @@ public class Table {
     public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
         if (cond == null) return getAllRows();
         if (this.primaryKey != -1) {
-            String primary = this.colNames.get(this.primaryKey);
+            String primary = this.tableName + "." + this.colNames.get(this.primaryKey);
             // index = x
             if (cond.isSymbolEqualSomething(primary)) {
                 Object obj = cond.getEqualValue().getKey();
@@ -233,8 +233,9 @@ public class Table {
         // bad implementation
         ArrayList<Long> res = new ArrayList<>();
         ArrayList<Long> allRow = this.persistence.getAllRowNum();
+        LinkedList<String> colNames = this.combineTableColumn();
         for (long row: allRow) {
-            if (cond.satisfied(new LinkedList<String>(this.colNames),
+            if (cond.satisfied(colNames,
                                 new LinkedList<Type>(this.colTypes),
                                 this.persistence.get(row)))
                 res.add(row);
@@ -258,7 +259,7 @@ public class Table {
         }
         LinkedList oldData = this.persistence.get(row);
         LinkedList newData = new LinkedList(oldData);
-        LinkedList<String> nameList = new LinkedList<String>(this.colNames);
+        LinkedList<String> nameList = this.combineTableColumn();
         LinkedList<Type> typeList = new LinkedList<Type>(this.colTypes);
         int n = colList.size();
         for (int i = 0; i < n; ++i) {
@@ -308,6 +309,13 @@ public class Table {
     public ArrayList<Type> getColTypes() { return this.colTypes; }
     public String getFileName() { return this.fileName; }
     public String getTableName() { return this.tableName; }
+
+    public LinkedList<String> combineTableColumn() {
+        LinkedList<String> list = new LinkedList<>();
+        for (String colName: this.colNames)
+            list.add(this.tableName + "." + colName);
+        return list;
+    }
 
 // ----------------------------- Private methods ---------------------------------------
 
