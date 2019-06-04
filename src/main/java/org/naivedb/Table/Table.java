@@ -183,7 +183,8 @@ public class Table {
 
         // type check pass
         long rowNum = this.persistence.add(values);
-        this.index.insert(values.getFirst(), rowNum);
+        if (this.index != null)
+            this.index.insert(values.getFirst(), rowNum);
         return rowNum;
     }
 
