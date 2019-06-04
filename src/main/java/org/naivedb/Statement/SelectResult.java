@@ -1,7 +1,9 @@
 package org.naivedb.Statement;
 
+import org.naivedb.Table.Table;
 import org.naivedb.utils.NDException;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class SelectResult {
@@ -36,10 +38,13 @@ public class SelectResult {
         dataList.add(data);
     }
 
-    public void insert(LinkedList<String> curNames, LinkedList curData) throws NDException {
+    public void insert(LinkedList<String> curNames, LinkedList curData, ArrayList<Table> tableList) throws NDException {
         LinkedList data = new LinkedList();
         for (String colName: this.colNames) {
-            int idx = curNames.indexOf(colName);
+            Expression tmp = new Expression(1, colName);
+            tmp.normalize(tableList);
+            String tableCol = tmp.getSymbol();
+            int idx = curNames.indexOf(tableCol);
             if (idx < 0) {
                 throw new NDException("Unknown column name: '" + colName + "'");
             }
@@ -59,7 +64,10 @@ public class SelectResult {
         System.out.println();
         for (LinkedList line: dataList) {
             for (Object o: line) {
-                System.out.printf("%10s ", o.toString());
+                if (o == null) {
+                    System.out.printf("      null ");
+                } else
+                    System.out.printf("%10s ", o.toString());
             }
             System.out.println();
         }

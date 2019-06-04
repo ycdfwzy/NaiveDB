@@ -71,12 +71,12 @@ public class TempTable{
      */
     public long insert(LinkedList values) throws IOException, NDException {
         if (values.size() != this.colTypes.size()) throw new NDException("row value number wrong");
-        
-        // not null and type check
+
         int i = 0;
         for (Object val: values) {
             // otherwise check
-            if (this.colTypes.get(i).check(val)) i++;
+            if (val == null) i++;
+            else if (this.colTypes.get(i).check(val)) i++;
             else throw new NDException("row values type check error!");
         }
 
