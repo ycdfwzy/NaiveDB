@@ -315,7 +315,7 @@ public class Expression {
             case 2:
                 this.expr1.normalize(tables);
                 break;
-            case 4:
+            case 3:
                 this.expr1.normalize(tables);
                 this.expr2.normalize(tables);
                 break;

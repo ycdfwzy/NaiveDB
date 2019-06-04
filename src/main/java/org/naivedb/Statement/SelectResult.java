@@ -23,6 +23,7 @@ public class SelectResult {
         for (String ignoreName: ignoreNames) {
             this.colNames.remove(ignoreName);
         }
+        this.dataList = new LinkedList<>();
     }
 
     public void insert(LinkedList<String> allNames, LinkedList curData, LinkedList<String> ignoreNames) throws NDException {

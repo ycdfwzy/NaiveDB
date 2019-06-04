@@ -205,7 +205,7 @@ public class BPlusTreeNode {
 
     public long getPtrByExactKey(Object key) {
         int idx = lowerbound(key, conf.getKeyType());
-        if (idx < 0 || keyList.size() < idx)
+        if (idx < 0 || keyList.size() <= idx)
             return -1;
         if (compareKey(keyList.get(idx), key, conf.getKeyType()) != 0)
             return -1;

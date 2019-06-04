@@ -42,7 +42,11 @@ public class StatementSelect {
             {
                 res = new SelectResult();
             }
-            // need normalize?
+            if (cond != null) {
+                tableList = new ArrayList<>();
+                tableList.add(table);
+                cond.normalize(tableList);
+            }
             ArrayList<Long> rowList = table.search(cond);
             for (long row: rowList) {
                 LinkedList data = table.getSingleRowData(row);
@@ -90,7 +94,7 @@ public class StatementSelect {
 
                 if (!targetList.isEmpty()) {
                     if (targetList.getFirst().compareTo("*") == 0) {
-                        res.insert(data, ignoreColumns);
+                        res.insert(colNames, data, ignoreColumns);
                     } else
                     {
                         res.insert(targetList, data);

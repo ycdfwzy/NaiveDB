@@ -267,7 +267,7 @@ public class RangeVariable {
         ArrayList<Table> totalTableList = leftTableList;
         totalTableList.addAll(rightTableList);
 
-        //rightRange.getConditions().normalize();
+        rightRange.getConditions().normalize(totalTableList);
 
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
             boolean inserted = false;
@@ -318,7 +318,7 @@ public class RangeVariable {
         ArrayList<Table> totalTableList = leftTableList;
         totalTableList.addAll(rightTableList);
 
-        //rightRange.getConditions().normalize();
+        rightRange.getConditions().normalize(totalTableList);
 
         for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
             boolean inserted = false;
@@ -372,7 +372,7 @@ public class RangeVariable {
         ArrayList<Table> totalTableList = leftTableList;
         totalTableList.addAll(rightTableList);
 
-        //rightRange.getConditions().normalize();
+        rightRange.getConditions().normalize(totalTableList);
 
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
             boolean inserted = false;
@@ -434,7 +434,7 @@ public class RangeVariable {
         ArrayList<Table> totalTableList = leftTableList;
         totalTableList.addAll(rightTableList);
 
-        //rightRange.getConditions().normalize();
+        rightRange.getConditions().normalize(totalTableList);
 
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
