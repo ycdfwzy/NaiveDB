@@ -40,6 +40,7 @@ public class StatementSelect {
             {
                 res = new ExecResult();
             }
+            colNames = table.combineTableColumn();
             tableList = new ArrayList<>();
             tableList.add(table);
             if (cond != null) {
