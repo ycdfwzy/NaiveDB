@@ -38,7 +38,7 @@ public class StatementUpdate {
         return:
             the number of updated rows
     */
-    public int exec(Database db) throws IOException, NDException {
+    public ExecResult exec(Database db) throws IOException, NDException {
         Table targetTable = db.getTable(this.targetTableName);
         ArrayList<Table> param = new ArrayList<>();
         param.add(targetTable);
@@ -48,12 +48,20 @@ public class StatementUpdate {
         if (cond != null)
             cond.normalize(param);
         ArrayList<Long> toUpdate = targetTable.search(cond);
+
+        LinkedList<String> tableHeader = new LinkedList<>();
+        tableHeader.add("Update_Count");
+        ExecResult execResult = new ExecResult(tableHeader);
         int succeed = 0;
         for (long row: toUpdate) {
             targetTable.update(row, colList, exprList);
             succeed += 1;
         }
         targetTable.close();
-        return succeed;
+
+        LinkedList val = new LinkedList();
+        val.add(succeed);
+        execResult.insert(val);
+        return execResult;
     }
 }

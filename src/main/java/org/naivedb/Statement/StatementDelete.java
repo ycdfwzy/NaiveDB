@@ -6,6 +6,7 @@ import org.naivedb.utils.NDException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class StatementDelete {
     private String targetTableName;
@@ -27,12 +28,16 @@ public class StatementDelete {
         return:
             the number of deleted rows
     */
-    public int exec(Database db) throws NDException, IOException {
+    public ExecResult exec(Database db) throws NDException, IOException {
         Table targetTable = db.getTable(this.targetTableName);
         ArrayList<Table> param = new ArrayList<>();
         param.add(targetTable);
         if (cond != null)
             cond.normalize(param);
+
+        LinkedList<String> tableHeader = new LinkedList<>();
+        tableHeader.add("Insert_Count");
+        ExecResult execResult = new ExecResult(tableHeader);
 
         int succeed = 0;
         ArrayList<Long> rowList = targetTable.search(cond);
@@ -41,6 +46,10 @@ public class StatementDelete {
             succeed += 1;
         }
         targetTable.close();
-        return succeed;
+
+        LinkedList val = new LinkedList();
+        val.add(succeed);
+        execResult.insert(val);
+        return execResult;
     }
 }

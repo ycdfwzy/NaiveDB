@@ -3,24 +3,15 @@ package org.naivedb;
 
 import org.antlr.v4.runtime.*;
 import org.naivedb.Database.Database;
-import org.naivedb.Persistence.PersistenceData;
 import org.naivedb.Statement.*;
 import org.naivedb.Statement.grammar.ThrowingErrorListener;
 import org.naivedb.Statement.grammar.myVisitor;
 import org.naivedb.Statement.grammar.sqlLexer;
 import org.naivedb.Statement.grammar.sqlParser;
-import org.naivedb.utils.NumberUtils;
-import org.naivedb.utils.MyLogger;
-import org.naivedb.Type.Type;
-import java.util.logging.*;
-import org.naivedb.Table.TempTable;
 
-import java.io.*;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Arrays;
+
 import org.naivedb.Database.DatabaseManager;
-import javafx.util.Pair;
 
 public class main {
 
@@ -52,12 +43,18 @@ public class main {
                 for (Object o: res) {
                     if (o instanceof StatementCreateDatabase) {
                         StatementCreateDatabase stm = (StatementCreateDatabase) o;
-                        System.out.println(stm.exec());
+                        stm.exec().show();
                     }
-                    // 可以drop当前db吗？
+                    if (o instanceof StatementShow) {
+                        StatementShow stm = (StatementShow) o;
+                        stm.exec().show();
+                    }
                     if (o instanceof StatementDropDatabase) {
                         StatementDropDatabase stm = (StatementDropDatabase) o;
-                        stm.exec();
+                        stm.exec().show();
+                        if (stm.getDbName().compareTo(curDatabase.getName()) == 0) {
+                            curDatabase = null;
+                        }
                     }
                     if (o instanceof StatementUse) {
                         if (curDatabase != null)
@@ -67,28 +64,27 @@ public class main {
                     }
                     if (o instanceof StatementCreateTable) {
                         StatementCreateTable stm = (StatementCreateTable) o;
-                        System.out.println(stm.exec(curDatabase));
+                        stm.exec(curDatabase).show();
                     }
                     if (o instanceof StatementDropTable) {
                         StatementDropTable stm = (StatementDropTable) o;
-                        System.out.println(stm.exec(curDatabase));
+                        stm.exec(curDatabase).show();
                     }
                     if (o instanceof StatementInsert) {
                         StatementInsert stm = (StatementInsert) o;
-                        System.out.println(stm.exec(curDatabase));
+                        stm.exec(curDatabase).show();
                     }
                     if (o instanceof StatementDelete) {
                         StatementDelete stm = (StatementDelete) o;
-                        System.out.println(stm.exec(curDatabase));
+                        stm.exec(curDatabase).show();
                     }
                     if (o instanceof StatementUpdate) {
                         StatementUpdate stm = (StatementUpdate) o;
-                        System.out.println(stm.exec(curDatabase));
+                        stm.exec(curDatabase).show();
                     }
                     if (o instanceof StatementSelect) {
                         StatementSelect stm = (StatementSelect) o;
-                        SelectResult selectResult = stm.exec(curDatabase);
-                        selectResult.show();
+                        stm.exec(curDatabase).show();
                     }
                 }
             } catch (Exception e)

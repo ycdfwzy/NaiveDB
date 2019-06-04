@@ -36,7 +36,7 @@ public class StatementInsert {
         return:
             the number of inserted rows
      */
-    public int exec(Database db) throws IOException, NDException {
+    public ExecResult exec(Database db) throws IOException, NDException {
         Table targetTable = db.getTable(targetTableName);
         if (this.attrList != null) {
             LinkedList<LinkedList> valueList = this.valueList;
@@ -64,12 +64,19 @@ public class StatementInsert {
             }
         }
 
+        LinkedList<String> tableHeader = new LinkedList<>();
+        tableHeader.add("Insert_Count");
+        ExecResult execResult = new ExecResult(tableHeader);
         int succeed = 0;
         for (LinkedList value: this.valueList) {
             targetTable.insert(value);
             succeed += 1;
         }
         targetTable.close();
-        return succeed;
+
+        LinkedList val = new LinkedList();
+        val.add(succeed);
+        execResult.insert(val);
+        return execResult;
     }
 }

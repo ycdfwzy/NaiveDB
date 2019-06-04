@@ -8,6 +8,7 @@ import org.naivedb.utils.NDException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class StatementCreateTable {
     private String tableName;
@@ -32,12 +33,19 @@ public class StatementCreateTable {
     }
 
     // return 1 if success
-    public int exec(Database db) throws IOException, NDException {
+    public ExecResult exec(Database db) throws IOException, NDException {
         Table table = db.createTable(tableName, colList);
         table.setNotNull(notNull);
         if (primaryKey != null)
             table.setPrimary(primaryKey);
         table.close();
-        return 1;
+
+        LinkedList<String> tableHeader = new LinkedList<>();
+        tableHeader.add("Insert_Count");
+        ExecResult execResult = new ExecResult(tableHeader);
+        LinkedList val = new LinkedList();
+        val.add(1);
+        execResult.insert(val);
+        return execResult;
     }
 }
