@@ -148,9 +148,9 @@ public class Type {
      */
     public static Object convert(String str, Type type)
             throws NDException {
-        if (str.startsWith("\"") && str.endsWith("\"") && type.getType() == Type.SQL_STRING) {
-            return str.substring(1, str.length()-1);
-        }
+//        if (str.startsWith("\"") && str.endsWith("\"") && type.getType() == Type.SQL_STRING) {
+//            return str.substring(1, str.length()-1);
+//        }
         switch (type.getType()) {
             case Type.SQL_INT:
                 return NumberUtils.parseInt(str, 0, str.length());
@@ -160,6 +160,8 @@ public class Type {
                 return NumberUtils.parseFloat(str, 0, str.length());
             case Type.SQL_DOUBLE:
                 return NumberUtils.parseDouble(str, 0, str.length());
+            case Type.SQL_STRING:
+                return str.substring(0, type.strLen < str.length() ? type.strLen : str.length());
             default:
                 throw new NDException("Can't convert " + str + " to " + type.typeName());
         }

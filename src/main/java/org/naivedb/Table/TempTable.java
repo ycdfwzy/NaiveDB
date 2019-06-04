@@ -3,6 +3,8 @@ package org.naivedb.Table;
 import java.util.*;
 import java.util.logging.*;
 import java.io.*;
+
+import org.naivedb.Statement.Conditions;
 import org.naivedb.Type.Type;
 import org.naivedb.Persistence.PersistenceData;
 import org.naivedb.utils.NDException;
@@ -69,18 +71,36 @@ public class TempTable{
      */
     public long insert(LinkedList values) throws IOException, NDException {
         if (values.size() != this.colTypes.size()) throw new NDException("row value number wrong");
-        
-        // not null and type check
+
         int i = 0;
         for (Object val: values) {
             // otherwise check
-            if (this.colTypes.get(i).check(val)) i++;
+            if (val == null) i++;
+            else if (this.colTypes.get(i).check(val)) i++;
             else throw new NDException("row values type check error!");
         }
 
         // type check pass
         long rowNum = this.persistence.add(values);
         return rowNum;
+    }
+
+    /**
+     * search
+     * param: conditions
+     * return: result of rows
+     */
+    public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        if (cond == null) return getAllRows();
+        ArrayList<Long> res = new ArrayList<>();
+        ArrayList<Long> allRow = this.persistence.getAllRowNum();
+        for (long row: allRow) {
+            if (cond.satisfied(new LinkedList<String>(this.colNames),
+                                new LinkedList<Type>(this.colTypes),
+                                this.persistence.get(row)))
+                res.add(row);
+        }
+        return res;
     }
 
     /**
@@ -110,7 +130,15 @@ public class TempTable{
         return this.persistence.get(row);
     }
 
-// ----------------------------- Private methods ---------------------------------------
+    public ArrayList<String> getColNames() {
+        return colNames;
+    }
+
+    public ArrayList<Type> getColTypes() {
+        return colTypes;
+    }
+
+    // ----------------------------- Private methods ---------------------------------------
     private static String generateFileName() {
         SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmmss");
         Date now = new Date();

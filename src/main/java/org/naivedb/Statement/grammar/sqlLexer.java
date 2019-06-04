@@ -1,4 +1,4 @@
-// Generated from /Users/leeda/THU/SixthSem/DB/homework/NaiveDB/src/main/java/org/naivedb/Statement/grammar/sql.g4 by ANTLR 4.7.2
+// Generated from D:/gitRepo/NaiveDB/src/main/java/org/naivedb/Statement/grammar\sql.g4 by ANTLR 4.7.2
 package org.naivedb.Statement.grammar;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;

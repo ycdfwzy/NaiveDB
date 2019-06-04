@@ -1,4 +1,4 @@
-// Generated from /Users/leeda/THU/SixthSem/DB/homework/NaiveDB/src/main/java/org/naivedb/Statement/grammar/sql.g4 by ANTLR 4.7.2
+// Generated from D:/gitRepo/NaiveDB/src/main/java/org/naivedb/Statement/grammar\sql.g4 by ANTLR 4.7.2
 package org.naivedb.Statement.grammar;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -168,6 +168,16 @@ public interface sqlListener extends ParseTreeListener {
 	 */
 	void exitJoin_range(sqlParser.Join_rangeContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link sqlParser#join_ranges}.
+	 * @param ctx the parse tree
+	 */
+	void enterJoin_ranges(sqlParser.Join_rangesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#join_ranges}.
+	 * @param ctx the parse tree
+	 */
+	void exitJoin_ranges(sqlParser.Join_rangesContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link sqlParser#natural_join}.
 	 * @param ctx the parse tree
 	 */
@@ -207,6 +217,16 @@ public interface sqlListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitInner_join(sqlParser.Inner_joinContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link sqlParser#single_range}.
+	 * @param ctx the parse tree
+	 */
+	void enterSingle_range(sqlParser.Single_rangeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#single_range}.
+	 * @param ctx the parse tree
+	 */
+	void exitSingle_range(sqlParser.Single_rangeContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link sqlParser#db_name}.
 	 * @param ctx the parse tree

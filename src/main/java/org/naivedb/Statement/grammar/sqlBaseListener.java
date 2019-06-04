@@ -1,4 +1,4 @@
-// Generated from /Users/leeda/THU/SixthSem/DB/homework/NaiveDB/src/main/java/org/naivedb/Statement/grammar/sql.g4 by ANTLR 4.7.2
+// Generated from D:/gitRepo/NaiveDB/src/main/java/org/naivedb/Statement/grammar\sql.g4 by ANTLR 4.7.2
 package org.naivedb.Statement.grammar;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -208,6 +208,18 @@ public class sqlBaseListener implements sqlListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterJoin_ranges(sqlParser.Join_rangesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitJoin_ranges(sqlParser.Join_rangesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNatural_join(sqlParser.Natural_joinContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -251,6 +263,18 @@ public class sqlBaseListener implements sqlListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitInner_join(sqlParser.Inner_joinContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterSingle_range(sqlParser.Single_rangeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitSingle_range(sqlParser.Single_rangeContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

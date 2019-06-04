@@ -1,10 +1,12 @@
 package org.naivedb.Statement;
 
 import javafx.util.Pair;
+import org.naivedb.Table.Table;
 import org.naivedb.Type.Type;
 import org.naivedb.utils.NDException;
 import org.naivedb.utils.NumberUtils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 public class Expression {
@@ -112,6 +114,8 @@ public class Expression {
                 return new Pair<>(obj, this.valueType);
             case 1:
                 int idx = nameList.indexOf(this.symbolORValue);
+                if (idx == -1)
+                    throw new NDException("Unknown column name '" + this.symbolORValue + "'!");
                 return new Pair<>(valueList.get(idx), typeList.get(idx));
             case 2:
                 Pair<Object, Type> tmp = expr1.calcValue(nameList, typeList, valueList);
@@ -163,6 +167,10 @@ public class Expression {
      */
     public boolean isSymbol(String symbol) {
         return (type == 1 && symbolORValue.compareTo(symbol) == 0);
+    }
+
+    public boolean isSymbol() {
+        return type == 1;
     }
 
     /*
@@ -279,6 +287,40 @@ public class Expression {
             throw new NDException("Not a symbol expression!");
         }
         return symbolORValue;
+    }
+
+    /*
+        convert column name to table_name.column_name
+        params: table list
+        return: none
+     */
+    public void normalize(ArrayList<Table> tables) throws NDException {
+        switch (this.type) {
+            case 1:
+                if (this.symbolORValue.indexOf(".") == -1) {
+                    String tableName = null;
+                    for (Table table : tables) {
+                        if (table.getColNames().indexOf(this.symbolORValue) != -1) {
+                            if (tableName != null)
+                                throw new NDException("Column name '" + this.symbolORValue +"' occurs in Table '" +
+                                                        tableName + "' and Table '" + table.getTableName() + "'!");
+                            tableName = table.getTableName();
+                        }
+                    }
+                    if (tableName == null)
+                        throw new NDException("Unknown column name: '" + this.symbolORValue + "'");
+                    this.symbolORValue = tableName + "." + this.symbolORValue;
+                }
+                break;
+            case 2:
+                this.expr1.normalize(tables);
+                break;
+            case 3:
+                this.expr1.normalize(tables);
+                this.expr2.normalize(tables);
+                break;
+        }
+
     }
 
     public int getType() {return this.type;}

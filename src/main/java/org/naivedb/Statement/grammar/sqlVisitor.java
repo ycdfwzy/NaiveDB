@@ -1,4 +1,4 @@
-// Generated from /Users/leeda/THU/SixthSem/DB/homework/NaiveDB/src/main/java/org/naivedb/Statement/grammar/sql.g4 by ANTLR 4.7.2
+// Generated from D:/gitRepo/NaiveDB/src/main/java/org/naivedb/Statement/grammar\sql.g4 by ANTLR 4.7.2
 package org.naivedb.Statement.grammar;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
@@ -107,6 +107,12 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitJoin_range(sqlParser.Join_rangeContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link sqlParser#join_ranges}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitJoin_ranges(sqlParser.Join_rangesContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link sqlParser#natural_join}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -130,6 +136,12 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitInner_join(sqlParser.Inner_joinContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link sqlParser#single_range}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSingle_range(sqlParser.Single_rangeContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link sqlParser#db_name}.
 	 * @param ctx the parse tree

@@ -49,12 +49,14 @@ public class StatementInsert {
                 this.valueList.add(newCol);
             }
 
-            for (String attr : this.attrList) {
+
+            for (int j = 0; j < this.attrList.size(); ++j) {
+                String attr = this.attrList.get(j);
                 int idx = colNames.indexOf(attr);
                 if (idx >= 0) {
                     for (int i = 0; i < valueList.size(); ++i) {
                         LinkedList values = this.valueList.get(i);
-                        values.set(idx, valueList.get(i).get(idx));
+                        values.set(idx, valueList.get(i).get(j));
                     }
                 } else {
                     throw new NDException("Unknown column name '" + attr + "'!");
@@ -67,6 +69,7 @@ public class StatementInsert {
             targetTable.insert(value);
             succeed += 1;
         }
+        targetTable.close();
         return succeed;
     }
 }

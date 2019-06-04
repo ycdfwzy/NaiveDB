@@ -186,15 +186,16 @@ public class BPlusTreeNode {
             return 0;
         }
         else {
-            int idx = binarySearch(key, conf.getKeyType()) + 1;
+//            int idx = lowerbound(key, conf.getKeyType()) + 1;
+            int idx = lowerbound(key, conf.getKeyType());
             keyList.add(idx, key);
             return idx;
         }
     }
 
     public long getPtrByKey(Object key) {
-        int idx = Integer.max(0, binarySearch(key, conf.getKeyType()));
-        if (keyList.size() < idx)
+        int idx = Integer.max(0, lowerbound(key, conf.getKeyType()));
+        if (keyList.size() <= idx)
             return -1;
 
         if (idx > 0 && compareKey(keyList.get(idx), key, conf.getKeyType()) == 1)
@@ -203,8 +204,8 @@ public class BPlusTreeNode {
     }
 
     public long getPtrByExactKey(Object key) {
-        int idx = binarySearch(key, conf.getKeyType());
-        if (idx < 0 || keyList.size() < idx)
+        int idx = lowerbound(key, conf.getKeyType());
+        if (idx < 0 || keyList.size() <= idx)
             return -1;
         if (compareKey(keyList.get(idx), key, conf.getKeyType()) != 0)
             return -1;
@@ -218,21 +219,26 @@ public class BPlusTreeNode {
         return -1;
     }
 
-    private int binarySearch(Object key, String keyType) {
-        int left = 0, right = keyList.size() - 1;
-        while (left < right) {
-            int mid = (left + right) / 2;
-            if (keyList.get(mid) == key) {
-                return mid;
-            }
-            int compare = compareKey(keyList.get(mid), key, keyType);
-            if (compare == 1) {
-                right = mid-1;
-            } else {
-                left = mid+1;
-            }
-        }
-        return right;
+    private int lowerbound(Object key, String keyType) {
+        int n = keyList.size();
+        for (int i = 0; i < n; ++i)
+        if (compareKey(keyList.get(i), key, keyType) >= 0)
+            return i;
+        return n;
+//        int left = 0, right = keyList.size() - 1;
+//        while (left < right) {
+//            int mid = (left + right) / 2;
+//            int compare = compareKey(keyList.get(mid), key, keyType);
+//            if (compare == 0) {
+//                return mid;
+//            }
+//            if (compare == 1) {
+//                right = mid-1;
+//            } else {
+//                left = mid+1;
+//            }
+//        }
+//        return right;
     }
 
     public void setNextPage(long nextPage) {
@@ -302,7 +308,7 @@ public class BPlusTreeNode {
     }
 
     public void removeKeyAndPtr(Object key) {
-        int idx = binarySearch(key, conf.getKeyType());
+        int idx = lowerbound(key, conf.getKeyType());
         if (compareKey(key, keyList.get(idx), conf.getKeyType()) == 0) {
             keyList.remove(idx);
             ptrList.remove(idx);

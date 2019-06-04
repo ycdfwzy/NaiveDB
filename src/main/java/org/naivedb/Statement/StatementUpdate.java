@@ -40,12 +40,20 @@ public class StatementUpdate {
     */
     public int exec(Database db) throws IOException, NDException {
         Table targetTable = db.getTable(this.targetTableName);
+        ArrayList<Table> param = new ArrayList<>();
+        param.add(targetTable);
+        for (Expression expr: exprList) {
+            expr.normalize(param);
+        }
+        if (cond != null)
+            cond.normalize(param);
         ArrayList<Long> toUpdate = targetTable.search(cond);
         int succeed = 0;
         for (long row: toUpdate) {
             targetTable.update(row, colList, exprList);
             succeed += 1;
         }
+        targetTable.close();
         return succeed;
     }
 }

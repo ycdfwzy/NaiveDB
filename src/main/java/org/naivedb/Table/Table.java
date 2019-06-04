@@ -162,18 +162,29 @@ public class Table {
         if (values.size() != this.colTypes.size()) throw new NDException("row value number wrong");
         
         // not null and type check
-        int i = 0;
-        for (Object val: values) {
-            // val is null and col can be null
-            if (val == null && !this.colNotNull.get(i)) i++;
-            // otherwise check
-            else if (this.colTypes.get(i).check(val)) i++;
-            else throw new NDException("row values type check error!");
+        int n = values.size();
+        for (int i = 0; i < n; ++ i) {
+            Object val = values.get(i);
+            // val is null
+            if (val == null) {
+                // col can't be null
+                if (this.colNotNull.get(i))
+                    throw new NDException(this.colNames.get(i) + " can't be null");
+                i++;
+            } else
+            {
+                try {
+                    values.set(i, Type.convert(val.toString(), this.colTypes.get(i)));
+                } catch (NDException e) {
+                    throw new NDException("row values type check error!");
+                }
+            }
         }
 
         // type check pass
         long rowNum = this.persistence.add(values);
-        this.index.insert(values.getFirst(), rowNum);
+        if (this.index != null)
+            this.index.insert(values.getFirst(), rowNum);
         return rowNum;
     }
 
@@ -183,8 +194,9 @@ public class Table {
      * return: result of rows
      */
     public ArrayList<Long> search(Conditions cond) throws IOException, NDException {
+        if (cond == null) return getAllRows();
         if (this.primaryKey != -1) {
-            String primary = this.colNames.get(this.primaryKey);
+            String primary = this.tableName + "." + this.colNames.get(this.primaryKey);
             // index = x
             if (cond.isSymbolEqualSomething(primary)) {
                 Object obj = cond.getEqualValue().getKey();
@@ -222,8 +234,9 @@ public class Table {
         // bad implementation
         ArrayList<Long> res = new ArrayList<>();
         ArrayList<Long> allRow = this.persistence.getAllRowNum();
+        LinkedList<String> colNames = this.combineTableColumn();
         for (long row: allRow) {
-            if (cond.satisfied(new LinkedList<String>(this.colNames),
+            if (cond.satisfied(colNames,
                                 new LinkedList<Type>(this.colTypes),
                                 this.persistence.get(row)))
                 res.add(row);
@@ -247,13 +260,14 @@ public class Table {
         }
         LinkedList oldData = this.persistence.get(row);
         LinkedList newData = new LinkedList(oldData);
-        LinkedList<String> nameList = new LinkedList<String>(this.colNames);
+        LinkedList<String> nameList = this.combineTableColumn();
         LinkedList<Type> typeList = new LinkedList<Type>(this.colTypes);
         int n = colList.size();
         for (int i = 0; i < n; ++i) {
             Pair<Object, Type> val = exprList.get(i).calcValue(nameList, typeList, oldData);
-            Object newVal = Type.convert(val.getKey().toString(), this.colTypes.get(i));
-            newData.set(i, newVal);
+            int idx = this.colNames.indexOf(colList.get(i));
+            Object newVal = Type.convert(val.getKey().toString(), this.colTypes.get(idx));
+            newData.set(idx, newVal);
         }
         this.persistence.update(row, newData);
         if (changePrimaryKey) {
@@ -296,6 +310,13 @@ public class Table {
     public ArrayList<Type> getColTypes() { return this.colTypes; }
     public String getFileName() { return this.fileName; }
     public String getTableName() { return this.tableName; }
+
+    public LinkedList<String> combineTableColumn() {
+        LinkedList<String> list = new LinkedList<>();
+        for (String colName: this.colNames)
+            list.add(this.tableName + "." + colName);
+        return list;
+    }
 
 // ----------------------------- Private methods ---------------------------------------
 
