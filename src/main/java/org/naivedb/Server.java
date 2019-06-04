@@ -10,6 +10,7 @@ import org.antlr.v4.runtime.*;
 import org.apache.commons.cli.*;
 import org.naivedb.utils.*;
 import org.naivedb.Statement.grammar.*;
+import org.naivedb.Database.DatabaseManager;
 import org.naivedb.Session.*;
 
 public class Server{
@@ -46,11 +47,14 @@ public class Server{
 
         try {
             System.out.println("Initiate Server...");
+            DatabaseManager.initial();
 
             // currently only support single session
             Session session = new Session(1, port_num);
             session.run();
+            
             System.out.println("Server shutdown...");
+            DatabaseManager.close();
         }
         catch(Exception e) {
             System.out.print("Server Meet error: ");

@@ -9,12 +9,15 @@ import java.util.logging.Logger;
 import org.antlr.v4.runtime.*;
 import org.apache.commons.cli.*;
 import org.naivedb.utils.*;
+import org.naivedb.Database.*;
 import org.naivedb.Statement.grammar.*;
+import org.naivedb.Statement.*;
 
 public class Session extends Thread{
     private ServerSocket sessionSocket;
     private int sessionNum;
     private SocketAddress clientAddress;
+    private Database curDatabase;
     private static Logger logger = MyLogger.getLogger("session");
 
     public Session(int number, int port) throws IOException, NDException {
@@ -39,7 +42,7 @@ public class Session extends Thread{
 
             // REPL start in here
             while(true) {
-                String message = in.readUTF();
+                String message = in.readUTF().trim().toUpperCase();
                 if (message.equals("EXIT") || 
                     message.equals("SHUTDOWN;") || message.equals("SHUTDOWN"))
                     break;
@@ -50,6 +53,7 @@ public class Session extends Thread{
             }
 
             System.out.println("Session " + this.sessionNum + " closing...");
+            if (this.curDatabase != null) this.curDatabase.close();
             out.close();
             server.close();
         }
@@ -60,35 +64,72 @@ public class Session extends Thread{
     }
 
     private ServerResult execSQL(String sql) {
-        ServerResult res = new ServerResult();
-
-        // succeed
-        // res.succ = true;
-        // res.data = "this is data";
-
-        // fail
-        res.succ = false;
-        res.err_msg = "this is err msg";
+        ServerResult result = new ServerResult();
         
-        // CharStream input = CharStreams.fromString(sql);
-        // sqlLexer lexer = new sqlLexer(input);
-        // lexer.removeErrorListeners();
-        // lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
-        // CommonTokenStream tokenStream = new CommonTokenStream(lexer);
-        // sqlParser parser = new sqlParser(tokenStream);
-        // parser.removeErrorListeners();
-        // parser.addErrorListener(ThrowingErrorListener.INSTANCE);
+        // initial anltr
+        CharStream input = CharStreams.fromString(sql);
+        sqlLexer lexer = new sqlLexer(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(ThrowingErrorListener.INSTANCE);
+        CommonTokenStream tokenStream = new CommonTokenStream(lexer);
+        sqlParser parser = new sqlParser(tokenStream);
+        parser.removeErrorListeners();
+        parser.addErrorListener(ThrowingErrorListener.INSTANCE);
 
-        // try {
-        //     myVisitor visitor = new myVisitor();
-        //     ArrayList res = (ArrayList) visitor.visit(parser.parse());
+        // compile and execute stage
+        try {
+            myVisitor visitor = new myVisitor();
+            ArrayList exec_res = (ArrayList) visitor.visit(parser.parse());
+            for (Object o: exec_res) {
+                if (o instanceof StatementCreateDatabase) {
+                    StatementCreateDatabase stm = (StatementCreateDatabase) o;
+                    System.out.println(stm.exec());
+                }
+                // 可以drop当前db吗？
+                if (o instanceof StatementDropDatabase) {
+                    StatementDropDatabase stm = (StatementDropDatabase) o;
+                    stm.exec();
+                }
+                if (o instanceof StatementUse) {
+                    if (curDatabase != null)
+                        curDatabase.close();
+                    StatementUse stm = (StatementUse) o;
+                    curDatabase = DatabaseManager.get(stm.getDBName());
+                }
+                if (o instanceof StatementCreateTable) {
+                    StatementCreateTable stm = (StatementCreateTable) o;
+                    System.out.println(stm.exec(curDatabase));
+                }
+                if (o instanceof StatementDropTable) {
+                    StatementDropTable stm = (StatementDropTable) o;
+                    System.out.println(stm.exec(curDatabase));
+                }
+                if (o instanceof StatementInsert) {
+                    StatementInsert stm = (StatementInsert) o;
+                    System.out.println(stm.exec(curDatabase));
+                }
+                if (o instanceof StatementDelete) {
+                    StatementDelete stm = (StatementDelete) o;
+                    System.out.println(stm.exec(curDatabase));
+                }
+                if (o instanceof StatementUpdate) {
+                    StatementUpdate stm = (StatementUpdate) o;
+                    System.out.println(stm.exec(curDatabase));
+                }
+                if (o instanceof StatementSelect) {
+                    StatementSelect stm = (StatementSelect) o;
+                    SelectResult selectResult = stm.exec(curDatabase);
+                    selectResult.show();
+                }
+            }
             
-        // } catch (Exception e) {
-        //     System.out.println(e.getMessage());
-        //     e.printStackTrace();
-        // }
+        } catch (Exception e) {
+            result.succ = false;
+            result.err_msg = e.getMessage();
+            logger.info("err meet: " + e.getMessage());
+        }
 
-        return res;
+        return result;
     }
     
 }
