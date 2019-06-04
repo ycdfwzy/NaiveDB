@@ -72,4 +72,12 @@ public class ExecResult {
             System.out.println();
         }
     }
+
+    public LinkedList<String> getColNames() {
+        return colNames;
+    }
+
+    public LinkedList<LinkedList> getDataList() {
+        return dataList;
+    }
 }

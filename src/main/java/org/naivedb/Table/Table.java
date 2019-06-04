@@ -182,9 +182,10 @@ public class Table {
         }
 
         // type check pass
-        long rowNum = this.persistence.add(values);
+        long rowNum = this.persistence.getNewRowIndexWithoutDeletion();
         if (this.index != null)
             this.index.insert(values.getFirst(), rowNum);
+        this.persistence.add(values);
         return rowNum;
     }
 

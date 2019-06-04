@@ -141,6 +141,15 @@ public class PersistenceData {
         }
     }
 
+    public long getNewRowIndexWithoutDeletion() {
+        if (this.rowIndexPool.isEmpty()) {
+            return this.maxRowIndex+1;
+        } else
+        {
+            return this.rowIndexPool.get(0);
+        }
+    }
+
     private void write(LinkedList values, long rowNum)
             throws IOException, NDException {
         byte[] rowData = new byte[this.rowSize];
