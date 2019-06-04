@@ -459,8 +459,10 @@ public class RangeVariable {
             rightColNames.addAll(colNames);
         }
         leftColNames = new ArrayList<>(leftColNames);
-        leftColNames.removeAll(ignoredColumns);
-        rightColNames.removeAll(rightRange.getIgnoredColumns());
+        if (ignoredColumns != null)
+            leftColNames.removeAll(ignoredColumns);
+        if (rightRange.getIgnoredColumns() != null)
+            rightColNames.removeAll(rightRange.getIgnoredColumns());
 
         checkDuplicateColName(leftColNames);
         checkDuplicateColName(rightColNames);
@@ -479,6 +481,9 @@ public class RangeVariable {
                         naturalCond = cond;
                     } else {
                         naturalCond = new Conditions(0, naturalCond, cond);
+                    }
+                    if (ignoredColumns == null){
+                        ignoredColumns = new ArrayList<>();
                     }
                     ignoredColumns.add(rightColName);
                 }
