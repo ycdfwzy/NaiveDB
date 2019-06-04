@@ -456,7 +456,11 @@ public class RangeVariable {
         ArrayList<String> rightColNames = new ArrayList<>();
         for (Table rightTable : rightTableList) {
             ArrayList<String> colNames = rightTable.getColNames();
-            rightColNames.addAll(colNames);
+            String tableName = rightTable.getTableName();
+//            rightColNames.addAll(rightTable.getTableName() + '.' + colNames);
+            for (String colName : colNames) {
+                rightColNames.add(tableName + "." + colName);
+            }
         }
         leftColNames = new ArrayList<>(leftColNames);
         if (ignoredColumns != null)
