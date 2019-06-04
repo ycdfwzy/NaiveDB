@@ -6,21 +6,21 @@ import org.naivedb.utils.NDException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
-public class SelectResult {
+public class ExecResult {
     private LinkedList<String> colNames;
     private LinkedList<LinkedList> dataList;
 
-    public SelectResult() {
+    public ExecResult() {
         this.colNames = new LinkedList<>();
         this.dataList = new LinkedList<>();
     }
 
-    public SelectResult(LinkedList<String> colNames) {
+    public ExecResult(LinkedList<String> colNames) {
         this.colNames = new LinkedList<>(colNames);
         this.dataList = new LinkedList<>();
     }
 
-    public SelectResult(LinkedList<String> colNames, LinkedList<String> ignoreNames) {
+    public ExecResult(LinkedList<String> colNames, LinkedList<String> ignoreNames) {
         this.colNames = new LinkedList<>(colNames);
         for (String ignoreName: ignoreNames) {
             this.colNames.remove(ignoreName);
@@ -59,17 +59,25 @@ public class SelectResult {
 
     public void show() {
         for (String colName: colNames) {
-            System.out.printf("%10s ", colName);
+            System.out.printf("%15s ", colName);
         }
         System.out.println();
         for (LinkedList line: dataList) {
             for (Object o: line) {
                 if (o == null) {
-                    System.out.printf("      null ");
+                    System.out.printf("           null ");
                 } else
-                    System.out.printf("%10s ", o.toString());
+                    System.out.printf("%15s ", o.toString());
             }
             System.out.println();
         }
+    }
+
+    public LinkedList<String> getColNames() {
+        return colNames;
+    }
+
+    public LinkedList<LinkedList> getDataList() {
+        return dataList;
     }
 }

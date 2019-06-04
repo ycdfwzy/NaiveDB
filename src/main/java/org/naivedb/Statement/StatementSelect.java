@@ -1,7 +1,5 @@
 package org.naivedb.Statement;
 
-import javax.xml.crypto.Data;
-import javax.xml.transform.Result;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -9,7 +7,6 @@ import java.util.LinkedList;
 import org.naivedb.Database.Database;
 import org.naivedb.Table.Table;
 import org.naivedb.Table.TempTable;
-import org.naivedb.Type.Type;
 import org.naivedb.utils.NDException;
 
 public class StatementSelect {
@@ -25,8 +22,8 @@ public class StatementSelect {
         this.cond = cond;
     }
 
-    public SelectResult exec(Database db) throws IOException, NDException {
-        SelectResult res;
+    public ExecResult exec(Database db) throws IOException, NDException {
+        ExecResult res;
         Object t = rv.exec(db);
         ArrayList<Table> tableList = rv.getTableList();
         if (t instanceof Table) {
@@ -35,12 +32,12 @@ public class StatementSelect {
 //            LinkedList<Type> colTypes = new LinkedList<>(table.getColTypes());
             if (!targetList.isEmpty()) {
                 if (targetList.getFirst().compareTo("*") == 0)
-                    res = new SelectResult(colNames);
+                    res = new ExecResult(colNames);
                 else
-                    res = new SelectResult(targetList);
+                    res = new ExecResult(targetList);
             } else
             {
-                res = new SelectResult();
+                res = new ExecResult();
             }
             tableList = new ArrayList<>();
             tableList.add(table);
@@ -77,12 +74,12 @@ public class StatementSelect {
             }
             if (!targetList.isEmpty()) {
                 if (targetList.getFirst().compareTo("*") == 0)
-                    res = new SelectResult(colNames, ignoreColumns);
+                    res = new ExecResult(colNames, ignoreColumns);
                 else
-                    res = new SelectResult(targetList);
+                    res = new ExecResult(targetList);
             } else
             {
-                res = new SelectResult();
+                res = new ExecResult();
             }
 
             if (cond != null) {

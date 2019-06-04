@@ -6,6 +6,7 @@ import org.naivedb.utils.NDException;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 public class StatementShow {
     private String dbName;
@@ -18,9 +19,27 @@ public class StatementShow {
         this.dbName = dbName;
     }
 
-    public ArrayList<String> exec() throws NDException, IOException {
-        if (dbName == null)
-            return DatabaseManager.getDatabases();
-        return DatabaseManager.get(dbName).getTables();
+    public ExecResult exec() throws NDException, IOException {
+        ExecResult execResult;
+        ArrayList<String> res;
+
+        if (dbName == null) {
+            LinkedList<String> tableHeader = new LinkedList<>();
+            tableHeader.add("DATABASES");
+            execResult = new ExecResult(tableHeader);
+            res = DatabaseManager.getDatabases();
+        } else {
+            LinkedList<String> tableHeader = new LinkedList<>();
+            tableHeader.add("TABLES");
+            execResult = new ExecResult(tableHeader);
+            res = DatabaseManager.get(dbName).getTables();
+        }
+        for (String db_name: res) {
+            LinkedList val = new LinkedList();
+            val.add(db_name);
+            execResult.insert(val);
+        }
+
+        return execResult;
     }
 }
