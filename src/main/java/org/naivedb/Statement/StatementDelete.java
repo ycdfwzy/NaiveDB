@@ -29,6 +29,7 @@ public class StatementDelete {
             the number of deleted rows
     */
     public ExecResult exec(Database db) throws NDException, IOException {
+        if (db == null) throw new NDException("not using any database");
         Table targetTable = db.getTable(this.targetTableName);
         ArrayList<Table> param = new ArrayList<>();
         param.add(targetTable);
@@ -36,7 +37,7 @@ public class StatementDelete {
             cond.normalize(param);
 
         LinkedList<String> tableHeader = new LinkedList<>();
-        tableHeader.add("Insert_Count");
+        tableHeader.add("Update_Count");
         ExecResult execResult = new ExecResult(tableHeader);
 
         int succeed = 0;

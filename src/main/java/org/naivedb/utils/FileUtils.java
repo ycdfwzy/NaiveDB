@@ -17,7 +17,7 @@ public class FileUtils {
     }
 
     public static String readFile(File file) throws IOException, NDException {
-        if (!file.exists() || file.isDirectory()) throw new NDException("fail can't be read");
+        if (!file.exists() || file.isDirectory()) throw new NDException("file \"" + file + "\" can't be read");
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         String in = "";

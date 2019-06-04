@@ -73,6 +73,29 @@ public class ExecResult {
         }
     }
 
+    public String zipString() {
+        StringBuffer buffer = new StringBuffer();
+        int i = 0;
+        int len = this.colNames.size();
+
+        for (String name: this.colNames) {
+            if (i == len - 1) buffer.append(name + "\n");
+            else buffer.append(name + "|");
+            i++;
+        }
+
+        for (LinkedList line: this.dataList) {
+            i = 0;
+            len = line.size();
+            for (Object obj: line) {
+                if (i == len - 1) buffer.append(obj.toString() + "\n");
+                else buffer.append(obj.toString() + "|");
+                i++;
+            }
+        }
+        return buffer.toString();
+    }
+
     public LinkedList<String> getColNames() {
         return colNames;
     }

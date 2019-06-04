@@ -52,11 +52,17 @@ public class Client {
                 new StringsCompleter("database", "table"),
                 NullCompleter.INSTANCE
             );
-        Completer showCompleter = new ArgumentCompleter(
+        Completer showDatabasesCompleter = new ArgumentCompleter(
                 new StringsCompleter("show"),
-                new StringsCompleter("databases;", "tables;", "table"),
+                new StringsCompleter("databases;"),
                 NullCompleter.INSTANCE
             );
+        Completer showTablesCompleter = new ArgumentCompleter(
+            new StringsCompleter("show"),
+            new StringsCompleter("database"),
+            new StringsCompleter("public;"),
+            NullCompleter.INSTANCE
+        );
         Completer insertCompleter = new ArgumentCompleter(
                 new StringsCompleter("insert"),
                 new StringsCompleter("into"),
@@ -89,8 +95,8 @@ public class Client {
         );
         return new AggregateCompleter(
             exitCompleter, clcCompleter, importCompleter, useCompleter,
-            metaCompleter, showCompleter, insertCompleter, delCompleter,
-            updCompleter, selCompleter
+            metaCompleter, showDatabasesCompleter, showTablesCompleter, insertCompleter, 
+            delCompleter, updCompleter, selCompleter
             );
     }
 
@@ -175,12 +181,12 @@ public class Client {
                     }
                     else if (upper.startsWith("IMPORT")){
                         String file_name = line.substring(7).trim();
-                        out.writeUTF(FileUtils.readFile(new File(file_name)).toUpperCase());
+                        out.writeUTF(FileUtils.readFile(new File(file_name)).trim());
                         ServerResult response = (ServerResult)in.readObject();
                         showResult(response);
                     }
                     else {
-                        out.writeUTF(upper);
+                        out.writeUTF(line);
                         ServerResult response = (ServerResult)in.readObject();
                         showResult(response);
                     }

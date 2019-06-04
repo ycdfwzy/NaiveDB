@@ -30,11 +30,12 @@ public class Session extends Thread{
     public void run()
     {
         try {
-            System.out.println("Session " + this.sessionNum + " listening at local port "
+            logger.info("Session " + this.sessionNum + " listening at local port "
                 + sessionSocket.getLocalPort() + "...");
             Socket server = sessionSocket.accept();
             this.clientAddress = server.getRemoteSocketAddress();
-            System.out.println("Session " + this.sessionNum + " accepted connect at address: "
+            this.curDatabase = DatabaseManager.getPublic();
+            logger.info("Session " + this.sessionNum + " accepted connect at address: "
                 + this.clientAddress);
             
             DataInputStream in = new DataInputStream(server.getInputStream());
@@ -42,17 +43,17 @@ public class Session extends Thread{
 
             // REPL start in here
             while(true) {
-                String message = in.readUTF().trim().toUpperCase();
+                String message = in.readUTF().trim();
                 if (message.equals("EXIT") || 
                     message.equals("SHUTDOWN;") || message.equals("SHUTDOWN"))
-                    break;
+                    break; // if is exit, then client will trans upper case
                 
                 ServerResult res = execSQL(message);
 
                 out.writeObject(res);
             }
 
-            System.out.println("Session " + this.sessionNum + " closing...");
+            logger.info("Session " + this.sessionNum + " closing...");
             if (this.curDatabase != null) this.curDatabase.close();
             out.close();
             server.close();
@@ -79,50 +80,69 @@ public class Session extends Thread{
         // compile and execute stage
         try {
             myVisitor visitor = new myVisitor();
-            ArrayList exec_res = (ArrayList) visitor.visit(parser.parse());
-            for (Object o: exec_res) {
+            ArrayList comp_res = (ArrayList) visitor.visit(parser.parse());
+            int i = 0; int len = comp_res.size();
+            for (Object o: comp_res) {
                 if (o instanceof StatementCreateDatabase) {
                     StatementCreateDatabase stm = (StatementCreateDatabase) o;
-                    System.out.println(stm.exec());
+                    if (i == len - 1) result.data = stm.exec().zipString();
+                    else stm.exec();
                 }
-                // 可以drop当前db吗？
-                if (o instanceof StatementDropDatabase) {
+                else if (o instanceof StatementShow) {
+                    StatementShow stm = (StatementShow) o;
+                    if (i == len - 1) result.data = stm.exec().zipString();
+                    else stm.exec();
+                }
+                else if (o instanceof StatementDropDatabase) {
                     StatementDropDatabase stm = (StatementDropDatabase) o;
-                    stm.exec();
+                    if (i == len - 1) result.data = stm.exec().zipString();
+                    else stm.exec();
+                    if (stm.getDbName().compareTo(curDatabase.getName()) == 0) {
+                        this.curDatabase = DatabaseManager.getPublic();
+                    }
                 }
-                if (o instanceof StatementUse) {
+                else if (o instanceof StatementUse) {
                     if (curDatabase != null)
                         curDatabase.close();
                     StatementUse stm = (StatementUse) o;
                     curDatabase = DatabaseManager.get(stm.getDBName());
+                    if (i == len - 1) result.data = "result\nsuccess\n";
                 }
-                if (o instanceof StatementCreateTable) {
+                else if (o instanceof StatementCreateTable) {
                     StatementCreateTable stm = (StatementCreateTable) o;
-                    System.out.println(stm.exec(curDatabase));
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
+                    this.curDatabase.close();
                 }
-                if (o instanceof StatementDropTable) {
+                else if (o instanceof StatementDropTable) {
                     StatementDropTable stm = (StatementDropTable) o;
-                    System.out.println(stm.exec(curDatabase));
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
+                    this.curDatabase.close();
                 }
-                if (o instanceof StatementInsert) {
+                else if (o instanceof StatementInsert) {
                     StatementInsert stm = (StatementInsert) o;
-                    System.out.println(stm.exec(curDatabase));
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
                 }
-                if (o instanceof StatementDelete) {
+                else if (o instanceof StatementDelete) {
                     StatementDelete stm = (StatementDelete) o;
-                    System.out.println(stm.exec(curDatabase));
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
                 }
-                if (o instanceof StatementUpdate) {
+                else if (o instanceof StatementUpdate) {
                     StatementUpdate stm = (StatementUpdate) o;
-                    System.out.println(stm.exec(curDatabase));
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
                 }
-                if (o instanceof StatementSelect) {
+                else if (o instanceof StatementSelect) {
                     StatementSelect stm = (StatementSelect) o;
-                    SelectResult selectResult = stm.exec(curDatabase);
-                    selectResult.show();
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
                 }
+                i++;
             }
-            
+            result.succ = true;
         } catch (Exception e) {
             result.succ = false;
             result.err_msg = e.getMessage();

@@ -23,6 +23,7 @@ public class StatementSelect {
     }
 
     public ExecResult exec(Database db) throws IOException, NDException {
+        if (db == null) throw new NDException("not using any database");
         ExecResult res;
         Object t = rv.exec(db);
         ArrayList<Table> tableList = rv.getTableList();
