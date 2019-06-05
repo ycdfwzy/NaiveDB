@@ -2,46 +2,20 @@ package org.naivedb;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.antlr.v4.runtime.*;
 import org.apache.commons.cli.*;
 import org.naivedb.utils.*;
+import org.naivedb.Statement.grammar.*;
+import org.naivedb.Database.DatabaseManager;
+import org.naivedb.Session.*;
 
-public class Server extends Thread{
+public class Server{
     private ServerSocket serverSocket;
-
-    public Server(int port) throws IOException, NDException {
-        if (port < 1000 || port > 65535) throw new NDException
-            ("please bind a port between 1000 and 63335");
-        serverSocket = new ServerSocket(port);
-    }
-
-    public void run()
-    {
-        try {
-            System.out.println("listening at local port " + serverSocket.getLocalPort() + "...");
-            Socket server = serverSocket.accept();
-            System.out.println("accepted connect at address: " + server.getRemoteSocketAddress());
-            DataInputStream in = new DataInputStream(server.getInputStream());
-            DataOutputStream out = new DataOutputStream(server.getOutputStream());
-
-            // REPL start in here
-            while(true) {
-                String message = in.readUTF();
-                if (message.equals("EXIT") || 
-                    message.equals("SHUTDOWN;") || message.equals("SHUTDOWN")) {
-                    break;
-                }
-                String response = new String(message);
-                out.writeUTF(response);
-            }
-
-            System.out.println("Server shutting down...");
-            server.close();
-        }
-        catch(Exception e){
-            System.out.print("Server meet error:");
-            System.out.println(e);
-        }
-    }
+    private static Logger logger = MyLogger.getLogger("Server");
 
     public static void showHelp() {
         System.out.println("Usage: `run class` [options]");
@@ -51,7 +25,6 @@ public class Server extends Thread{
     }
 
     public static void main(String[] args) {
-
         Options opts = new Options();
         opts.addOption(new Option("h", "help", false, "show this help"));
         opts.addOption(new Option("p", "port", true, "specify port number"));
@@ -73,12 +46,18 @@ public class Server extends Thread{
         }
 
         try {
-            System.out.println("Try initiate server.");
-            Thread t = new Server(port_num);
-            t.run();
+            System.out.println("Initiate Server...");
+            DatabaseManager.initial();
+
+            // currently only support single session
+            Session session = new Session(1, port_num);
+            session.run();
+            
+            System.out.println("Server shutdown...");
+            DatabaseManager.close();
         }
         catch(Exception e) {
-            System.out.print("Meet error: ");
+            System.out.print("Server Meet error: ");
             System.out.println(e);
         }
     }

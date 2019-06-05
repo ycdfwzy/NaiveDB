@@ -2,6 +2,9 @@ package org.naivedb;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
+import java.util.function.Consumer;
+
 import org.apache.commons.cli.*;
 import org.naivedb.utils.*;
 import org.jline.terminal.*;
@@ -10,8 +13,6 @@ import org.jline.reader.impl.completer.*;
 import org.jline.builtins.Completers;
 import org.jline.builtins.Completers.RegexCompleter;
 import org.jline.utils.InfoCmp.Capability;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Client {
 
@@ -52,11 +53,17 @@ public class Client {
                 new StringsCompleter("database", "table"),
                 NullCompleter.INSTANCE
             );
-        Completer showCompleter = new ArgumentCompleter(
+        Completer showDatabasesCompleter = new ArgumentCompleter(
                 new StringsCompleter("show"),
-                new StringsCompleter("databases;", "tables;", "table"),
+                new StringsCompleter("databases;"),
                 NullCompleter.INSTANCE
             );
+        Completer showTablesCompleter = new ArgumentCompleter(
+            new StringsCompleter("show"),
+            new StringsCompleter("database"),
+            new StringsCompleter("public;"),
+            NullCompleter.INSTANCE
+        );
         Completer insertCompleter = new ArgumentCompleter(
                 new StringsCompleter("insert"),
                 new StringsCompleter("into"),
@@ -66,6 +73,7 @@ public class Client {
             );
         Completer delCompleter = new ArgumentCompleter(
             new StringsCompleter("delete"),
+            new StringsCompleter("from"),
             NullCompleter.INSTANCE
         );
         Completer updCompleter = new ArgumentCompleter(
@@ -89,41 +97,9 @@ public class Client {
         );
         return new AggregateCompleter(
             exitCompleter, clcCompleter, importCompleter, useCompleter,
-            metaCompleter, showCompleter, insertCompleter, delCompleter,
-            updCompleter, selCompleter
+            metaCompleter, showDatabasesCompleter, showTablesCompleter, insertCompleter, 
+            delCompleter, updCompleter, selCompleter
             );
-    }
-
-    private static void execFile(String filename, DataInputStream in, DataOutputStream out) {
-        File sqls = new File(filename);
-        BufferedReader reader = null;
-        try {
-            reader = new BufferedReader(new FileReader(sqls));
-            String sql;
-            String response = "";
-            int line_num = 1;
-            while ((sql = reader.readLine()) != null){
-                out.writeUTF(sql);
-                response = in.readUTF();
-                // if (response.err == null) continue;
-                // else {
-                //     System.out.println("err meet when executing line " + line_num + ": ");
-                //     System.out.println(reponse.err_message);
-                // }
-            }
-            System.out.println("recived message: " + response);
-            reader.close();
-        } catch(IOException e){
-            System.out.print("err meet: ");
-            System.out.println(e);
-        } finally {
-            try {
-                if (reader != null) reader.close();
-            } catch (IOException e){
-                System.out.print("err meet: ");
-                System.out.println(e);
-            }
-        }
     }
 
     public static void showHelp() {
@@ -132,6 +108,78 @@ public class Client {
         System.out.println("  -h                            Show this help.");
         System.out.println("  -a IP_ADDRESS                 Specify IP address of host.");
         System.out.println("  -p PORT_NUMBER                Specify port number.");
+    }
+
+    public static void showResult(ServerResult res) {
+        if (!res.succ) {
+            System.out.println("Error meet: " + res.err_msg);
+            return;
+        }
+
+        // get content
+        ArrayList<String[]> contents = new ArrayList<String[]>();
+        for (String line: res.data.split("\n"))
+            contents.add(line.split("\\|"));
+
+        // get col number
+        int col_num = contents.get(0).length;
+        try {
+            // make sure col number is the same
+            for (String[] line: contents) if (line.length != col_num) throw new Exception("col num does't match");
+        }
+        catch (Exception e) {
+            System.out.print(res.data);
+            return;
+        }
+        
+        // find and set longest length for every col
+        int[] col_len = new int[col_num];
+        for (int i = 0; i < col_num; i++) col_len[i] = 0;
+
+        for (String[] line: contents)
+            for (int i = 0; i < col_num; i++)
+                if (line[i].length() > col_len[i]) 
+                    col_len[i] = line[i].length();
+        
+        Runnable print_header_line = () -> {
+            System.out.print('+');
+            for (int i = 0; i < col_num; i++) {
+                for (int j = 0; j < col_len[i] + 2; j++) System.out.print('-');
+                System.out.print("+");
+            }
+            System.out.print("\n");
+        };
+        
+        Consumer<String[]> print_content = (String[] strs) -> {
+            System.out.print('|');
+            for (int i = 0; i < col_num; i++){
+                System.out.printf(" %-" + col_len[i] + "s |", strs[i]);
+            }
+            System.out.print("\n");
+        };
+
+        // begin to print
+        boolean header = true;
+        for (String[] line: contents) {
+            if (header) {
+                // print header
+                print_header_line.run();
+                print_content.accept(line);
+                print_header_line.run();
+                header = false;
+                continue;
+            }
+            // print content
+            print_content.accept(line);
+        }
+        print_header_line.run();
+        System.out.printf("%d rows in set (%d mill sec)\n", contents.size() - 1, res.time_used);
+        System.out.println();
+    }
+
+    public static void showTime(ServerResult res) {
+        if (res.succ) System.out.println("Finished execute in " + res.time_used + " ms");
+        else System.out.println(res.err_msg);
     }
     
     public static void main(String[] args) {
@@ -168,7 +216,7 @@ public class Client {
             client = new Socket(ip, port_num);
 
             System.out.println("Connect succeed, host address: " + client.getRemoteSocketAddress());
-            DataInputStream in = new DataInputStream(client.getInputStream());
+            ObjectInputStream in = new ObjectInputStream(client.getInputStream());
             DataOutputStream out = new DataOutputStream(client.getOutputStream());
 
             // REPL
@@ -198,18 +246,23 @@ public class Client {
                     }
                     else if (upper.startsWith("IMPORT")){
                         String file_name = line.substring(7).trim();
-                        execFile(file_name, in, out);
+                        out.writeUTF(FileUtils.readFile(new File(file_name)).trim());
+                        ServerResult response = (ServerResult)in.readObject();
+                        showTime(response);
                     }
                     else {
-                        out.writeUTF(upper);
-                        String response = in.readUTF();
-                        System.out.println("recived message: " + response);
+                        out.writeUTF(line);
+                        ServerResult response = (ServerResult)in.readObject();
+                        showResult(response);
                     }
                 } catch (UserInterruptException e) {
                     // Do nothing
                 } catch (EndOfFileException e) {
                     System.out.println("\nBye.");
                     break;
+                } catch (Exception e) {
+                    System.out.print("Meet error: ");
+                    System.out.println(e);
                 }
                 
             }

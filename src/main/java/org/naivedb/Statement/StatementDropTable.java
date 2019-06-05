@@ -15,10 +15,11 @@ public class StatementDropTable {
 
     // return 1 if success
     public ExecResult exec(Database db) throws NDException, IOException {
+        if (db == null) throw new NDException("not using any database");
         db.dropTable(tableName);
 
         LinkedList<String> tableHeader = new LinkedList<>();
-        tableHeader.add("Insert_Count");
+        tableHeader.add("Update_Count");
         ExecResult execResult = new ExecResult(tableHeader);
         LinkedList val = new LinkedList();
         val.add(1);

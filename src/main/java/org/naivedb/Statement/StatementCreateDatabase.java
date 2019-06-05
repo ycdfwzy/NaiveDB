@@ -19,7 +19,7 @@ public class StatementCreateDatabase {
         DatabaseManager.create(dbName);
 
         LinkedList<String> tableHeader = new LinkedList<>();
-        tableHeader.add("Insert_Count");
+        tableHeader.add("Update_Count");
         ExecResult execResult = new ExecResult(tableHeader);
         LinkedList val = new LinkedList();
         val.add(1);

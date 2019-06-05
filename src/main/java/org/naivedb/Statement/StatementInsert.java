@@ -37,6 +37,7 @@ public class StatementInsert {
             the number of inserted rows
      */
     public ExecResult exec(Database db) throws IOException, NDException {
+        if (db == null) throw new NDException("not using any database");
         Table targetTable = db.getTable(targetTableName);
         if (this.attrList != null) {
             LinkedList<LinkedList> valueList = this.valueList;
@@ -65,7 +66,7 @@ public class StatementInsert {
         }
 
         LinkedList<String> tableHeader = new LinkedList<>();
-        tableHeader.add("Insert_Count");
+        tableHeader.add("Update_Count");
         ExecResult execResult = new ExecResult(tableHeader);
         int succeed = 0;
         for (LinkedList value: this.valueList) {
