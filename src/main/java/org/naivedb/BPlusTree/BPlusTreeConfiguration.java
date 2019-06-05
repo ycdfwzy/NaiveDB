@@ -37,9 +37,9 @@ public class BPlusTreeConfiguration {
             throw new NDException("Too small page size: " + this.pageSize + "bytes");
         }
 
-        if (columnType.isEmpty() || !keyType.equals(columnType.get(0))) {
-            throw new NDException("key-type is not equal to first column-type!");
-        }
+//        if (columnType.isEmpty() || !keyType.equals(columnType.get(0))) {
+//            throw new NDException("key-type is not equal to first column-type!");
+//        }
 
         this.columnType = columnType;
         this.rowSize = 0;

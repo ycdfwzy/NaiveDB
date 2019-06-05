@@ -91,8 +91,8 @@ public class Session extends Thread{
                 }
                 else if (o instanceof StatementShow) {
                     StatementShow stm = (StatementShow) o;
-                    if (i == len - 1) result.data = stm.exec().zipString();
-                    else stm.exec();
+                    if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
+                    else stm.exec(curDatabase);
                 }
                 else if (o instanceof StatementDropDatabase) {
                     StatementDropDatabase stm = (StatementDropDatabase) o;
