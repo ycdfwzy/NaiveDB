@@ -177,6 +177,12 @@ public class RangeVariable {
             else {
                 innerJoin(leftRowNumLists, leftTableList, rightRange, totalColNames, totalColTypes);
             }
+            if (rightRange.getIgnoredColumns() != null) {
+                if (ignoredColumns == null) {
+                    ignoredColumns = new ArrayList<>();
+                }
+                ignoredColumns.addAll(rightRange.getIgnoredColumns());
+            }
         }
 
         rowNumLists = leftRowNumLists;
@@ -419,7 +425,6 @@ public class RangeVariable {
             throws NDException, IOException {
         ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
         ArrayList<Table> rightTableList = rightRange.getTableList();
-
         ArrayList<Table> totalTableList = leftTableList;
         totalTableList.addAll(rightTableList);
 
