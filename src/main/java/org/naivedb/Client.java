@@ -2,6 +2,9 @@ package org.naivedb;
 
 import java.net.*;
 import java.io.*;
+import java.util.*;
+import java.util.function.Consumer;
+
 import org.apache.commons.cli.*;
 import org.naivedb.utils.*;
 import org.jline.terminal.*;
@@ -10,8 +13,6 @@ import org.jline.reader.impl.completer.*;
 import org.jline.builtins.Completers;
 import org.jline.builtins.Completers.RegexCompleter;
 import org.jline.utils.InfoCmp.Capability;
-import java.util.HashMap;
-import java.util.Map;
 
 public class Client {
 
@@ -72,6 +73,7 @@ public class Client {
             );
         Completer delCompleter = new ArgumentCompleter(
             new StringsCompleter("delete"),
+            new StringsCompleter("from"),
             NullCompleter.INSTANCE
         );
         Completer updCompleter = new ArgumentCompleter(
@@ -109,16 +111,72 @@ public class Client {
     }
 
     public static void showResult(ServerResult res) {
-        if (res.succ) {
-            System.out.println(res.data);
+        if (!res.succ) {
+            System.out.println("Error meet: " + res.err_msg);
+            return;
         }
-        else {
-            System.out.println(res.err_msg);
+
+        // get content
+        ArrayList<String[]> contents = new ArrayList<String[]>();
+        for (String line: res.data.split("\n"))
+            contents.add(line.split("\\|"));
+
+        // get col number
+        int col_num = contents.get(0).length;
+        try {
+            // make sure col number is the same
+            for (String[] line: contents) if (line.length != col_num) throw new Exception("col num does't match");
         }
+        catch (Exception e) {
+            System.out.print(res.data);
+            return;
+        }
+        
+        // find and set longest length for every col
+        int[] col_len = new int[col_num];
+        for (int i = 0; i < col_num; i++) col_len[i] = 0;
+
+        for (String[] line: contents)
+            for (int i = 0; i < col_num; i++)
+                if (line[i].length() > col_len[i]) 
+                    col_len[i] = line[i].length();
+        
+        Runnable print_header_line = () -> {
+            System.out.print('+');
+            for (int i = 0; i < col_num; i++) {
+                for (int j = 0; j < col_len[i] + 2; j++) System.out.print('-');
+                System.out.print("+");
+            }
+            System.out.print("\n");
+        };
+        
+        Consumer<String[]> print_content = (String[] strs) -> {
+            System.out.print('|');
+            for (int i = 0; i < col_num; i++){
+                System.out.printf(" %-" + col_len[i] + "s |", strs[i]);
+            }
+            System.out.print("\n");
+        };
+
+        // begin to print
+        boolean header = true;
+        for (String[] line: contents) {
+            if (header) {
+                // print header
+                print_header_line.run();
+                print_content.accept(line);
+                print_header_line.run();
+                header = false;
+                continue;
+            }
+            // print content
+            print_content.accept(line);
+        }
+        print_header_line.run();
     }
 
     public static void showTime(ServerResult res) {
-        if (res.succ) System.out.println("finished execute in " + res.time_used + " ms");
+        if (res.succ) System.out.println("Finished execute in " + res.time_used + " ms");
         else System.out.println(res.err_msg);
     }
     
