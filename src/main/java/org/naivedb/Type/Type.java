@@ -117,11 +117,14 @@ public class Type {
             type: Type
         return:
             0: equal
-            1: obj1 < obj2
-            2: obj1 > obj2
+            -1: obj1 < obj2
+            1: obj1 > obj2
+            2: obj1 or obj2 is null
      */
     public static int compare(Object obj1, Object obj2, Type type) {
-        // todo: null value
+        if (obj1 == null || obj2 == null) {
+            return 2;
+        }
         if (obj1.equals(obj2))
             return 0;
         switch (type.getType()) {
@@ -148,9 +151,7 @@ public class Type {
      */
     public static Object convert(String str, Type type)
             throws NDException {
-//        if (str.startsWith("\"") && str.endsWith("\"") && type.getType() == Type.SQL_STRING) {
-//            return str.substring(1, str.length()-1);
-//        }
+
         switch (type.getType()) {
             case Type.SQL_INT:
                 return NumberUtils.parseInt(str, 0, str.length());
@@ -167,6 +168,11 @@ public class Type {
         }
     }
 
+    public static Object convert(Object ori, Type type) throws NDException {
+        if (ori == null) return null;
+        return Type.convert(ori.toString(), type);
+    }
+
     /*
         get higher type in t1, t2
             double > float > long > int
@@ -181,7 +187,7 @@ public class Type {
     public static Type lift(Type t1, Type t2)
             throws NDException {
         if ((t1.isNumber() && !t2.isNumber()) || (!t1.isNumber() && t2.isNumber()))
-            throw new NDException("Can't lift!");
+            throw new NDException("Type " + t1.typeName() + " and Type " + t2.typeName() + " conflict!");
         if (!t1.isNumber() && !t2.isNumber())
             return t1.strLen > t2.strLen ? t1 : t2;
         if (t1.getType() == SQL_DOUBLE || t2.getType() == SQL_DOUBLE)

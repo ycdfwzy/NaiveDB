@@ -66,8 +66,8 @@ public class Conditions {
                     if (finalType.getType() == 5) {
                         return check(tmp1.getKey(), tmp2.getKey(), this.op, finalType);
                     }
-                    Object obj1 = Type.convert(tmp1.getKey().toString(), finalType);
-                    Object obj2 = Type.convert(tmp2.getKey().toString(), finalType);
+                    Object obj1 = Type.convert(tmp1.getKey(), finalType);
+                    Object obj2 = Type.convert(tmp2.getKey(), finalType);
                     return check(obj1, obj2, this.op, finalType);
                 } catch (ClassCastException e)
                 {
@@ -231,15 +231,15 @@ public class Conditions {
             case "EQ":
                 return comp == 0;
             case "NEQ":
-                return comp != 0;
+                return comp == -1 || comp == 1;
             case "LT":
-                return comp <= -1;
+                return comp == -1;
             case "GT":
-                return comp >= 1;
+                return comp == 1;
             case "NLT":
-                return comp >= 0;
+                return comp == 0 || comp == 1;
             case "NGT":
-                return comp <= 0;
+                return comp == 0 || comp == -1;
             default:
                 throw new NDException("Unknown relation!");
         }

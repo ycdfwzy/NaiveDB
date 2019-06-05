@@ -135,8 +135,8 @@ public class Expression {
                 Pair<Object, Type> tmp1 = expr1.calcValue(nameList, typeList, valueList);
                 Pair<Object, Type> tmp2 = expr2.calcValue(nameList, typeList, valueList);
                 Type finalType = Type.lift(tmp1.getValue(), tmp2.getValue());
-                Object o1 = Type.convert(tmp1.getKey().toString(), finalType);
-                Object o2 = Type.convert(tmp2.getKey().toString(), finalType);
+                Object o1 = Type.convert(tmp1.getKey(), finalType);
+                Object o2 = Type.convert(tmp2.getKey(), finalType);
                 switch (this.op) {
                     case "+":
                         return plus(o1, o2, finalType);
@@ -257,8 +257,8 @@ public class Expression {
             Pair<Object, Type> x = expr1.getDirectValue();
             Pair<Object, Type> y = expr1.getDirectValue();
             Type finalType = Type.lift(x.getValue(), y.getValue());
-            Object o1 = Type.convert(x.getKey().toString(), finalType);
-            Object o2 = Type.convert(y.getKey().toString(), finalType);
+            Object o1 = Type.convert(x.getKey(), finalType);
+            Object o2 = Type.convert(y.getKey(), finalType);
             switch (this.op) {
                 case "+":
                     return new Expression(0, plus(o1, o2, finalType).getKey().toString());

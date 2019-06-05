@@ -174,7 +174,7 @@ public class Table {
             } else
             {
                 try {
-                    values.set(i, Type.convert(val.toString(), this.colTypes.get(i)));
+                    values.set(i, Type.convert(val, this.colTypes.get(i)));
                 } catch (NDException e) {
                     throw new NDException("row values type check error!");
                 }
@@ -201,7 +201,7 @@ public class Table {
             // index = x
             if (cond.isSymbolEqualSomething(primary)) {
                 Object obj = cond.getEqualValue().getKey();
-                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                Object key = Type.convert(obj, this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(key));
             } else
             // index ∈ (-∞, x) / (-∞, x]
@@ -209,7 +209,7 @@ public class Table {
                 Pair<Pair<Object, Type>, Boolean> lower = cond.getBoundValue();
                 boolean isOpen = lower.getValue();
                 Object obj = lower.getKey().getKey();
-                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                Object key = Type.convert(obj, this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(key, isOpen ? "GT" : "NLT"));
             } else
             // index ∈ (x, +∞) / [x, +∞)
@@ -217,7 +217,7 @@ public class Table {
                 Pair<Pair<Object, Type>, Boolean> upper = cond.getBoundValue();
                 boolean isOpen = upper.getValue();
                 Object obj = upper.getKey().getKey();
-                Object key = Type.convert(obj.toString(), this.colTypes.get(this.primaryKey));
+                Object key = Type.convert(obj, this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(key, isOpen ? "LT" : "NGT"));
             } else
             // index ∈ (/[x, y)/]
@@ -227,8 +227,8 @@ public class Table {
                 Pair<Pair<Object, Type>, Boolean> upper = range.getValue();
                 boolean lowerOpen = lower.getValue();
                 boolean upperOpen = upper.getValue();
-                Object lowerKey = Type.convert(lower.getKey().getKey().toString(), this.colTypes.get(this.primaryKey));
-                Object upperKey = Type.convert(upper.getKey().getKey().toString(), this.colTypes.get(this.primaryKey));
+                Object lowerKey = Type.convert(lower.getKey().getKey(), this.colTypes.get(this.primaryKey));
+                Object upperKey = Type.convert(upper.getKey().getKey(), this.colTypes.get(this.primaryKey));
                 return new ArrayList<>(this.index.search(lowerKey, !lowerOpen, upperKey, !upperOpen));
             }
         }
@@ -267,7 +267,7 @@ public class Table {
         for (int i = 0; i < n; ++i) {
             Pair<Object, Type> val = exprList.get(i).calcValue(nameList, typeList, oldData);
             int idx = this.colNames.indexOf(colList.get(i));
-            Object newVal = Type.convert(val.getKey().toString(), this.colTypes.get(idx));
+            Object newVal = Type.convert(val.getKey(), this.colTypes.get(idx));
             newData.set(idx, newVal);
         }
         this.persistence.update(row, newData);

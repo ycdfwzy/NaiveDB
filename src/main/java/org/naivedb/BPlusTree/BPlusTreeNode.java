@@ -194,6 +194,7 @@ public class BPlusTreeNode {
     }
 
     public long getPtrByKey(Object key) {
+        if (key == null) return -1;
         int idx = Integer.max(0, lowerbound(key, conf.getKeyType()));
         if (keyList.size() <= idx)
             return -1;
@@ -204,6 +205,7 @@ public class BPlusTreeNode {
     }
 
     public long getPtrByExactKey(Object key) {
+        if (key == null) return -1;
         int idx = lowerbound(key, conf.getKeyType());
         if (idx < 0 || keyList.size() <= idx)
             return -1;
@@ -308,6 +310,7 @@ public class BPlusTreeNode {
     }
 
     public void removeKeyAndPtr(Object key) {
+        if (key == null) return;
         int idx = lowerbound(key, conf.getKeyType());
         if (compareKey(key, keyList.get(idx), conf.getKeyType()) == 0) {
             keyList.remove(idx);
