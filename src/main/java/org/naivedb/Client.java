@@ -18,23 +18,6 @@ public class Client {
 
     private static Socket client;
 
-    private static boolean ipValid(String ip_addr) {
-        if (ip_addr == null || ip_addr.length() < 7 || ip_addr.length() > 15) return false;
-
-        String[] arr = ip_addr.split(".");
-        if (arr.length != 4) return false;
-
-        try{
-            for (int i = 0; i < 4; i++) {
-                int num = Integer.parseInt(arr[i]);
-                if (i == 0) { if (num < 1 || num > 255) return false; }
-                else if (num < 0 || num > 255) return false;
-            }
-        } catch(Exception e) { return false; }
-
-        return true;
-    }
-
     private static AggregateCompleter getCompleter() {
         Map<String, Completer> comp = new HashMap<>();
         // comp.put("NE", new StringsCompleter())
@@ -178,7 +161,7 @@ public class Client {
     }
 
     public static void showTime(ServerResult res) {
-        if (res.succ) System.out.println("Finished execute in " + res.time_used + " ms");
+        if (res.succ) System.out.println("Finished execute in " + res.time_used + " ms\n");
         else System.out.println(res.err_msg);
     }
     
@@ -201,7 +184,7 @@ public class Client {
                 showHelp();
             else if (cl.hasOption("a")) {
                 ip = cl.getOptionValue("a");
-                if (!ipValid(ip)) throw new NDException("ip address not valid");
+                if (!NetworkUtils.ipValid(ip)) throw new NDException("ip address not valid");
             }
             else if (cl.hasOption("p"))
                 port_num = Integer.parseInt(cl.getOptionValue("p"));
