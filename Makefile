@@ -2,6 +2,7 @@
 ENTRY_POINT = org.naivedb.main
 SERVER_ENTRY_POINT = org.naivedb.Server
 CLIENT_ENTRY_POINT = org.naivedb.Client
+SWING_ENTRY_POINT = org.naivedb.ClientSwing
 
 # jar path
 JAR_PATH = target/NaiveDB-1.0-jar-with-dependencies.jar
@@ -10,7 +11,7 @@ Default:
 	@echo "make build: compile project."
 	@echo "make clean: clear classes generated."
 	@echo "make rebuild: rebuild project."
-	@echo "make run: run app (6 ways)."
+	@echo "make run: run app (8 ways)."
 	@echo "make jar: package project into a executable jar."
 
 build:
@@ -30,6 +31,9 @@ run_deb_server:
 run_deb_client:
 	@mvn -q exec:java -Dexec.mainClass="$(CLIENT_ENTRY_POINT)"
 
+run_deb_swing:
+	@mvn -q exec:java -Dexec.mainClass="$(SWING_ENTRY_POINT)"
+
 jar:
 	@mvn package
 
@@ -41,6 +45,9 @@ run_rel_server:
 
 run_rel_client:
 	@java -classpath target/NaiveDB-1.0-jar-with-dependencies.jar $(CLIENT_ENTRY_POINT)
+
+run_rel_swing:
+	@java -classpath target/NaiveDB-1.0-jar-with-dependencies.jar $(SWING_ENTRY_POINT)
 
 test:
 	@mvn -q test

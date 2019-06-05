@@ -173,6 +173,8 @@ public class Client {
             print_content.accept(line);
         }
         print_header_line.run();
+        System.out.printf("%d rows in set (%d mill sec)\n", contents.size() - 1, res.time_used);
+        System.out.println();
     }
 
     public static void showTime(ServerResult res) {

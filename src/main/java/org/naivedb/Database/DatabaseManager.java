@@ -86,7 +86,8 @@ public class DatabaseManager {
     // drop a database
     public static void drop(String db_name) throws IOException, NDException {
         if (!databases.contains(db_name)) throw new NDException("database does not exist!");
-        if (db_name == pubBaseName) throw new NDException("you can't drop database \"public\".");
+        if (db_name.equals(pubBaseName)) 
+            throw new NDException("you can't drop database \"public\".");
 
         File db = new File(getDatabasePath(db_name));
         if (!db.exists()) throw new NDException("database dir does not exists!");
