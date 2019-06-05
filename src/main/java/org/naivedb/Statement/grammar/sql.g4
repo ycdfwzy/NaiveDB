@@ -86,6 +86,11 @@ join_range // rangeVariable
 
 join_ranges // rangeVariable[]
   : single_range ( natural_join | join_on )+
+  | single_range (product_range)+
+  ;
+
+product_range
+  : ',' join_range
   ;
 
 natural_join // rangeVariable
