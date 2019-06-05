@@ -47,7 +47,7 @@ public class main {
                     }
                     if (o instanceof StatementShow) {
                         StatementShow stm = (StatementShow) o;
-                        stm.exec().show();
+                        stm.exec(curDatabase).show();
                     }
                     if (o instanceof StatementDropDatabase) {
                         StatementDropDatabase stm = (StatementDropDatabase) o;

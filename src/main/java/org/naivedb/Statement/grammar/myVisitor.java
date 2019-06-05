@@ -191,8 +191,8 @@ public class myVisitor extends sqlBaseVisitor {
         if (ctx.getChildCount() == 2) {
             return new StatementShow();
         }
-        String dbName = (String) visit(ctx.getChild(2));
-        return new StatementShow(dbName);
+        String name = (String) visit(ctx.getChild(2));
+        return new StatementShow(name, ctx.getChild(1).getText().toUpperCase());
     }
 
     @Override

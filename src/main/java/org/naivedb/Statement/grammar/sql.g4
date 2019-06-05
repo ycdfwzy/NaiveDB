@@ -67,6 +67,7 @@ use_stmt
 show_stmt
   : K_SHOW K_DATABASES
   | K_SHOW K_DATABASE db_name
+  | K_SHOW K_TABLE table_name
   ;
 
 select_elements
