@@ -82,6 +82,7 @@ public class Session extends Thread{
             myVisitor visitor = new myVisitor();
             ArrayList comp_res = (ArrayList) visitor.visit(parser.parse());
             int i = 0; int len = comp_res.size();
+            long start_time = System.currentTimeMillis();
             for (Object o: comp_res) {
                 if (o instanceof StatementCreateDatabase) {
                     StatementCreateDatabase stm = (StatementCreateDatabase) o;
@@ -142,6 +143,7 @@ public class Session extends Thread{
                 }
                 i++;
             }
+            result.time_used = System.currentTimeMillis() - start_time;
             result.succ = true;
         } catch (Exception e) {
             result.succ = false;

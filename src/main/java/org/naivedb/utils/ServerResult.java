@@ -5,4 +5,5 @@ public class ServerResult implements java.io.Serializable {
     public boolean succ;
     public String data;
     public String err_msg;
+    public long time_used;
 }

@@ -116,6 +116,11 @@ public class Client {
             System.out.println(res.err_msg);
         }
     }
+
+    public static void showTime(ServerResult res) {
+        if (res.succ) System.out.println("finished execute in " + res.time_used + " ms");
+        else System.out.println(res.err_msg);
+    }
     
     public static void main(String[] args) {
         Options opts = new Options();
@@ -183,7 +188,7 @@ public class Client {
                         String file_name = line.substring(7).trim();
                         out.writeUTF(FileUtils.readFile(new File(file_name)).trim());
                         ServerResult response = (ServerResult)in.readObject();
-                        showResult(response);
+                        showTime(response);
                     }
                     else {
                         out.writeUTF(line);
