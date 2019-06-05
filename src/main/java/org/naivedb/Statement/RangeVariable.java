@@ -221,14 +221,14 @@ public class RangeVariable {
         ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
         ArrayList<Table> rightTableList = rightRange.getTableList();
 
+        leftTableList.addAll(rightTableList);
+
         if (leftRowNumLists.size() == 0 || rightRowNumLists.size() == 0) {
             leftRowNumLists.clear();
             return;
         }
 
         ArrayList<ArrayList<Long>> tempRowNumLists = new ArrayList<>();
-
-        leftTableList.addAll(rightTableList);
 
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
@@ -248,6 +248,13 @@ public class RangeVariable {
                                ArrayList<String> totalColNames,
                                ArrayList<Type> totalColTypes)
             throws NDException, IOException {
+
+        ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
+        ArrayList<Table> rightTableList = rightRange.getTableList();
+
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
         if (leftRowNumLists.size() == 0) {
             leftRowNumLists.clear();
             return;
@@ -255,15 +262,10 @@ public class RangeVariable {
 
         ArrayList<ArrayList<Long>> tempRowNumLists = new ArrayList<>();
 
-        ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
-        ArrayList<Table> rightTableList = rightRange.getTableList();
-
         //TODO: change the type of list
         LinkedList<String> linkedTotalColNames = new LinkedList<>(totalColNames);
         LinkedList<Type> linkedTotalColTypes = new LinkedList<>(totalColTypes);
 
-        ArrayList<Table> totalTableList = leftTableList;
-        totalTableList.addAll(rightTableList);
 
         rightRange.getConditions().normalize(totalTableList);
 
@@ -302,6 +304,9 @@ public class RangeVariable {
         ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
         ArrayList<Table> rightTableList = rightRange.getTableList();
 
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
         if (rightRowNumLists.size() == 0) {
             leftRowNumLists.clear();
             return;
@@ -312,9 +317,6 @@ public class RangeVariable {
         //TODO: change the type of list
         LinkedList<String> linkedTotalColNames = new LinkedList<>(totalColNames);
         LinkedList<Type> linkedTotalColTypes = new LinkedList<>(totalColTypes);
-
-        ArrayList<Table> totalTableList = leftTableList;
-        totalTableList.addAll(rightTableList);
 
         rightRange.getConditions().normalize(totalTableList);
 
@@ -355,6 +357,9 @@ public class RangeVariable {
         ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
         ArrayList<Table> rightTableList = rightRange.getTableList();
 
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
         if (leftRowNumLists.size() == 0 && rightRowNumLists.size() == 0) {
             leftRowNumLists.clear();
             return;
@@ -366,9 +371,6 @@ public class RangeVariable {
         LinkedList<Type> linkedTotalColTypes = new LinkedList<>(totalColTypes);
 
         HashSet<ArrayList<Long>> rightRowNumSet = new HashSet<>();
-
-        ArrayList<Table> totalTableList = leftTableList;
-        totalTableList.addAll(rightTableList);
 
         rightRange.getConditions().normalize(totalTableList);
 
@@ -418,6 +420,9 @@ public class RangeVariable {
         ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
         ArrayList<Table> rightTableList = rightRange.getTableList();
 
+        ArrayList<Table> totalTableList = leftTableList;
+        totalTableList.addAll(rightTableList);
+
         if (leftRowNumLists.size() == 0) {
             leftRowNumLists.clear();
             return;
@@ -428,9 +433,6 @@ public class RangeVariable {
         //TODO: change the type of list
         LinkedList<String> newTotalColNames = new LinkedList<>(totalColNames);
         LinkedList<Type> newTotalColTypes = new LinkedList<>(totalColTypes);
-
-        ArrayList<Table> totalTableList = leftTableList;
-        totalTableList.addAll(rightTableList);
 
         rightRange.getConditions().normalize(totalTableList);
 
