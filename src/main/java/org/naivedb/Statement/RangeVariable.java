@@ -140,6 +140,15 @@ public class RangeVariable {
 
         RangeVariable leftRange = rangeVariables.get(0);
         leftRange.combineRows(db);
+
+        if (leftRange.getIgnoredColumns() != null) {
+            if (ignoredColumns == null) {
+                ignoredColumns = leftRange.getIgnoredColumns();
+            } else {
+                ignoredColumns.addAll(leftRange.getIgnoredColumns());
+            }
+        }
+
         ArrayList<Table> leftTableList = leftRange.getTableList();
         ArrayList<ArrayList<Long>> leftRowNumLists = leftRange.getRowNumLists();
 
