@@ -324,6 +324,7 @@ public class myVisitor extends sqlBaseVisitor {
                 break;
             case "FULL":
                 rv.setFull(true);
+                break;
             default:
                 throw new ParseCancellationException("Unsupported token '" + ctx.getChild(0).getText().toUpperCase() + "'");
         }
