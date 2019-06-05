@@ -50,9 +50,18 @@ public class ClientSwing extends JFrame {
     private JMenuItem cmdDropTable;
     private JMenuItem cmdCreateDb;
     private JMenuItem cmdDropDb;
+    private JMenuItem cmdShowDbs;
+    private JMenuItem cmdShowDb;
+    private JMenuItem cmdShowTb;
     private JMenuItem cmdShutdown;
     private JMenuItem helpAbout;
     private JMenuItem helpHelp;
+
+    // recent
+    private JMenu recentMenu;
+
+    // status
+    private JLabel dbStatus;
 
     /**
      * construct a client swing
@@ -65,6 +74,7 @@ public class ClientSwing extends JFrame {
         table = new MyTable(datas, titles);
         clearButton = new JButton("clear");
         execButton = new JButton("execute");
+        dbStatus = new JLabel("* Ready");
         textarea = new JTextArea(8, 5);
         textarea.setLineWrap(true);
 
@@ -88,10 +98,15 @@ public class ClientSwing extends JFrame {
         main_container.add(textPanel, BorderLayout.NORTH);
         main_container.add(tablePanel, BorderLayout.CENTER);
 
+        JPanel footer = new JPanel();
+        footer.setLayout(new FlowLayout(FlowLayout.LEADING, 5, 5));
+        footer.add(dbStatus);
+
         JPanel outter_container = new JPanel();
         outter_container.setLayout(new BorderLayout());
         outter_container.add(quickPanel, BorderLayout.NORTH);
         outter_container.add(main_container, BorderLayout.CENTER);
+        outter_container.add(footer, BorderLayout.SOUTH);
 
         this.add(menuBar, BorderLayout.NORTH);
         this.add(outter_container, BorderLayout.CENTER);
@@ -118,6 +133,9 @@ public class ClientSwing extends JFrame {
         cmdCreateDb = new JMenuItem("Create Database");
         cmdDropDb = new JMenuItem("Drop Database");
         cmdShutdown = new JMenuItem("Shutdown");
+        cmdShowDbs = new JMenuItem("Show Databases");
+        cmdShowDb = new JMenuItem("Show Database");
+        cmdShowTb = new JMenuItem("Show Table");
         helpAbout = new JMenuItem("About");
         helpHelp = new JMenuItem("Help");
 
@@ -138,9 +156,13 @@ public class ClientSwing extends JFrame {
         cmd.add(cmdCreateDb);
         cmd.add(cmdDropDb);
         cmd.addSeparator();
+        cmd.add(cmdShowDbs);
+        cmd.add(cmdShowDb);
+        cmd.add(cmdShowTb);
+        cmd.addSeparator();
         cmd.add(cmdShutdown);
 
-        JMenu recent = new JMenu("Recent");
+        recentMenu = new JMenu("Recent");
 
         JMenu help = new JMenu("Help");
         help.add(helpAbout);
@@ -149,7 +171,7 @@ public class ClientSwing extends JFrame {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(file);
         menuBar.add(cmd);
-        menuBar.add(recent);
+        menuBar.add(recentMenu);
         menuBar.add(help);
 
         return menuBar;
@@ -161,6 +183,7 @@ public class ClientSwing extends JFrame {
         ActionListener execListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                dbStatus.setText("* Busy...");
                 execSQL(textarea.getText());
             }
         };
@@ -238,6 +261,7 @@ public class ClientSwing extends JFrame {
                 JFileChooser chooser = new JFileChooser(System.getProperty("user.dir"));
                 chooser.setFileFilter(new ScriptFilter());
                 if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
+                    dbStatus.setText("* Busy...");
                     try {
                         outStream.writeUTF(FileUtils.readFile(chooser.getSelectedFile()).trim());
                         ServerResult response = (ServerResult)inStream.readObject();
@@ -245,6 +269,7 @@ public class ClientSwing extends JFrame {
                     }
                     catch (Exception e) {
                         try {
+                            dbStatus.setText("* Ready");
                             JOptionPane.showMessageDialog(null, e, "Error", 0);
                         }
                         catch (Exception e2) {
@@ -332,6 +357,33 @@ public class ClientSwing extends JFrame {
             }
         });
 
+        // cmd show dbs
+        cmdShowDbs.addActionListener(new ActionListener(){
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textarea.setText("SHOW DATABASES;");
+            }
+        });
+
+        // cmd show db
+        cmdShowDb.addActionListener(new ActionListener(){
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textarea.setText("SHOW DATABASE [db_Name];");
+            }
+        });
+
+        // cmd show tb
+        cmdShowTb.addActionListener(new ActionListener(){
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textarea.setText("SHOW TABLE [table_name];");
+            }
+        });
+
         // cmd Shutdown
         cmdShutdown.addActionListener(new ActionListener() {
 
@@ -365,9 +417,10 @@ public class ClientSwing extends JFrame {
             }
         });
 
-        // -------------------------- Menu Btn ---------------------------
+        // -------------------------- Menu Btn Over ---------------------------
     }
 
+    // connect with server
     private void connectDB(String ip, int port) throws IOException {
         System.out.println("Try connect server.");
         client = new Socket(ip, port);
@@ -377,6 +430,7 @@ public class ClientSwing extends JFrame {
         outStream = new DataOutputStream(client.getOutputStream());
     }
 
+    // show time as table
     private void showTime(ServerResult res) throws NDException{
         if (!res.succ) {
             throw new NDException(res.err_msg);
@@ -389,8 +443,10 @@ public class ClientSwing extends JFrame {
         vec.add(res.time_used + " mill sec");
         datas.add(vec);
         table.setTo(titles, datas);
+        dbStatus.setText("* Ready, last finished in " + res.time_used + " mill sec");
     }
 
+    // show result as table
     private void showResult(ServerResult res) throws NDException{
         if (!res.succ) {
             throw new NDException(res.err_msg);
@@ -410,6 +466,22 @@ public class ClientSwing extends JFrame {
             datas.add(vec);   
         }
         table.setTo(titles, datas);
+        dbStatus.setText("* Ready, last finished in " + res.time_used + " mill sec");
+    }
+
+    // keep recent 20 sqls
+    private void updateRecent(String sql) {
+        if (recentMenu.getMenuComponentCount() >= 20)
+            recentMenu.remove(0);
+        JMenuItem item = new JMenuItem(sql);
+        item.addActionListener(new ActionListener(){
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textarea.setText(sql);
+            }
+        });
+        recentMenu.add(item);
     }
 
     private void execSQL(String line) {
@@ -417,10 +489,11 @@ public class ClientSwing extends JFrame {
         String upper = line.toUpperCase();
 
         try {
+            dbStatus.setText("* Busy...");
             if (upper.equals("EXIT") || 
                 upper.equals("SHUTDOWN") || upper.equals("SHUTDOWN;")) {
                 outStream.writeUTF(upper);
-                JOptionPane.showMessageDialog(null, "Will Exit", "Info", 1);
+                JOptionPane.showMessageDialog(null, "Success, will exit now.", "Info", 1);
                 System.exit(0);
             }
             else if (upper.startsWith("IMPORT")){
@@ -433,10 +506,12 @@ public class ClientSwing extends JFrame {
                 outStream.writeUTF(line);
                 ServerResult response = (ServerResult)inStream.readObject();
                 showResult(response);
+                updateRecent(line);
             }
         }
         catch (Exception e) {
             try {
+                dbStatus.setText("* Ready");
                 JOptionPane.showMessageDialog(null, e, "Error", 0);
             }
             catch (Exception e2) {
