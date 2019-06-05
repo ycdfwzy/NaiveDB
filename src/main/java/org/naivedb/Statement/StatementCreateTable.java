@@ -34,6 +34,7 @@ public class StatementCreateTable {
 
     // return 1 if success
     public ExecResult exec(Database db) throws IOException, NDException {
+        if (db == null) throw new NDException("not using any database");
         Table table = db.createTable(tableName, colList);
         table.setNotNull(notNull);
         if (primaryKey != null)
@@ -41,7 +42,7 @@ public class StatementCreateTable {
         table.close();
 
         LinkedList<String> tableHeader = new LinkedList<>();
-        tableHeader.add("Insert_Count");
+        tableHeader.add("Update_Count");
         ExecResult execResult = new ExecResult(tableHeader);
         LinkedList val = new LinkedList();
         val.add(1);

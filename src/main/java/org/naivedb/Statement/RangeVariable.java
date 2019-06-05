@@ -5,8 +5,6 @@ import org.naivedb.Database.Database;
 import org.naivedb.Table.*;
 import org.naivedb.utils.NDException;
 import org.naivedb.Type.*;
-import org.w3c.dom.ranges.Range;
-import sun.awt.image.ImageWatched;
 
 import javax.xml.crypto.Data;
 import java.io.IOException;

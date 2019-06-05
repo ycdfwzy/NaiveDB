@@ -23,6 +23,7 @@ public class DatabaseManager {
 
     private static String baseDir = "data";
     private static String metaName = "db.meta";
+    private static String pubBaseName = "PUBLIC";
     private static HashSet<String> databases = null;
     private static Logger logger = MyLogger.getLogger("database");
 
@@ -47,6 +48,7 @@ public class DatabaseManager {
             logger.info("data directory created");
             meta.createNewFile();
             logger.info("meta info file created");
+            create(pubBaseName);
         }
         else throw new NDException("database base dir or meta already exists");
     }
@@ -77,9 +79,15 @@ public class DatabaseManager {
         return new Database(db_name);
     }
 
+    public static Database getPublic() throws IOException, NDException {
+        return get(pubBaseName); 
+    }
+
     // drop a database
     public static void drop(String db_name) throws IOException, NDException {
         if (!databases.contains(db_name)) throw new NDException("database does not exist!");
+        if (db_name.equals(pubBaseName)) 
+            throw new NDException("you can't drop database \"public\".");
 
         File db = new File(getDatabasePath(db_name));
         if (!db.exists()) throw new NDException("database dir does not exists!");

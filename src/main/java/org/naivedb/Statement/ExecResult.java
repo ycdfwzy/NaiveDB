@@ -5,6 +5,7 @@ import org.naivedb.utils.NDException;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.function.Consumer;
 
 public class ExecResult {
     private LinkedList<String> colNames;
@@ -71,6 +72,35 @@ public class ExecResult {
             }
             System.out.println();
         }
+    }
+
+    public String zipString() {
+        StringBuffer buffer = new StringBuffer();
+        int i = 0;
+        int len = this.colNames.size();
+
+        for (String name: this.colNames) {
+            if (i == len - 1) buffer.append(name + "\n");
+            else buffer.append(name + "|");
+            i++;
+        }
+
+        for (LinkedList line: this.dataList) {
+            i = 0;
+            len = line.size();
+            for (Object obj: line) {
+                if (i == len - 1) {
+                    if (obj == null) buffer.append("null\n");
+                    else buffer.append(obj.toString() + "\n");
+                }
+                else {
+                    if (obj == null) buffer.append("null|");
+                    else buffer.append(obj.toString() + "|");
+                }
+                i++;
+            }
+        }
+        return buffer.toString();
     }
 
     public LinkedList<String> getColNames() {
