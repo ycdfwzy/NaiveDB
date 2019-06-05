@@ -312,6 +312,10 @@ public class Table {
     public String getFileName() { return this.fileName; }
     public String getTableName() { return this.tableName; }
 
+    public int getPrimaryKey() {
+        return primaryKey;
+    }
+
     public LinkedList<String> combineTableColumn() {
         LinkedList<String> list = new LinkedList<>();
         for (String colName: this.colNames)

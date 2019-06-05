@@ -56,7 +56,11 @@ public class StatementShow {
             ArrayList<Type> colTypes = table.getColTypes();
             for (int i = 0; i < colNames.size(); ++i) {
                 LinkedList val = new LinkedList();
-                val.add(colNames.get(i));
+                if (i == table.getPrimaryKey()) {
+                    val.add(colNames.get(i)+"(PRIMARY KEY)");
+                } else {
+                    val.add(colNames.get(i));
+                }
                 val.add(colTypes.get(i).typeName());
                 execResult.insert(val);
             }
