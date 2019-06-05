@@ -178,6 +178,16 @@ public interface sqlListener extends ParseTreeListener {
 	 */
 	void exitJoin_ranges(sqlParser.Join_rangesContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link sqlParser#product_range}.
+	 * @param ctx the parse tree
+	 */
+	void enterProduct_range(sqlParser.Product_rangeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link sqlParser#product_range}.
+	 * @param ctx the parse tree
+	 */
+	void exitProduct_range(sqlParser.Product_rangeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link sqlParser#natural_join}.
 	 * @param ctx the parse tree
 	 */

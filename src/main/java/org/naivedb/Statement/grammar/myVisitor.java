@@ -273,6 +273,10 @@ public class myVisitor extends sqlBaseVisitor {
 
     @Override
     public Object visitJoin_range(sqlParser.Join_rangeContext ctx) {
+        // ( join_range )
+        if (ctx.getChildCount() > 1) {
+            return visit(ctx.getChild(1));
+        }
         Object o = visit(ctx.getChild(0));
         if (o instanceof String) {
             return new RangeVariable( (String) o, null);
@@ -294,6 +298,13 @@ public class myVisitor extends sqlBaseVisitor {
             rvs.add((RangeVariable) visit(ctx.getChild(i)));
         }
         return rvs;
+    }
+
+    @Override
+    public Object visitProduct_range(sqlParser.Product_rangeContext ctx) {
+        RangeVariable rv = (RangeVariable) visit(ctx.getChild(1));
+        rv.setProduct(true);
+        return rv;
     }
 
     @Override

@@ -82,15 +82,16 @@ asign_clause
 join_range // rangeVariable
   : table_name
   | join_ranges // rangeVariable[]
+  | '(' join_range ')'
   ;
 
 join_ranges // rangeVariable[]
-  : single_range ( natural_join | join_on )+
-  | single_range (product_range)+
+  : single_range ( product_range )+
+  | single_range ( natural_join | join_on )+
   ;
 
 product_range
-  : ',' join_range
+  : ',' (single_range | join_range)
   ;
 
 natural_join // rangeVariable
@@ -102,11 +103,11 @@ join_on
   ;
 
 outer_join
-  : ( K_LEFT | K_RIGHT | K_FULL ) K_OUTER K_JOIN single_range
+  : ( K_LEFT | K_RIGHT | K_FULL ) K_OUTER K_JOIN (single_range | join_range)
   ;
 
 inner_join
-  : ( K_INNER )? K_JOIN single_range
+  : ( K_INNER )? K_JOIN (single_range | join_range)
   ;
 
 single_range
