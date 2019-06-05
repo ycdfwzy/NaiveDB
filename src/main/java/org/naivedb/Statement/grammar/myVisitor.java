@@ -435,6 +435,7 @@ public class myVisitor extends sqlBaseVisitor {
             Expression expr1 = (Expression) visit(ctx.getChild(0));
             Expression expr2 = (Expression) visit(ctx.getChild(2));
             switch (op) {
+                case "=":
                 case "==":
                     return new Conditions(2, "EQ", expr1, expr2);
                 case "!=":
