@@ -221,14 +221,14 @@ public class RangeVariable {
         ArrayList<ArrayList<Long>> rightRowNumLists = rightRange.getRowNumLists();
         ArrayList<Table> rightTableList = rightRange.getTableList();
 
+        leftTableList.addAll(rightTableList);
+
         if (leftRowNumLists.size() == 0 || rightRowNumLists.size() == 0) {
             leftRowNumLists.clear();
             return;
         }
 
         ArrayList<ArrayList<Long>> tempRowNumLists = new ArrayList<>();
-
-        leftTableList.addAll(rightTableList);
 
         for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
