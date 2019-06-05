@@ -112,7 +112,7 @@ public class ClientSwing extends JFrame {
         this.add(outter_container, BorderLayout.CENTER);
         this.add(Box.createRigidArea(new Dimension(20, 0)), BorderLayout.WEST);
         this.add(Box.createRigidArea(new Dimension(20, 0)), BorderLayout.EAST);
-        this.add(Box.createRigidArea(new Dimension(0, 20)), BorderLayout.SOUTH);
+        this.add(Box.createRigidArea(new Dimension(0, 10)), BorderLayout.SOUTH);
 
         this.setActionListener();
     }
