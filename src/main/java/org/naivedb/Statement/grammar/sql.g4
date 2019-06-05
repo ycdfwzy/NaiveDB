@@ -164,7 +164,10 @@ SPACES
   : [ \u000B\t\r\n] -> channel(HIDDEN)
   ;
 
-TEXT_STRING :    '"' ( ~'"' | '\\"' )* '"';
+TEXT_STRING
+  : '"' ( ~'"' | '\\"' )* '"'
+  | '\'' ( ~'\'' | '\\\'' )* '\''
+  ;
 
 K_CREATE : C R E A T E;
 K_DATABASE : D A T A B A S E;

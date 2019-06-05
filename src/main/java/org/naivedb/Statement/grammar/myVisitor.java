@@ -360,7 +360,8 @@ public class myVisitor extends sqlBaseVisitor {
     public Object visitExpr(sqlParser.ExprContext ctx) {
         try {
             Expression expr;
-            if (ctx.getChild(0).getText().startsWith("\"")) {
+            if (ctx.getChild(0).getText().startsWith("\"") ||
+                ctx.getChild(0).getText().startsWith("'")) {
                 expr = new Expression(4, ctx.getText().substring(1, ctx.getText().length()-1));
             } else
             {
