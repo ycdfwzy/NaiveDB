@@ -473,7 +473,12 @@ public class ClientSwing extends JFrame {
     private void updateRecent(String sql) {
         if (recentMenu.getMenuComponentCount() >= 20)
             recentMenu.remove(0);
-        JMenuItem item = new JMenuItem(sql);
+
+        JMenuItem item;
+        if (sql.length() >= 40)
+            item = new JMenuItem(sql.substring(0, 40) + " ...");
+        else item = new JMenuItem(sql);
+
         item.addActionListener(new ActionListener(){
         
             @Override
