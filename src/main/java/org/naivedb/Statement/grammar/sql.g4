@@ -57,7 +57,7 @@ update_stmt
   ;
 
 select_stmt
-  : K_SELECT select_elements K_FROM join_range ( K_WHERE pred_expr )?
+  : K_SELECT select_elements K_FROM range ( K_WHERE pred_expr )?
   ;
 
 use_stmt
@@ -79,19 +79,33 @@ asign_clause
   : expr_column '=' expr (',' expr_column '=' expr)*
   ;
 
-join_range // rangeVariable
+range
   : table_name
-  | join_ranges // rangeVariable[]
+  | join_range
+  | product_range
   ;
 
-join_ranges // rangeVariable[]
+//join_range // rangeVariable
+//  : table_name
+//  | join_ranges // rangeVariable[]
+//  ;
+
+//
+//join_ranges // rangeVariable[]
+//  : single_range ( natural_join | join_on )+
+//  ;
+
+join_range // rangeVariable[]
   : single_range ( natural_join | join_on )+
-  | single_range (product_range)+
   ;
 
 product_range
-  : ',' join_range
+  : ( table_name | join_range | '(' product_range ')' ) ( ',' range )+
   ;
+
+//product_range
+//  : ',' join_range
+//  ;
 
 natural_join // rangeVariable
   : K_NATURAL ( outer_join | inner_join )
@@ -110,7 +124,7 @@ inner_join
   ;
 
 single_range
-  : table_name | '(' join_range ')'
+  : table_name | '(' range ')'
   ;
 
 db_name
