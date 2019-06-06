@@ -74,7 +74,7 @@ public class Conditions {
                     throw new NDException(e.getMessage());
                 }
             default:
-                throw new NDException("Unexpected Conditions type");
+                throw new NDException("Unexpected Conditions type!");
         }
     }
 
@@ -218,6 +218,90 @@ public class Conditions {
         if (type != 0) return false;
         return (leftCond.isLowerBounded(symbol) && rightCond.isUpperBounded(symbol)) ||
                 (rightCond.isLowerBounded(symbol) && leftCond.isUpperBounded(symbol));
+    }
+
+    /*
+        if this condition is contains only single table/temptable
+        you should pass table names list because of temptable
+     */
+    public boolean onlySingleTable(ArrayList<String> tbNames) throws NDException {
+        switch (this.type) {
+            case 0:
+            case 1:
+                return this.leftCond.onlySingleTable(tbNames) &&
+                        this.rightCond.onlySingleTable(tbNames);
+            case 2:
+                return this.expr1.onlySingleTable(tbNames) &&
+                        this.expr2.onlySingleTable(tbNames);
+            default:
+                throw new NDException("Unexpected Conditions type!");
+        }
+    }
+
+    public boolean twoTablesEqual(ArrayList<String> tbNames1, ArrayList<String> tbNames2) throws NDException {
+        switch (this.type) {
+            case 0:
+                return this.leftCond.twoTablesEqual(tbNames1, tbNames2) &&
+                        this.rightCond.twoTablesEqual(tbNames1, tbNames2);
+            case 1:
+                return false;
+            case 2:
+                if (this.op.compareTo("EQ") == 0 &&
+                        this.expr1.isSymbol() &&
+                        this.expr2.isSymbol()) {
+                    String t1 = this.expr1.getSymbol();
+                    String t2 = this.expr2.getSymbol();
+                    if (t1.indexOf(".") >= 0 && t2.indexOf(".") >= 0) {
+                        t1 = t1.substring(0, t1.indexOf("."));
+                        t2 = t2.substring(0, t2.indexOf("."));
+                    }
+                    return (tbNames1.indexOf(t1)>=0 && tbNames2.indexOf(t2)>=0) ||
+                            (tbNames1.indexOf(t2)>=0 && tbNames2.indexOf(t1)>=0);
+                }
+                return false;
+            default:
+                throw new NDException("Unexpected Conditions type!");
+        }
+    }
+
+    public Pair<ArrayList<String>, ArrayList<String>> getTwoTableColumns(ArrayList<String> tbNames1, ArrayList<String> tbNames2) throws NDException {
+        switch (this.type) {
+            case 0:
+                Pair<ArrayList<String>, ArrayList<String>> res1 = this.leftCond.getTwoTableColumns(tbNames1, tbNames2);
+                Pair<ArrayList<String>, ArrayList<String>> res2 = this.rightCond.getTwoTableColumns(tbNames1, tbNames2);
+                ArrayList<String> l1 = res1.getKey(), l2 = res1.getValue();
+                l1.addAll(res2.getKey());
+                l2.addAll(res2.getValue());
+                return new Pair<>(l1, l2);
+            case 1:
+                throw new NDException("Please call twoTablesEqual() first!");
+            case 2:
+                if (this.op.compareTo("EQ") == 0 &&
+                        this.expr1.isSymbol() &&
+                        this.expr2.isSymbol()) {
+                    String t1 = this.expr1.getSymbol();
+                    String t2 = this.expr2.getSymbol();
+                    if (t1.indexOf(".") >= 0 && t2.indexOf(".") >= 0) {
+                        t1 = t1.substring(0, t1.indexOf("."));
+                        t2 = t2.substring(0, t2.indexOf("."));
+                    }
+                    ArrayList<String> p1 = new ArrayList<>();
+                    ArrayList<String> p2 = new ArrayList<>();
+                    if (tbNames1.indexOf(t1)>=0 && tbNames2.indexOf(t2)>=0) {
+                        p1.add(this.expr1.getSymbol());
+                        p2.add(this.expr2.getSymbol());
+                        return new Pair<>(p1, p2);
+                    } else
+                    if (tbNames1.indexOf(t2)>=0 && tbNames2.indexOf(t1)>=0) {
+                        p1.add(this.expr2.getSymbol());
+                        p2.add(this.expr1.getSymbol());
+                        return new Pair<>(p1, p2);
+                    }
+                    throw new NDException("Please call twoTablesEqual() first!");
+                }
+            default:
+                throw new NDException("Unexpected Conditions type!");
+        }
     }
 
     private boolean isValue(String s) {
