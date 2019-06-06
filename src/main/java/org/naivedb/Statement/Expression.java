@@ -154,7 +154,7 @@ public class Expression {
             case 4:
                 return new Pair<>(this.symbolORValue, this.valueType);
             default:
-                throw new NDException("Unknown Type!");
+                throw new NDException("Unknown Expression Type!");
         }
     }
 
@@ -280,6 +280,24 @@ public class Expression {
             return new Expression(4, x.getKey().toString()+y.getKey().toString());
         }
         return new Expression(3, this.op, expr1, expr2);
+    }
+
+    public boolean onlySingleTable(ArrayList<String> tbNames) throws NDException {
+        switch (this.type) {
+            case 0:
+            case 4:
+                return true;
+            case 1:
+                int idx = this.symbolORValue.indexOf(".");
+                return idx >= 0 && tbNames.indexOf(this.symbolORValue.substring(0, idx)) >= 0;
+            case 2:
+                return this.expr1.onlySingleTable(tbNames);
+            case 3:
+                return this.expr1.onlySingleTable(tbNames) &&
+                        this.expr2.onlySingleTable(tbNames);
+            default:
+                throw new NDException("Unknown Expression Type!");
+        }
     }
 
     public String getSymbol() throws NDException {
