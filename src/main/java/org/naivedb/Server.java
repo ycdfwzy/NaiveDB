@@ -14,8 +14,9 @@ import org.naivedb.Database.DatabaseManager;
 import org.naivedb.Session.*;
 
 public class Server{
-    private ServerSocket serverSocket;
     private static Logger logger = MyLogger.getLogger("Server");
+
+    public static void setShutdown() { shutdown = true; }
 
     public static void showHelp() {
         System.out.println("Usage: `run class` [options]");

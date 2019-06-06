@@ -44,6 +44,7 @@ public class Session extends Thread{
             // REPL start in here
             while(true) {
                 String message = in.readUTF().trim();
+                
                 if (message.equals("EXIT") || 
                     message.equals("SHUTDOWN;") || message.equals("SHUTDOWN"))
                     break; // if is exit, then client will trans upper case
