@@ -113,6 +113,12 @@ public interface sqlVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitJoin_ranges(sqlParser.Join_rangesContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link sqlParser#product_range}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitProduct_range(sqlParser.Product_rangeContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link sqlParser#natural_join}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
