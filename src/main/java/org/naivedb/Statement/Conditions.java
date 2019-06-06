@@ -224,12 +224,12 @@ public class Conditions {
         if this condition is contains only single table/temptable
         you should pass table names list because of temptable
      */
-    public boolean onlySingleTable(ArrayList<String> tbNames) throws NDException {
+    private boolean onlySingleTable2(ArrayList<String> tbNames) throws NDException {
         switch (this.type) {
             case 0:
             case 1:
-                return this.leftCond.onlySingleTable(tbNames) &&
-                        this.rightCond.onlySingleTable(tbNames);
+                return this.leftCond.onlySingleTable2(tbNames) &&
+                        this.rightCond.onlySingleTable2(tbNames);
             case 2:
                 return this.expr1.onlySingleTable(tbNames) &&
                         this.expr2.onlySingleTable(tbNames);
@@ -238,11 +238,20 @@ public class Conditions {
         }
     }
 
-    public boolean twoTablesEqual(ArrayList<String> tbNames1, ArrayList<String> tbNames2) throws NDException {
+    public boolean onlySingleTable(ArrayList<Table> tbs) throws NDException {
+        ArrayList<String> tbNames = new ArrayList<>();
+        tbNames.ensureCapacity(tbs.size());
+        for (Table tb: tbs) {
+            tbNames.add(tb.getTableName());
+        }
+        return onlySingleTable2(tbNames);
+    }
+
+    private boolean twoTablesEqual2(ArrayList<String> tbNames1, ArrayList<String> tbNames2) throws NDException {
         switch (this.type) {
             case 0:
-                return this.leftCond.twoTablesEqual(tbNames1, tbNames2) &&
-                        this.rightCond.twoTablesEqual(tbNames1, tbNames2);
+                return this.leftCond.twoTablesEqual2(tbNames1, tbNames2) &&
+                        this.rightCond.twoTablesEqual2(tbNames1, tbNames2);
             case 1:
                 return false;
             case 2:
@@ -264,11 +273,25 @@ public class Conditions {
         }
     }
 
-    public Pair<ArrayList<String>, ArrayList<String>> getTwoTableColumns(ArrayList<String> tbNames1, ArrayList<String> tbNames2) throws NDException {
+    public boolean twoTablesEqual(ArrayList<Table> tbs1, ArrayList<Table> tbs2) throws NDException {
+        ArrayList<String> tbNames1 = new ArrayList<>();
+        ArrayList<String> tbNames2 = new ArrayList<>();
+        tbNames1.ensureCapacity(tbs1.size());
+        tbNames2.ensureCapacity(tbs2.size());
+        for (Table tb: tbs1) {
+            tbNames1.add(tb.getTableName());
+        }
+        for (Table tb: tbs2) {
+            tbNames2.add(tb.getTableName());
+        }
+        return twoTablesEqual2(tbNames1, tbNames2);
+    }
+
+    public Pair<ArrayList<String>, ArrayList<String>> getTwoTableColumns2(ArrayList<String> tbNames1, ArrayList<String> tbNames2) throws NDException {
         switch (this.type) {
             case 0:
-                Pair<ArrayList<String>, ArrayList<String>> res1 = this.leftCond.getTwoTableColumns(tbNames1, tbNames2);
-                Pair<ArrayList<String>, ArrayList<String>> res2 = this.rightCond.getTwoTableColumns(tbNames1, tbNames2);
+                Pair<ArrayList<String>, ArrayList<String>> res1 = this.leftCond.getTwoTableColumns2(tbNames1, tbNames2);
+                Pair<ArrayList<String>, ArrayList<String>> res2 = this.rightCond.getTwoTableColumns2(tbNames1, tbNames2);
                 ArrayList<String> l1 = res1.getKey(), l2 = res1.getValue();
                 l1.addAll(res2.getKey());
                 l2.addAll(res2.getValue());
@@ -302,6 +325,20 @@ public class Conditions {
             default:
                 throw new NDException("Unexpected Conditions type!");
         }
+    }
+
+    public Pair<ArrayList<String>, ArrayList<String>> getTwoTableColumns(ArrayList<Table> tbs1, ArrayList<Table> tbs2) throws NDException {
+        ArrayList<String> tbNames1 = new ArrayList<>();
+        ArrayList<String> tbNames2 = new ArrayList<>();
+        tbNames1.ensureCapacity(tbs1.size());
+        tbNames2.ensureCapacity(tbs2.size());
+        for (Table tb: tbs1) {
+            tbNames1.add(tb.getTableName());
+        }
+        for (Table tb: tbs2) {
+            tbNames2.add(tb.getTableName());
+        }
+        return getTwoTableColumns2(tbNames1, tbNames2);
     }
 
     private boolean isValue(String s) {
