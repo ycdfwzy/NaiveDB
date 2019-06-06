@@ -8,8 +8,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.naivedb.Database.DatabaseManager;
-import org.naivedb.Database.Database;
+import org.naivedb.Database.*;
 import org.naivedb.utils.FileUtils;
 import org.naivedb.utils.NDException;
 
@@ -45,7 +44,7 @@ public class DatabaseTest {
         File meta = new File(DatabaseManager.getMetaPath());
         Assert.assertTrue(data.exists() && data.isDirectory());
         Assert.assertTrue(meta.exists() && meta.isFile());
-        Assert.assertEquals(0, dbs.size());
+        Assert.assertEquals(1, dbs.size());
     }
 
     // able to load dir
@@ -55,7 +54,8 @@ public class DatabaseTest {
         DatabaseManager.close();
         DatabaseManager.initial();
         ArrayList<String> dbs =  DatabaseManager.getDatabases();
-        Assert.assertEquals(1, dbs.size());
+        Assert.assertEquals(2, dbs.size());
+        Assert.assertEquals("PUBLIC", dbs.get(1));
         Assert.assertEquals("new_db", dbs.get(0));
         DatabaseManager.close();
     }
@@ -66,7 +66,8 @@ public class DatabaseTest {
         DatabaseManager.create("new_db");
         ArrayList<String> dbs = DatabaseManager.getDatabases();
         File db = new File(DatabaseManager.getDatabasePath("new_db"));
-        Assert.assertEquals(1, dbs.size());
+        Assert.assertEquals(2, dbs.size());
+        Assert.assertEquals("PUBLIC", dbs.get(1));
         Assert.assertEquals("new_db", dbs.get(0));
         DatabaseManager.close();
         Assert.assertTrue(db.exists() && db.isDirectory());

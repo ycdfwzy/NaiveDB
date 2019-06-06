@@ -14,7 +14,6 @@ import org.naivedb.Database.DatabaseManager;
 import org.naivedb.Session.*;
 
 public class Server{
-    private ServerSocket serverSocket;
     private static Logger logger = MyLogger.getLogger("Server");
 
     public static void showHelp() {
