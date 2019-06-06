@@ -38,7 +38,7 @@ public class Client {
             );
         Completer showDatabasesCompleter = new ArgumentCompleter(
                 new StringsCompleter("show"),
-                new StringsCompleter("databases;"),
+                new StringsCompleter("databases;", "table"),
                 NullCompleter.INSTANCE
             );
         Completer showTablesCompleter = new ArgumentCompleter(

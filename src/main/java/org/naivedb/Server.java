@@ -16,8 +16,6 @@ import org.naivedb.Session.*;
 public class Server{
     private static Logger logger = MyLogger.getLogger("Server");
 
-    public static void setShutdown() { shutdown = true; }
-
     public static void showHelp() {
         System.out.println("Usage: `run class` [options]");
         System.out.println("Options:");
