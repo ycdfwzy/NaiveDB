@@ -59,12 +59,18 @@ public class Database {
      * close a db, write meta info back
      */
     public void close() throws IOException, NDException {
+        this.close(true);
+    }
+
+    public void close(boolean clearCache) throws IOException, NDException {
         File dbmeta = new File(this.dbPath + "/" + metaName);
         this.writeMeta(dbmeta);
-        for (Map.Entry<String, Table> entry: this.cachedTables.entrySet()) {
-            entry.getValue().close();
+        if (clearCache) {
+            for (Map.Entry<String, Table> entry : this.cachedTables.entrySet()) {
+                entry.getValue().close();
+            }
+            this.cachedTables.clear();
         }
-        this.cachedTables.clear();
     }
 
     // create a table
@@ -97,8 +103,10 @@ public class Database {
     public void dropTable(String table_name) throws IOException, NDException {
         if (!this.tables.contains(table_name)) throw new NDException("table not exists!");
 
-        Table table = this.cachedTables.remove(table_name);
-        table.close(false);
+        if (this.cachedTables.containsKey(table_name)) {
+            Table table = this.cachedTables.remove(table_name);
+            table.close(false);
+        }
 
         File root = new File(this.dbPath);
         File[] files = root.listFiles(new FilenameFilter(){
