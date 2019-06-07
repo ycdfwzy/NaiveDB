@@ -263,7 +263,8 @@ public class ClientSwing extends JFrame {
                 if (chooser.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                     dbStatus.setText("* Busy...");
                     try {
-                        outStream.writeUTF(FileUtils.readFile(chooser.getSelectedFile()).trim());
+                        NetworkUtils.writeString(outStream, 
+                            FileUtils.readFile(chooser.getSelectedFile()).trim());
                         ServerResult response = (ServerResult)inStream.readObject();
                         showTime(response);
                     }
@@ -497,18 +498,18 @@ public class ClientSwing extends JFrame {
             dbStatus.setText("* Busy...");
             if (upper.equals("EXIT") || 
                 upper.equals("SHUTDOWN") || upper.equals("SHUTDOWN;")) {
-                outStream.writeUTF(upper);
+                NetworkUtils.writeString(outStream, upper);
                 JOptionPane.showMessageDialog(null, "Success, will exit now.", "Info", 1);
                 System.exit(0);
             }
             else if (upper.startsWith("IMPORT")){
                 String file_name = line.substring(7).trim();
-                outStream.writeUTF(FileUtils.readFile(new File(file_name)).trim());
+                NetworkUtils.writeString(outStream, FileUtils.readFile(new File(file_name)).trim());
                 ServerResult response = (ServerResult)inStream.readObject();
                 showTime(response);
             }
             else {
-                outStream.writeUTF(line);
+                NetworkUtils.writeString(outStream, line);
                 ServerResult response = (ServerResult)inStream.readObject();
                 showResult(response);
                 updateRecent(line);

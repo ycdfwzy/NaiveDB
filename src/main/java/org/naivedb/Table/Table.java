@@ -369,7 +369,7 @@ public class Table {
         input.close();
 
         this.persistence = new PersistenceData(this.fileName, this.colTypes, blankRow);
-        logger.info("table " + this.tableName + " meta info load successful.");
+        logger.fine("table " + this.tableName + " meta info load successful.");
     }
     
     private void writeMeta(File meta) throws IOException, NDException{
@@ -398,7 +398,7 @@ public class Table {
         this.persistence.output(output);
 
         output.close();
-        logger.info("table " + this.tableName + " meta info write successful.");
+        logger.fine("table " + this.tableName + " meta info write successful.");
     }
 
 }
