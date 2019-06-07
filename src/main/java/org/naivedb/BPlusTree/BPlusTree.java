@@ -18,7 +18,7 @@ public class BPlusTree {
     private HashMap<Long, BPlusTreeNode> cachedNodes;
 //    private HashMap<Long, LinkedList> cachedData;
     private long maxPageIndex;
-    private ArrayList<Long> pageIndexPool;
+    private LinkedList<Long> pageIndexPool;
 //    private long maxRowIndex;
 //    private ArrayList<Long> rowIndexPool;
     private long firstLeaf, lastLeaf;
@@ -42,7 +42,7 @@ public class BPlusTree {
         this.lastLeaf = 0;
         this.firstLeaf = 0;
         this.maxPageIndex = 0;
-        this.pageIndexPool = new ArrayList<Long>();
+        this.pageIndexPool = new LinkedList<>();
 //        this.maxRowIndex = -1;
 //        this.rowIndexPool = new ArrayList<Long>();
         this.headerFile = new File(config.getFilename()+".header");
@@ -175,7 +175,7 @@ public class BPlusTree {
 
         // blankPageCnt
         int blankPageCnt = StreamUtils.readInt(input);
-        this.pageIndexPool = new ArrayList<Long>();
+        this.pageIndexPool = new LinkedList<>();
         // [blankPage]
         for (int i = 0; i < blankPageCnt; ++i) {
             long pageIndex = StreamUtils.readLong(input);
