@@ -86,7 +86,7 @@ public class StatementSelect {
             }
 
             if (cond != null) {
-                cond.normalize(tableList);
+                cond.normalize(tableList, ignoreColumns);
             }
             ArrayList<Long> rowList = tempTable.search(cond);
             for (long row: rowList) {
