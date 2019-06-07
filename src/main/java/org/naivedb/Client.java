@@ -223,18 +223,19 @@ public class Client {
                     }
                     else if (upper.equals("EXIT") || 
                         upper.equals("SHUTDOWN") || upper.equals("SHUTDOWN;")) {
-                        out.writeUTF(upper);
+                        NetworkUtils.writeString(out, upper);
                         System.out.println("Bye.");
                         break;
                     }
                     else if (upper.startsWith("IMPORT")){
                         String file_name = line.substring(7).trim();
-                        out.writeUTF(FileUtils.readFile(new File(file_name)).trim());
+                        NetworkUtils.writeString(out,
+                            FileUtils.readFile(new File(file_name)).trim());
                         ServerResult response = (ServerResult)in.readObject();
                         showTime(response);
                     }
                     else {
-                        out.writeUTF(line);
+                        NetworkUtils.writeString(out, line);
                         ServerResult response = (ServerResult)in.readObject();
                         showResult(response);
                     }

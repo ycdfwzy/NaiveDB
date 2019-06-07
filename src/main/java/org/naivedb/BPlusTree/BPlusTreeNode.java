@@ -196,10 +196,10 @@ public class BPlusTreeNode {
     public long getPtrByKey(Object key) {
         if (key == null) return -1;
         int idx = Integer.max(0, lowerbound(key, conf.getKeyType()));
-        if (keyList.size() <= idx)
+        if (keyList.size() < idx)
             return -1;
 
-        if (idx > 0 && compareKey(keyList.get(idx), key, conf.getKeyType()) == 1)
+        if (idx == keyList.size() || (idx > 0 && compareKey(keyList.get(idx), key, conf.getKeyType()) > 0))
             idx -= 1;
         return ptrList.get(idx);
     }
@@ -361,7 +361,7 @@ public class BPlusTreeNode {
                 compare = (double) a > (double) b ? 1 : -1;
                 break;
             default:    // String***
-                compare = a.toString().compareTo(b.toString());
+                compare = a.toString().compareTo(b.toString()) > 0 ? 1 : -1;
                 break;
         }
         return compare;

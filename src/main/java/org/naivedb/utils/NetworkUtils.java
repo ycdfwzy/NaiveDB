@@ -1,5 +1,7 @@
 package org.naivedb.utils;
 
+import java.io.*;
+
 public class NetworkUtils {
     
     public static boolean ipValid(String ip_addr) {
@@ -17,6 +19,19 @@ public class NetworkUtils {
         } catch(Exception e) { return false; }
 
         return true;
+    }
+
+    public static void writeString(DataOutputStream out, String msg) throws IOException{
+        byte[] bytes = msg.getBytes("utf-8");
+        out.writeInt(bytes.length);
+        out.write(bytes);
+    }
+
+    public static String readString(DataInputStream in) throws IOException {
+        int length =  in.readInt();
+        byte[] bytes = new byte[length];
+        in.readFully(bytes, 0, length);
+        return new String(bytes, "utf-8");
     }
     
 }

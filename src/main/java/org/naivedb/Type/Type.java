@@ -137,7 +137,7 @@ public class Type {
             case SQL_DOUBLE:
                 return (double) obj1 < (double) obj2 ? -1 : 1;
             default:
-                return obj1.toString().compareTo(obj2.toString());
+                return obj1.toString().compareTo(obj2.toString()) < 0 ? -1 : 1;
         }
     }
 
