@@ -319,7 +319,7 @@ public class Expression {
                     String tableName = null;
                     for (Table table : tables) {
                         if (table.getColNames().indexOf(this.symbolORValue) != -1 &&
-                                !ignoreNames.contains(table.getTableName() + "." + this.symbolORValue)) {
+                            (ignoreNames == null || !ignoreNames.contains(table.getTableName() + "." + this.symbolORValue))) {
                             if (tableName != null)
                                 throw new NDException("Column name '" + this.symbolORValue +"' occurs in Table '" +
                                         tableName + "' and Table '" + table.getTableName() + "'!");
