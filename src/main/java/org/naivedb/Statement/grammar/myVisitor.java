@@ -432,6 +432,10 @@ public class myVisitor extends sqlBaseVisitor {
     @Override
     public Object visitPred_expr(sqlParser.Pred_exprContext ctx) {
         try {
+            // ( pred_expr )
+            if (ctx.getChild(0).getText().compareTo("(") == 0) {
+                return visit(ctx.getChild(1));
+            }
             String op = ctx.getChild(1).getText().toUpperCase();
             // pred_expr and pred_expr  |  pred_expr or pred_expr
             if (op.compareTo("AND") == 0 || op.compareTo("OR") == 0) {
