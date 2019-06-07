@@ -180,8 +180,10 @@ public class Client {
         try {
             cl = parser.parse(opts, args);
             
-            if (cl.hasOption("h"))
+            if (cl.hasOption("h")) {
                 showHelp();
+                return;
+            }
             else if (cl.hasOption("a")) {
                 ip = cl.getOptionValue("a");
                 if (!NetworkUtils.ipValid(ip)) throw new NDException("ip address not valid");

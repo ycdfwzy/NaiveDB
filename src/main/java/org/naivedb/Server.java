@@ -35,8 +35,10 @@ public class Server{
         try {
             cl = parser.parse(opts, args);
             
-            if (cl.hasOption("h"))
+            if (cl.hasOption("h")) {
                 showHelp();
+                return;
+            }
             else if (cl.hasOption("p"))
                 port_num = Integer.parseInt(cl.getOptionValue("p"));
         } catch(Exception e) {
