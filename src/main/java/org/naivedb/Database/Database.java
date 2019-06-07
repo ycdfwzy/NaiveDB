@@ -86,7 +86,7 @@ public class Database {
         File[] files = root.listFiles(new FilenameFilter(){
             @Override
             public boolean accept(File dir, String name) {
-                return name.startsWith(table_name);
+                return name.startsWith(table_name + ".");
             }
         });
         boolean succ = true;
@@ -118,7 +118,7 @@ public class Database {
         }
         
         input.close();
-        logger.info("table names loaded");
+        logger.fine("table names loaded");
     }
 
     private void writeMeta(File meta) throws IOException, NDException {
@@ -130,6 +130,6 @@ public class Database {
             StreamUtils.writeString(output, name, Consts.tableNameSize);
 
         output.close();
-        logger.info("table names written");
+        logger.fine("table names written");
     }
 }

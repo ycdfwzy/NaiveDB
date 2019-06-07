@@ -45,9 +45,9 @@ public class DatabaseManager {
         else if (!dbDir.exists() && !meta.exists()) {
             // frist time: create
             dbDir.mkdir();
-            logger.info("data directory created");
+            logger.fine("data directory created");
             meta.createNewFile();
-            logger.info("meta info file created");
+            logger.fine("meta info file created");
             create(pubBaseName);
         }
         else throw new NDException("database base dir or meta already exists");
@@ -128,7 +128,7 @@ public class DatabaseManager {
             databases.add(name);
         }
         input.close();
-        logger.info("meta info loaded");
+        logger.fine("meta info loaded");
     }
 
     private static void writeMeta(File meta) throws IOException, NDException{
@@ -143,7 +143,7 @@ public class DatabaseManager {
             StreamUtils.writeString(output, name, Consts.databaseNameSize);
         }
         output.close();
-        logger.info("database metainfo write successful.");
+        logger.fine("database metainfo write successful.");
     }
 
 }
