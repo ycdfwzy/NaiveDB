@@ -48,13 +48,18 @@ public class PersistenceData {
             StreamUtils.writeLong(output, row);
     }
 
-    public void close() {
+    public void close(boolean needWriteBack) {
         try {
-            write();
+            if (needWriteBack)
+                write();
             this.dataFile.close();
         } catch (Exception e) {
             logger.warning("Error happened while trying to write back to data file!");
         }
+    }
+
+    public void close() {
+        close(true);
     }
 
     public ArrayList<Long> getAllRowNum() {

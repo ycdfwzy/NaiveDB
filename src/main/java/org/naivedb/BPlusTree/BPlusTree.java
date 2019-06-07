@@ -23,11 +23,16 @@ public class BPlusTree {
 //    private ArrayList<Long> rowIndexPool;
     private long firstLeaf, lastLeaf;
 
+    public void close(boolean needWriteBack)
+            throws IOException, NDException {
+        if (needWriteBack)
+            this.toFile();
+        this.treeFile.close();
+    }
+
     public void close()
         throws IOException, NDException {
-        this.toFile();
-        this.treeFile.close();
-//        this.dataFile.close();
+        this.close(true);
     }
 
     public BPlusTree(BPlusTreeConfiguration config)

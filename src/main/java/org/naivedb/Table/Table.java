@@ -113,8 +113,17 @@ public class Table {
      * close a table, write data back to storage (not meta info currently)
      */
     public void close() throws IOException, NDException {
-        this.writeMeta(new File(this.fileName + ".meta"));
-        this.persistence.close();
+//        this.writeMeta(new File(this.fileName + ".meta"));
+//        this.persistence.close();
+//        if (this.index != null)
+//            this.index.close();
+        this.close(true);
+    }
+
+    public void close(boolean needWriteBack) throws IOException, NDException {
+        if (needWriteBack)
+            this.writeMeta(new File(this.fileName + ".meta"));
+        this.persistence.close(needWriteBack);
         if (this.index != null)
             this.index.close();
     }
