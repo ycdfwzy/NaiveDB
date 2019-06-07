@@ -45,14 +45,14 @@ public class Server{
         }
 
         try {
-            System.out.println("Initiate Server...");
+            logger.info("Initiate Server...");
             DatabaseManager.initial();
 
             // currently only support single session
             Session session = new Session(1, port_num);
             session.run();
             
-            System.out.println("Server shutdown...");
+            logger.info("Server shutdown...");
             DatabaseManager.close();
         }
         catch(Exception e) {

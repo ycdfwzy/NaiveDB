@@ -400,7 +400,7 @@ public class ClientSwing extends JFrame {
             @Override
             public void actionPerformed(ActionEvent event) {
                 try{
-                    JOptionPane.showMessageDialog(null, "This is Naive DB\n  A simple Database Manage System", "Info", 1);
+                    JOptionPane.showMessageDialog(null, "This is Naive DB:  A simple Database Manage System\n  Copyright (c) 2019 Wang Zeyu, Na Xin, Li Shuai", "Info", 1);
                 }
                 catch (Exception e){
                     System.out.println("catch handless error:");
@@ -414,7 +414,13 @@ public class ClientSwing extends JFrame {
         
             @Override
             public void actionPerformed(ActionEvent event) {
-                
+                try{
+                    JOptionPane.showMessageDialog(null, "You can get help at https://github.com/ycdfwzy/NaiveDB.", "Info", 1);
+                }
+                catch (Exception e){
+                    System.out.println("catch handless error:");
+                    System.out.println(e);
+                }
             }
         });
 

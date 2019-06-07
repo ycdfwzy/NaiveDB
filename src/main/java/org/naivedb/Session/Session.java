@@ -67,6 +67,7 @@ public class Session extends Thread{
 
     private ServerResult execSQL(String sql) {
         ServerResult result = new ServerResult();
+        long start_time = System.currentTimeMillis();
         
         // initial anltr
         CharStream input = CharStreams.fromString(sql);
@@ -83,7 +84,6 @@ public class Session extends Thread{
             myVisitor visitor = new myVisitor();
             ArrayList comp_res = (ArrayList) visitor.visit(parser.parse());
             int i = 0; int len = comp_res.size();
-            long start_time = System.currentTimeMillis();
             for (Object o: comp_res) {
                 if (o instanceof StatementCreateDatabase) {
                     StatementCreateDatabase stm = (StatementCreateDatabase) o;
