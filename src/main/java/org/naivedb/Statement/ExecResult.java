@@ -39,11 +39,11 @@ public class ExecResult {
         dataList.add(data);
     }
 
-    public void insert(LinkedList<String> curNames, LinkedList curData, ArrayList<Table> tableList) throws NDException {
+    public void insert(LinkedList<String> curNames, LinkedList curData, ArrayList<Table> tableList, LinkedList<String> ignoreNames) throws NDException {
         LinkedList data = new LinkedList();
         for (String colName: this.colNames) {
             Expression tmp = new Expression(1, colName);
-            tmp.normalize(tableList);
+            tmp.normalize(tableList, ignoreNames);
             String tableCol = tmp.getSymbol();
             int idx = curNames.indexOf(tableCol);
             if (idx < 0) {
