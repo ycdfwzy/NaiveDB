@@ -183,8 +183,12 @@ public class Table {
 
         // type check pass
         long rowNum = this.persistence.getNewRowIndexWithoutDeletion();
-        if (this.index != null)
+        if (this.index != null) {
             this.index.insert(values.get(this.primaryKey), rowNum);
+//            if ((int)values.get(2) > 8000) {
+//                System.out.println(values.get(0).toString() + " " + this.index.check());
+//            }
+        }
         this.persistence.add(values);
         return rowNum;
     }

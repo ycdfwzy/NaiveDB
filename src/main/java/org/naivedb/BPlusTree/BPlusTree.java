@@ -186,6 +186,21 @@ public class BPlusTree {
 //        this.rowIndexPool = new ArrayList<Long>();
     }
 
+    public boolean check() throws IOException, NDException {
+        return check(this.root);
+    }
+
+    private boolean check(BPlusTreeNode p) throws IOException, NDException {
+        if (p.isLeaf()) return true;
+        int n = p.getCurrentSize();
+        for (int i = 0; i < n; ++i) {
+            BPlusTreeNode q = getNode(p.getPtr(i));
+            if (q.getParent() != p.getPageIndex() || !check(q))
+                return false;
+        }
+        return true;
+    }
+
     public int getTreeDegree() {return config.getTreeDegree();}
 
     public String getKeyType() {return config.getKeyType();}
@@ -420,7 +435,7 @@ public class BPlusTree {
 
             if (p.isLeaf())
                 p.setNodeType(BPlusTreeNodeType.LEAF_NODE);
-            else if (p.isInternal())
+            else// if (p.isInternal())
                 p.setNodeType(BPlusTreeNodeType.INTERNAL_NODE);
             p.setParent(newRootPageIndex);
             newRoot.addKeyAndPtr(p.getKey(0), p.getPageIndex());
@@ -458,6 +473,9 @@ public class BPlusTree {
             Object key = p.getKey(i);
             long ptr = p.getPtr(i);
             q.addKeyAndPtr(key, ptr);
+            if (!p.isLeaf()) {
+                getNode(ptr).setParent(newPageIndex);
+            }
         }
         for (int i = m/2; i < m; ++i) {
             p.removeKeyAndPtr(m/2);
@@ -473,6 +491,7 @@ public class BPlusTree {
     private void afterDelete(BPlusTreeNode p)
         throws NDException, IOException {
         if (p.isRoot()) {
+            if (p.isLeaf()) return;
             this.root = getNode(p.getPtr(0));
             if (this.root.isLeaf()) {
                 this.root.setNodeType(BPlusTreeNodeType.ROOT_LEAF_NODE);
