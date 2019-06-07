@@ -94,6 +94,7 @@ public class BPlusTreeNode {
         this.ptrList = new ArrayList<Long>();
         int n = this.conf.getTreeDegree();
         for (int i = 0; i < n; ++i) {
+//        while (true) {
             if (pageS.substring(pos).startsWith("\0")) {
                 break;
             }
@@ -103,6 +104,7 @@ public class BPlusTreeNode {
             pos += Consts.pointSize;
         }
         if (!pageS.substring(pos).trim().isEmpty()) {
+            System.out.println("pageIndex: " + this.pageIndex + " page left: " + pageS.substring(pos));
             throw new NDException("Node page is invalid!");
         }
     }
@@ -132,6 +134,9 @@ public class BPlusTreeNode {
         }
 
         // [(key, ptr)]
+        if (keyList.size() > this.conf.getTreeDegree()) {
+            throw new NDException("tree degree < key list size!");
+        }
         for (int i = 0; i < keyList.size(); ++i) {
             pos += NumberUtils.toBytes(pageB, pos, keyList.get(i), conf.getKeyType());
             tmp = Long.toString(ptrList.get(i)).getBytes();
@@ -305,8 +310,8 @@ public class BPlusTreeNode {
     }
 
     public void removeKeyAndPtr(int idx) {
-        keyList.remove(idx);
-        ptrList.remove(idx);
+        Object o = keyList.remove(idx);
+        o = ptrList.remove(idx);
     }
 
     public void removeKeyAndPtr(Object key) {

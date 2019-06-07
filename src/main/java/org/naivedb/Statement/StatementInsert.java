@@ -69,6 +69,9 @@ public class StatementInsert {
         tableHeader.add("Update_Count");
         ExecResult execResult = new ExecResult(tableHeader);
         int succeed = 0;
+//        if ((int)this.valueList.get(0).get(2) == 5844) {
+//            System.out.println(this.valueList.get(0));
+//        }
         for (LinkedList value: this.valueList) {
             targetTable.insert(value);
             succeed += 1;
