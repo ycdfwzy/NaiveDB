@@ -114,13 +114,13 @@ public class Session extends Thread{
                     StatementCreateTable stm = (StatementCreateTable) o;
                     if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
                     else stm.exec(curDatabase);
-                    this.curDatabase.close();
+                    this.curDatabase.close(false);
                 }
                 else if (o instanceof StatementDropTable) {
                     StatementDropTable stm = (StatementDropTable) o;
                     if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
                     else stm.exec(curDatabase);
-                    this.curDatabase.close();
+                    this.curDatabase.close(false);
                 }
                 else if (o instanceof StatementInsert) {
                     StatementInsert stm = (StatementInsert) o;
