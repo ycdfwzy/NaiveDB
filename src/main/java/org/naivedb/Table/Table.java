@@ -184,7 +184,7 @@ public class Table {
         // type check pass
         long rowNum = this.persistence.getNewRowIndexWithoutDeletion();
         if (this.index != null)
-            this.index.insert(values.getFirst(), rowNum);
+            this.index.insert(values.get(this.primaryKey), rowNum);
         this.persistence.add(values);
         return rowNum;
     }
