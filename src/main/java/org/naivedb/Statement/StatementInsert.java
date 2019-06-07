@@ -76,7 +76,7 @@ public class StatementInsert {
             targetTable.insert(value);
             succeed += 1;
         }
-        targetTable.close();
+//        targetTable.close();
 
         LinkedList val = new LinkedList();
         val.add(succeed);

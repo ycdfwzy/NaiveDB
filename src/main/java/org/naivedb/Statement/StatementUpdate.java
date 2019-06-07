@@ -58,7 +58,7 @@ public class StatementUpdate {
             targetTable.update(row, colList, exprList);
             succeed += 1;
         }
-        targetTable.close();
+//        targetTable.close();
 
         LinkedList val = new LinkedList();
         val.add(succeed);

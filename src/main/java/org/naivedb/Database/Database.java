@@ -1,5 +1,6 @@
 package org.naivedb.Database;
 
+import org.naivedb.BPlusTree.BPlusTreeNode;
 import org.naivedb.utils.Consts;
 import org.naivedb.utils.NumberUtils;
 import org.naivedb.utils.StreamUtils;
@@ -25,6 +26,7 @@ public class Database {
     private String dbName;
     private String dbPath;
     HashSet<String> tables;
+    HashMap<String, Table> cachedTables;
     private Logger logger;
 
     /**
@@ -34,6 +36,7 @@ public class Database {
         this.dbName = db_name;
         this.dbPath = DatabaseManager.getDatabasePath(db_name);
         this.tables = new HashSet<String>();
+        this.cachedTables = new HashMap<>();
         this.logger = MyLogger.getLogger(db_name);
 
         File db = new File(this.dbPath);
@@ -58,6 +61,10 @@ public class Database {
     public void close() throws IOException, NDException {
         File dbmeta = new File(this.dbPath + "/" + metaName);
         this.writeMeta(dbmeta);
+        for (Map.Entry<String, Table> entry: this.cachedTables.entrySet()) {
+            entry.getValue().close();
+        }
+        this.cachedTables.clear();
     }
 
     // create a table
@@ -70,18 +77,29 @@ public class Database {
 
         Table tb = new Table(table_name, this.dbPath, cols);
         this.tables.add(table_name);
+        this.addCachedTables(table_name, tb);
         return tb;
     }
 
     // get a table
     public Table getTable(String table_name) throws IOException, NDException {
         if (!this.tables.contains(table_name)) throw new NDException("table does not exist");
-        return new Table(table_name, this.dbPath);
+//        return new Table(table_name, this.dbPath);
+        if (this.cachedTables.containsKey(table_name))
+            return this.cachedTables.get(table_name);
+
+        Table tb = new Table(table_name, this.dbPath);
+        this.addCachedTables(table_name, tb);
+        return tb;
     }
 
     // drop a table
     public void dropTable(String table_name) throws IOException, NDException {
         if (!this.tables.contains(table_name)) throw new NDException("table not exists!");
+
+        Table table = this.cachedTables.remove(table_name);
+        table.close(false);
+
         File root = new File(this.dbPath);
         File[] files = root.listFiles(new FilenameFilter(){
             @Override
@@ -108,6 +126,18 @@ public class Database {
 
 
 // ---------------------------- private methods ----------------------------------
+
+    private void addCachedTables(String table_name, Table table) throws NDException, IOException {
+        if (this.cachedTables.size() > Consts.memoryTableLimitation) {
+            for (Map.Entry<String, Table> entry: this.cachedTables.entrySet()) {
+                entry.getValue().close();
+                this.cachedTables.remove(entry.getKey());
+                break;
+            }
+        }
+        this.cachedTables.put(table_name, table);
+    }
+
     private void loadMeta(File meta) throws IOException, NDException {
         BufferedInputStream input = new BufferedInputStream(new FileInputStream(meta));
 

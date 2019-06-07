@@ -62,7 +62,7 @@ public class StatementSelect {
                     res.insert(new LinkedList());
                 }
             }
-            table.close(false);
+//            table.close(false);
             return res;
         } else
         {
