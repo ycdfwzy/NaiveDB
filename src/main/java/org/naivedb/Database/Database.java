@@ -86,7 +86,7 @@ public class Database {
         File[] files = root.listFiles(new FilenameFilter(){
             @Override
             public boolean accept(File dir, String name) {
-                return name.startsWith(table_name);
+                return name.startsWith(table_name + ".");
             }
         });
         boolean succ = true;
