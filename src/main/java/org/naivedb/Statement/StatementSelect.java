@@ -55,7 +55,7 @@ public class StatementSelect {
                         res.insert(data);
                     } else
                     {
-                        res.insert(colNames, data, tableList);
+                        res.insert(colNames, data, tableList, null);
                     }
                 } else
                 {
@@ -97,7 +97,7 @@ public class StatementSelect {
                         res.insert(colNames, data, ignoreColumns);
                     } else
                     {
-                        res.insert(colNames, data, tableList);
+                        res.insert(colNames, data, tableList, ignoreColumns);
                     }
                 } else
                 {
