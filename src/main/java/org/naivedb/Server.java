@@ -35,8 +35,10 @@ public class Server{
         try {
             cl = parser.parse(opts, args);
             
-            if (cl.hasOption("h"))
+            if (cl.hasOption("h")) {
                 showHelp();
+                return;
+            }
             else if (cl.hasOption("p"))
                 port_num = Integer.parseInt(cl.getOptionValue("p"));
         } catch(Exception e) {
@@ -45,14 +47,14 @@ public class Server{
         }
 
         try {
-            System.out.println("Initiate Server...");
+            logger.info("Initiate Server...");
             DatabaseManager.initial();
 
             // currently only support single session
             Session session = new Session(1, port_num);
             session.run();
             
-            System.out.println("Server shutdown...");
+            logger.info("Server shutdown...");
             DatabaseManager.close();
         }
         catch(Exception e) {
