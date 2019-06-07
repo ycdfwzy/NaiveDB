@@ -46,7 +46,7 @@ public class StatementDelete {
             targetTable.delete(row);
             succeed += 1;
         }
-        targetTable.close();
+//        targetTable.close();
 
         LinkedList val = new LinkedList();
         val.add(succeed);
