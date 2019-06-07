@@ -50,6 +50,7 @@ public class ClientSwing extends JFrame {
     private JMenuItem cmdDropTable;
     private JMenuItem cmdCreateDb;
     private JMenuItem cmdDropDb;
+    private JMenuItem cmdUseDb;
     private JMenuItem cmdShowDbs;
     private JMenuItem cmdShowDb;
     private JMenuItem cmdShowTb;
@@ -132,6 +133,7 @@ public class ClientSwing extends JFrame {
         cmdDropTable = new JMenuItem("Drop Table");
         cmdCreateDb = new JMenuItem("Create Database");
         cmdDropDb = new JMenuItem("Drop Database");
+        cmdUseDb = new JMenuItem("Use Database");
         cmdShutdown = new JMenuItem("Shutdown");
         cmdShowDbs = new JMenuItem("Show Databases");
         cmdShowDb = new JMenuItem("Show Database");
@@ -155,6 +157,7 @@ public class ClientSwing extends JFrame {
         cmd.add(cmdDropTable);
         cmd.add(cmdCreateDb);
         cmd.add(cmdDropDb);
+        cmd.add(cmdUseDb);
         cmd.addSeparator();
         cmd.add(cmdShowDbs);
         cmd.add(cmdShowDb);
@@ -355,6 +358,15 @@ public class ClientSwing extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 textarea.setText("DROP DATABASE [database_name];");
+            }
+        });
+
+        // cmd use db
+        cmdUseDb.addActionListener(new ActionListener(){
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textarea.setText("USE [database_name];");
             }
         });
 
