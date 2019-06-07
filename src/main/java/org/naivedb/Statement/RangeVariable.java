@@ -44,47 +44,85 @@ public class RangeVariable {
         this.conditions = conditions;
     }
 
-    public void setProduct(boolean product) { isProduct = product; }
+    public void setProduct(boolean product) {
+        isProduct = product;
+    }
 
-    public boolean isProduct() { return isProduct; }
+    public boolean isProduct() {
+        return isProduct;
+    }
 
-    public void setNatural(boolean natural) { isNatural = natural; }
+    public void setNatural(boolean natural) {
+        isNatural = natural;
+    }
 
-    public boolean isNatural() { return isNatural;}
+    public boolean isNatural() {
+        return isNatural;
+    }
 
-    public void setOuterJoined(boolean outerJoined) { isOuterJoined = outerJoined; }
+    public void setOuterJoined(boolean outerJoined) {
+        isOuterJoined = outerJoined;
+    }
 
-    public boolean isOuterJoined() { return isOuterJoined; }
+    public boolean isOuterJoined() {
+        return isOuterJoined;
+    }
 
-    public void setInnerJoined(boolean innerJoined) { isInnerJoined = innerJoined; }
+    public void setInnerJoined(boolean innerJoined) {
+        isInnerJoined = innerJoined;
+    }
 
-    public boolean isInnerJoined() { return isInnerJoined; }
+    public boolean isInnerJoined() {
+        return isInnerJoined;
+    }
 
-    public void setLeft(boolean left) { isLeft = left; }
+    public void setLeft(boolean left) {
+        isLeft = left;
+    }
 
-    public boolean isLeft() { return isLeft; }
+    public boolean isLeft() {
+        return isLeft;
+    }
 
-    public void setRight(boolean right) { isRight = right; }
+    public void setRight(boolean right) {
+        isRight = right;
+    }
 
-    public boolean isRight() { return isRight; }
+    public boolean isRight() {
+        return isRight;
+    }
 
-    public void setFull(boolean full) { isFull = full; }
+    public void setFull(boolean full) {
+        isFull = full;
+    }
 
-    public boolean isFull() { return isFull; }
+    public boolean isFull() {
+        return isFull;
+    }
 
-    public void setConditions(Conditions conditions) { this.conditions = conditions; }
+    public void setConditions(Conditions conditions) {
+        this.conditions = conditions;
+    }
 
-    public Conditions getConditions() { return conditions; }
+    public Conditions getConditions() {
+        return conditions;
+    }
 
-    public void setRowNumLists(ArrayList<ArrayList<Long>> rowNumLists) { this.rowNumLists = rowNumLists; }
+    public void setRowNumLists(ArrayList<ArrayList<Long>> rowNumLists) {
+        this.rowNumLists = rowNumLists;
+    }
 
     public void setRangeVariables(ArrayList<RangeVariable> rangeVariables) {
         this.rangeVariables = rangeVariables;
     }
 
-    public ArrayList<ArrayList<Long>> getRowNumLists() { return rowNumLists; }
+    public ArrayList<ArrayList<Long>> getRowNumLists() {
+        return rowNumLists;
+    }
 
-    public ArrayList<String> getIgnoredColumns() { return ignoredColumns; }
+    public ArrayList<String> getIgnoredColumns() {
+        return ignoredColumns;
+    }
 
     public ArrayList<Table> getTableList() {
         return tableList;
@@ -616,10 +654,10 @@ public class RangeVariable {
 
                 leftTableList.addAll(rightTableList);
             }
-
-            leftRowNumLists.clear();
-            leftRowNumLists.addAll(tempRowNumLists);
         }
+
+        leftRowNumLists.clear();
+        leftRowNumLists.addAll(tempRowNumLists);
     }
 
 
@@ -716,20 +754,21 @@ public class RangeVariable {
                     tempRowNumList.addAll(rightRowNumList);
                     tempRowNumLists.add(tempRowNumList);
                 }
+            }
 
-                for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
-                    if (!leftRowNumSet.contains(leftRowNumList)) {
-                        ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
-                        for (int i = 0; i < rightTableList.size(); ++i) {
-                            tempRowNumList.add((long)-1);
-                        }
-                        tempRowNumLists.add(tempRowNumList);
+            for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
+                if (!leftRowNumSet.contains(leftRowNumList)) {
+                    ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
+                    for (int i = 0; i < rightTableList.size(); ++i) {
+                        tempRowNumList.add((long)-1);
                     }
+                    tempRowNumLists.add(tempRowNumList);
                 }
             }
 
             leftTableList.addAll(rightTableList);
             getTotalColNamesAndTypes(leftColNames, leftColTypes, rightTableList);
+
         } else {
 
             ArrayList<String> totalColNames = leftColNames;
@@ -774,6 +813,8 @@ public class RangeVariable {
                     tempRowNumLists.add(tempRowNumList);
                 }
             }
+
+            leftTableList.addAll(rightTableList);
         }
 
         leftRowNumLists.clear();
@@ -895,6 +936,8 @@ public class RangeVariable {
                     }
                 }
             }
+
+            leftTableList.addAll(rightTableList);
         }
 
         leftRowNumLists.clear();
@@ -971,5 +1014,4 @@ public class RangeVariable {
             colNameSet.add(exactColName);
         }
     }
-
 }
