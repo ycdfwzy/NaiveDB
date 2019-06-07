@@ -13,7 +13,7 @@ public class PersistenceData {
 
     private HashMap<Long, LinkedList> cachedData;
     private long maxRowIndex;
-    private ArrayList<Long> rowIndexPool;
+    private LinkedList<Long> rowIndexPool;
     private RandomAccessFile dataFile;
     private int rowSize;
     private ArrayList<Type> types;
@@ -35,9 +35,9 @@ public class PersistenceData {
         for (Type type: types)
             this.rowSize += type.typeSize();
         if (rowIndexPool == null) {
-            this.rowIndexPool = new ArrayList<>();
+            this.rowIndexPool = new LinkedList<>();
         } else {
-            this.rowIndexPool = rowIndexPool;
+            this.rowIndexPool = new LinkedList<>(rowIndexPool);
         }
         this.maxRowIndex = this.dataFile.length() / this.rowSize - 1;
     }
@@ -48,13 +48,18 @@ public class PersistenceData {
             StreamUtils.writeLong(output, row);
     }
 
-    public void close() {
+    public void close(boolean needWriteBack) {
         try {
-            write();
+            if (needWriteBack)
+                write();
             this.dataFile.close();
         } catch (Exception e) {
             logger.warning("Error happened while trying to write back to data file!");
         }
+    }
+
+    public void close() {
+        close(true);
     }
 
     public ArrayList<Long> getAllRowNum() {

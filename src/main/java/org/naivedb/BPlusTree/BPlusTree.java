@@ -18,16 +18,21 @@ public class BPlusTree {
     private HashMap<Long, BPlusTreeNode> cachedNodes;
 //    private HashMap<Long, LinkedList> cachedData;
     private long maxPageIndex;
-    private ArrayList<Long> pageIndexPool;
+    private LinkedList<Long> pageIndexPool;
 //    private long maxRowIndex;
 //    private ArrayList<Long> rowIndexPool;
     private long firstLeaf, lastLeaf;
 
+    public void close(boolean needWriteBack)
+            throws IOException, NDException {
+        if (needWriteBack)
+            this.toFile();
+        this.treeFile.close();
+    }
+
     public void close()
         throws IOException, NDException {
-        this.toFile();
-        this.treeFile.close();
-//        this.dataFile.close();
+        this.close(true);
     }
 
     public BPlusTree(BPlusTreeConfiguration config)
@@ -42,7 +47,7 @@ public class BPlusTree {
         this.lastLeaf = 0;
         this.firstLeaf = 0;
         this.maxPageIndex = 0;
-        this.pageIndexPool = new ArrayList<Long>();
+        this.pageIndexPool = new LinkedList<>();
 //        this.maxRowIndex = -1;
 //        this.rowIndexPool = new ArrayList<Long>();
         this.headerFile = new File(config.getFilename()+".header");
@@ -175,7 +180,7 @@ public class BPlusTree {
 
         // blankPageCnt
         int blankPageCnt = StreamUtils.readInt(input);
-        this.pageIndexPool = new ArrayList<Long>();
+        this.pageIndexPool = new LinkedList<>();
         // [blankPage]
         for (int i = 0; i < blankPageCnt; ++i) {
             long pageIndex = StreamUtils.readLong(input);
@@ -184,6 +189,21 @@ public class BPlusTree {
         input.close();
 
 //        this.rowIndexPool = new ArrayList<Long>();
+    }
+
+    public boolean check() throws IOException, NDException {
+        return check(this.root);
+    }
+
+    private boolean check(BPlusTreeNode p) throws IOException, NDException {
+        if (p.isLeaf()) return true;
+        int n = p.getCurrentSize();
+        for (int i = 0; i < n; ++i) {
+            BPlusTreeNode q = getNode(p.getPtr(i));
+            if (q.getParent() != p.getPageIndex() || !check(q))
+                return false;
+        }
+        return true;
     }
 
     public int getTreeDegree() {return config.getTreeDegree();}
@@ -420,7 +440,7 @@ public class BPlusTree {
 
             if (p.isLeaf())
                 p.setNodeType(BPlusTreeNodeType.LEAF_NODE);
-            else if (p.isInternal())
+            else// if (p.isInternal())
                 p.setNodeType(BPlusTreeNodeType.INTERNAL_NODE);
             p.setParent(newRootPageIndex);
             newRoot.addKeyAndPtr(p.getKey(0), p.getPageIndex());
@@ -458,6 +478,9 @@ public class BPlusTree {
             Object key = p.getKey(i);
             long ptr = p.getPtr(i);
             q.addKeyAndPtr(key, ptr);
+            if (!p.isLeaf()) {
+                getNode(ptr).setParent(newPageIndex);
+            }
         }
         for (int i = m/2; i < m; ++i) {
             p.removeKeyAndPtr(m/2);
@@ -473,6 +496,7 @@ public class BPlusTree {
     private void afterDelete(BPlusTreeNode p)
         throws NDException, IOException {
         if (p.isRoot()) {
+            if (p.isLeaf()) return;
             this.root = getNode(p.getPtr(0));
             if (this.root.isLeaf()) {
                 this.root.setNodeType(BPlusTreeNodeType.ROOT_LEAF_NODE);

@@ -113,8 +113,17 @@ public class Table {
      * close a table, write data back to storage (not meta info currently)
      */
     public void close() throws IOException, NDException {
-        this.writeMeta(new File(this.fileName + ".meta"));
-        this.persistence.close();
+//        this.writeMeta(new File(this.fileName + ".meta"));
+//        this.persistence.close();
+//        if (this.index != null)
+//            this.index.close();
+        this.close(true);
+    }
+
+    public void close(boolean needWriteBack) throws IOException, NDException {
+        if (needWriteBack)
+            this.writeMeta(new File(this.fileName + ".meta"));
+        this.persistence.close(needWriteBack);
         if (this.index != null)
             this.index.close();
     }
@@ -183,8 +192,12 @@ public class Table {
 
         // type check pass
         long rowNum = this.persistence.getNewRowIndexWithoutDeletion();
-        if (this.index != null)
-            this.index.insert(values.getFirst(), rowNum);
+        if (this.index != null) {
+            this.index.insert(values.get(this.primaryKey), rowNum);
+//            if ((int)values.get(2) > 8000) {
+//                System.out.println(values.get(0).toString() + " " + this.index.check());
+//            }
+        }
         this.persistence.add(values);
         return rowNum;
     }
@@ -365,7 +378,7 @@ public class Table {
         input.close();
 
         this.persistence = new PersistenceData(this.fileName, this.colTypes, blankRow);
-        logger.info("table " + this.tableName + " meta info load successful.");
+        logger.fine("table " + this.tableName + " meta info load successful.");
     }
     
     private void writeMeta(File meta) throws IOException, NDException{
@@ -394,7 +407,7 @@ public class Table {
         this.persistence.output(output);
 
         output.close();
-        logger.info("table " + this.tableName + " meta info write successful.");
+        logger.fine("table " + this.tableName + " meta info write successful.");
     }
 
 }

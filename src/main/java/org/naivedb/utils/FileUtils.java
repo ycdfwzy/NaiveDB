@@ -17,7 +17,8 @@ public class FileUtils {
     }
 
     public static String readFile(File file) throws IOException, NDException {
-        if (!file.exists() || file.isDirectory()) throw new NDException("file \"" + file + "\" can't be read");
+        if (!file.exists() || file.isDirectory())
+            throw new NDException("file \"" + file + "\" can't be read");
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line;
         String in = "";
@@ -25,5 +26,26 @@ public class FileUtils {
             in += line + " ";
         reader.close();
         return in;
+    }
+
+    public static String readFileMultiLine(File file) throws IOException, NDException {
+        if (!file.exists() || file.isDirectory())
+            throw new NDException("file \"" + file + "\" can't be read");
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line;
+        String in = "";
+        while ((line = reader.readLine()) != null)
+            in += line + "\n";
+        reader.close();
+        return in;
+    }
+
+    public static void writeToFile(String str, File file) throws IOException, NDException {
+        if (file.isDirectory())
+            throw new NDException("file \"" + file + "\" can't be read");
+        if (!file.exists()) file.createNewFile();
+        BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+        writer.write(str);
+        writer.close();
     }
 }
