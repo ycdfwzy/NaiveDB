@@ -462,7 +462,7 @@ public class ClientSwing extends JFrame {
         vec.add(res.time_used + " mill sec");
         datas.add(vec);
         table.setTo(titles, datas);
-        dbStatus.setText("* Ready, last finished in " + res.time_used + " mill sec");
+        dbStatus.setText("* Ready, " + datas.size() + " rows in set, finished in " + res.time_used + " mill sec");
     }
 
     // show result as table
@@ -485,7 +485,7 @@ public class ClientSwing extends JFrame {
             datas.add(vec);   
         }
         table.setTo(titles, datas);
-        dbStatus.setText("* Ready, last finished in " + res.time_used + " mill sec");
+        dbStatus.setText("* Ready, " + datas.size() + " rows in set, finished in " + res.time_used + " mill sec");
     }
 
     // keep recent 20 sqls
