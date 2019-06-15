@@ -32,4 +32,4 @@ A naive database implementation
 #### **王泽宇**
 
 - 学校：清华大学软件学院
-- Email：[ycdfwzy@outlook.com]
+- Email：ycdfwzy@outlook.com
