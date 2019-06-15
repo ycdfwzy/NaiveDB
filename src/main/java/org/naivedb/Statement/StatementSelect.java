@@ -55,14 +55,14 @@ public class StatementSelect {
                         res.insert(data);
                     } else
                     {
-                        res.insert(colNames, data, tableList);
+                        res.insert(colNames, data, tableList, null);
                     }
                 } else
                 {
                     res.insert(new LinkedList());
                 }
             }
-            table.close(false);
+//            table.close(false);
             return res;
         } else
         {
@@ -86,7 +86,7 @@ public class StatementSelect {
             }
 
             if (cond != null) {
-                cond.normalize(tableList);
+                cond.normalize(tableList, ignoreColumns);
             }
             ArrayList<Long> rowList = tempTable.search(cond);
             for (long row: rowList) {
@@ -97,7 +97,7 @@ public class StatementSelect {
                         res.insert(colNames, data, ignoreColumns);
                     } else
                     {
-                        res.insert(colNames, data, tableList);
+                        res.insert(colNames, data, tableList, ignoreColumns);
                     }
                 } else
                 {

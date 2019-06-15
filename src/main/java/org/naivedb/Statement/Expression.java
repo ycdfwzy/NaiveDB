@@ -312,16 +312,17 @@ public class Expression {
         params: table list
         return: none
      */
-    public void normalize(ArrayList<Table> tables) throws NDException {
+    public void normalize(ArrayList<Table> tables, LinkedList<String> ignoreNames) throws NDException {
         switch (this.type) {
             case 1:
                 if (this.symbolORValue.indexOf(".") == -1) {
                     String tableName = null;
                     for (Table table : tables) {
-                        if (table.getColNames().indexOf(this.symbolORValue) != -1) {
+                        if (table.getColNames().indexOf(this.symbolORValue) != -1 &&
+                            (ignoreNames == null || !ignoreNames.contains(table.getTableName() + "." + this.symbolORValue))) {
                             if (tableName != null)
                                 throw new NDException("Column name '" + this.symbolORValue +"' occurs in Table '" +
-                                                        tableName + "' and Table '" + table.getTableName() + "'!");
+                                        tableName + "' and Table '" + table.getTableName() + "'!");
                             tableName = table.getTableName();
                         }
                     }
@@ -338,7 +339,10 @@ public class Expression {
                 this.expr2.normalize(tables);
                 break;
         }
+    }
 
+    public void normalize(ArrayList<Table> tables) throws NDException {
+        normalize(tables, null);
     }
 
     public int getType() {return this.type;}

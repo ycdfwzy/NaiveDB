@@ -67,6 +67,7 @@ public class Session extends Thread{
 
     private ServerResult execSQL(String sql) {
         ServerResult result = new ServerResult();
+        long start_time = System.currentTimeMillis();
         
         // initial anltr
         CharStream input = CharStreams.fromString(sql);
@@ -83,7 +84,6 @@ public class Session extends Thread{
             myVisitor visitor = new myVisitor();
             ArrayList comp_res = (ArrayList) visitor.visit(parser.parse());
             int i = 0; int len = comp_res.size();
-            long start_time = System.currentTimeMillis();
             for (Object o: comp_res) {
                 if (o instanceof StatementCreateDatabase) {
                     StatementCreateDatabase stm = (StatementCreateDatabase) o;
@@ -114,13 +114,13 @@ public class Session extends Thread{
                     StatementCreateTable stm = (StatementCreateTable) o;
                     if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
                     else stm.exec(curDatabase);
-                    this.curDatabase.close();
+                    this.curDatabase.close(false);
                 }
                 else if (o instanceof StatementDropTable) {
                     StatementDropTable stm = (StatementDropTable) o;
                     if (i == len - 1) result.data = stm.exec(curDatabase).zipString();
                     else stm.exec(curDatabase);
-                    this.curDatabase.close();
+                    this.curDatabase.close(false);
                 }
                 else if (o instanceof StatementInsert) {
                     StatementInsert stm = (StatementInsert) o;

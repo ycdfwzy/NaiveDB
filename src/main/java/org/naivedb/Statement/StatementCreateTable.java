@@ -39,7 +39,7 @@ public class StatementCreateTable {
         table.setNotNull(notNull);
         if (primaryKey != null)
             table.setPrimary(primaryKey);
-        table.close();
+//        table.close();
 
         LinkedList<String> tableHeader = new LinkedList<>();
         tableHeader.add("Update_Count");

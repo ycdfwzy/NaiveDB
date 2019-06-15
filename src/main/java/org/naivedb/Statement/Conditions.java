@@ -83,18 +83,22 @@ public class Conditions {
         params: table list
         return: none
      */
-    public void normalize(ArrayList<Table> tables) throws NDException {
+    public void normalize(ArrayList<Table> tables, LinkedList<String> ignoreNames) throws NDException {
         switch (this.type) {
             case 0:
             case 1:
-                leftCond.normalize(tables);
-                rightCond.normalize(tables);
+                leftCond.normalize(tables, ignoreNames);
+                rightCond.normalize(tables, ignoreNames);
                 break;
             case 2:
-                expr1.normalize(tables);
-                expr2.normalize(tables);
+                expr1.normalize(tables, ignoreNames);
+                expr2.normalize(tables, ignoreNames);
                 break;
         }
+    }
+
+    public void normalize(ArrayList<Table> tables) throws NDException {
+        normalize(tables, null);
     }
 
     /*
