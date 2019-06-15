@@ -128,7 +128,9 @@ public class RangeVariable {
         return tableList;
     }
 
-    // db.getTable(tableName)
+    /**
+     * return a temporary table as a result of joining
+     */
     public Object exec(Database db) throws NDException, IOException {
         if (rangeVariables == null) {
             return db.getTable(this.tableName);
@@ -160,6 +162,10 @@ public class RangeVariable {
         return tempTable;
     }
 
+    /**
+     * as we use row number as the middle result of joining operation, this function is to combine the row lists of
+     * each table together
+     */
     private void combineRows(Database db) throws NDException, IOException {
 
         if (rangeVariables == null) {
@@ -200,13 +206,9 @@ public class RangeVariable {
             RangeVariable rightRange = rangeVariables.get(i);
             rightRange.combineRows(db);
 
-//            ArrayList<Table> rightTableList = rightRange.getTableList();
-
             if (rightRange.isNatural()) {
                 processNatural(totalColNames, rightRange);
             }
-
-//            getTotalColNamesAndTypes(totalColNames, totalColTypes, rightTableList);
 
             if (rightRange.isProduct()) {
                 getTotalColNamesAndTypes(totalColNames, totalColTypes, rightRange.getTableList());
@@ -217,16 +219,13 @@ public class RangeVariable {
                     leftOuterJoin(leftRowNumLists, leftTableList, totalColNames, totalColTypes, rightRange);
                 }
                 else if (rightRange.isRight()) {
-//                    rightOuterJoin(leftRowNumLists, leftTableList, rightRange, totalColNames, totalColTypes);
                     rightOuterJoin(leftRowNumLists, leftTableList, totalColNames, totalColTypes, rightRange);
                 }
                 else {
-//                    fullOuterJoin(leftRowNumLists, leftTableList, rightRange, totalColNames, totalColTypes);
                     fullOuterJoin(leftRowNumLists, leftTableList, totalColNames, totalColTypes, rightRange);
                 }
             }
             else {
-//                innerJoin(leftRowNumLists, leftTableList, rightRange, totalColNames, totalColTypes);
                 innerJoin(leftRowNumLists, leftTableList, totalColNames, totalColTypes, rightRange);
             }
             if (rightRange.getIgnoredColumns() != null) {
@@ -241,6 +240,9 @@ public class RangeVariable {
         tableList = leftTableList;
     }
 
+    /**
+     * add the total column names and types from a table list to the existed column name list and type list
+     */
     private void getTotalColNamesAndTypes(ArrayList<String> totalColNames,
                                           ArrayList<Type> totalColTypes,
                                           ArrayList<Table> tableList) {
@@ -254,6 +256,9 @@ public class RangeVariable {
         }
     }
 
+    /**
+     * return a list of actual row value according to the row numbers and tables
+     */
     private LinkedList getRowValue(ArrayList<Table> tableList,
                                   ArrayList<Long> rowNumList)
             throws NDException, IOException {
@@ -358,7 +363,12 @@ public class RangeVariable {
 
         ArrayList<ArrayList<Long>> tempRowNumLists = new ArrayList<>();
 
+        /**
+         * single table condition optimization;
+         * filter the former table with condition and then do Cartesian product with the latter table
+         */
         if (rightRange.getConditions().onlySingleTable(leftTableList)) {
+            /** when the single table condition works on the left table */
             LinkedList<String> linkedLeftColNames = new LinkedList<>(leftColNames);
             LinkedList<Type> linkedLeftColTypes = new LinkedList<>(leftColTypes);
 
@@ -373,7 +383,9 @@ public class RangeVariable {
                         tempRowNumLists.add(tempRowNumList);
                     }
                 }
-
+                /**
+                 * implement outer join
+                 */
                 if (!inserted) {
                     ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
                     for (int i = 0; i < rightTableList.size(); ++i) {
@@ -387,6 +399,7 @@ public class RangeVariable {
             getTotalColNamesAndTypes(leftColNames, leftColTypes, rightTableList);
 
         } else if (rightRange.getConditions().onlySingleTable(rightTableList)) {
+            /** when the single table condition works on the right table */
             if (rightRowNumLists.size() == 0) {
                 for (ArrayList<Long> leftRowNumList : leftRowNumLists) {
                     ArrayList<Long> tempRowNumList = new ArrayList<>(leftRowNumList);
@@ -395,7 +408,12 @@ public class RangeVariable {
                     }
                     tempRowNumLists.add(tempRowNumList);
                 }
-            } else {
+            }
+            /**
+             * once there is a row from the right table satisfy the condition
+             * then all row from left table will be added to the result
+             */
+            else {
                 LinkedList<String> linkedRightColNames = new LinkedList<>(rightColNames);
                 LinkedList<Type> linkedRightColTypes = new LinkedList<>(rightColTypes);
 
@@ -414,7 +432,11 @@ public class RangeVariable {
             leftTableList.addAll(rightTableList);
             getTotalColNamesAndTypes(leftColNames, leftColTypes, rightTableList);
 
-        } else if (rightRange.getConditions().twoTablesEqual(leftTableList, rightTableList)) {
+        }
+        /**
+         * hash join optimization
+         */
+        else if (rightRange.getConditions().twoTablesEqual(leftTableList, rightTableList)) {
             Pair<ArrayList<String>, ArrayList<String>> equalCols = rightRange.getConditions().getTwoTableColumns(leftTableList, rightTableList);
             HashMap<LinkedList, ArrayList<ArrayList<Long>>> index = new HashMap<>();
             for (ArrayList<Long> rightRowNumList : rightRowNumLists) {
@@ -455,7 +477,11 @@ public class RangeVariable {
             leftTableList.addAll(rightTableList);
             getTotalColNamesAndTypes(leftColNames, leftColTypes, rightTableList);
 
-        } else {
+        }
+        /**
+         * nested loop join
+         */
+        else {
 
             ArrayList<String> totalColNames = leftColNames;
             ArrayList<Type> totalColTypes = leftColTypes;
@@ -944,13 +970,16 @@ public class RangeVariable {
         leftRowNumLists.addAll(tempRowNumLists);
     }
 
+    /**
+     * find the columns with a same name, and build a condition,
+     * then add the column name to the ignore column list
+     */
     private void processNatural(ArrayList<String> leftColNames, RangeVariable rightRange) throws NDException {
         ArrayList<Table> rightTableList = rightRange.getTableList();
         ArrayList<String> rightColNames = new ArrayList<>();
         for (Table rightTable : rightTableList) {
             ArrayList<String> colNames = rightTable.getColNames();
             String tableName = rightTable.getTableName();
-//            rightColNames.addAll(rightTable.getTableName() + '.' + colNames);
             for (String colName : colNames) {
                 rightColNames.add(tableName + "." + colName);
             }

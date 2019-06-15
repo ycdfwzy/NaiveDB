@@ -50,6 +50,7 @@ public class ClientSwing extends JFrame {
     private JMenuItem cmdDropTable;
     private JMenuItem cmdCreateDb;
     private JMenuItem cmdDropDb;
+    private JMenuItem cmdUseDb;
     private JMenuItem cmdShowDbs;
     private JMenuItem cmdShowDb;
     private JMenuItem cmdShowTb;
@@ -132,6 +133,7 @@ public class ClientSwing extends JFrame {
         cmdDropTable = new JMenuItem("Drop Table");
         cmdCreateDb = new JMenuItem("Create Database");
         cmdDropDb = new JMenuItem("Drop Database");
+        cmdUseDb = new JMenuItem("Use Database");
         cmdShutdown = new JMenuItem("Shutdown");
         cmdShowDbs = new JMenuItem("Show Databases");
         cmdShowDb = new JMenuItem("Show Database");
@@ -155,6 +157,7 @@ public class ClientSwing extends JFrame {
         cmd.add(cmdDropTable);
         cmd.add(cmdCreateDb);
         cmd.add(cmdDropDb);
+        cmd.add(cmdUseDb);
         cmd.addSeparator();
         cmd.add(cmdShowDbs);
         cmd.add(cmdShowDb);
@@ -358,6 +361,15 @@ public class ClientSwing extends JFrame {
             }
         });
 
+        // cmd use db
+        cmdUseDb.addActionListener(new ActionListener(){
+        
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                textarea.setText("USE [database_name];");
+            }
+        });
+
         // cmd show dbs
         cmdShowDbs.addActionListener(new ActionListener(){
         
@@ -450,7 +462,7 @@ public class ClientSwing extends JFrame {
         vec.add(res.time_used + " mill sec");
         datas.add(vec);
         table.setTo(titles, datas);
-        dbStatus.setText("* Ready, last finished in " + res.time_used + " mill sec");
+        dbStatus.setText("* Ready, " + datas.size() + " rows in set, finished in " + res.time_used + " mill sec");
     }
 
     // show result as table
@@ -473,7 +485,7 @@ public class ClientSwing extends JFrame {
             datas.add(vec);   
         }
         table.setTo(titles, datas);
-        dbStatus.setText("* Ready, last finished in " + res.time_used + " mill sec");
+        dbStatus.setText("* Ready, " + datas.size() + " rows in set, finished in " + res.time_used + " mill sec");
     }
 
     // keep recent 20 sqls
